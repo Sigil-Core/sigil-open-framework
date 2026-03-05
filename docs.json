@@ -1,14 +1,11 @@
 {
   "name": "Sigil Open Framework",
-  "logo": {
-    "dark": "/logo/dark.svg",
-    "light": "/logo/light.svg"
-  },
   "navigation": [
     {
       "group": "Overview",
       "pages": [
         "introduction",
+        "getting-started",
         "architecture",
         "aaif-standards"
       ]

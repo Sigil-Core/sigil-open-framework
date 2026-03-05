@@ -85,13 +85,13 @@ PORT=8080 node mock_server.js
 
 _(Remember to update SIGIL_API_ENDPOINT in your Python script to match the new port)._
 
-- **YAML Parsing Errors:** If your Python script crashes reading the policy, ensure your ASSURANCE.md strictly contains the ```yaml block. Do not use tabs for indentation in YAML; use spaces.
+- **YAML Parsing Errors:** If your Python script crashes reading the policy, ensure your `ASSURANCE.md` includes a fenced YAML code block (opening with three backticks plus `yaml`, then closing with three backticks). Do not use tabs for indentation in YAML; use spaces.
 
 ## **Next Steps**
 
 Once your agent can successfully generate and handle Intent Attestations locally, you are ready to point your endpoint to the live production API and submit your transaction on-chain.
 
-Return to the main [**Sigil Open Framework Documentation**](https://www.google.com/search?q=../README.md) for production integration guides.
+Return to the main [**Sigil Open Framework Documentation**](../README.md) for production integration guides.
 
 ---
 
