@@ -1,19 +1,3 @@
-### **Mock Express.js Server**
-
-This acts as your local https://sign.sigilcore.com for offline testing. It validates the bearer token, checks the intent against a simple mock logic, and returns a dummy Ed25519 signature.
-
-**Prerequisites for the developer:**
-
-```bash
-npm init -y
-npm install express
-```
-
-_(Alternative: If they want auto-reloading during development, npm install -g nodemon and run with nodemon mock_server.js)_
-
-Instruct developers to save this as mock_server.js:
-
-```javascript
 const express = require("express");
 const crypto = require("crypto");
 
@@ -58,7 +42,7 @@ app.post("/v1/authorize", (req, res) => {
   const mockSignature = crypto.randomBytes(64).toString("hex");
   const attestationId = `att_${crypto.randomBytes(8).toString("hex")}`;
 
-  res.status(200).json({
+  return res.status(200).json({
     status: "AUTHORIZED",
     attestation_id: attestationId,
     ed25519_signature: mockSignature,
@@ -67,17 +51,10 @@ app.post("/v1/authorize", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`\\n======================================================`);
-  console.log(`🚀 Sigil Open Framework - Mock Engine Server Running`);
-  console.log(`======================================================`);
+  console.log("\\n======================================================");
+  console.log("🚀 Sigil Open Framework - Mock Engine Server Running");
+  console.log("======================================================");
   console.log(`Listening on: http://localhost:${PORT}`);
   console.log(`Send POST requests to: http://localhost:${PORT}/v1/authorize`);
   console.log(`Expected Bearer Token: ${EXPECTED_API_KEY}\\n`);
 });
-```
-
-**To run the mock server:**
-
-```bash
-node mock_server.js
-```

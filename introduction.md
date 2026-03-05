@@ -51,13 +51,13 @@ The entire framework relies on a single cryptographic primitive: the **Intent At
 Before an agent can execute a transaction on-chain, it must evaluate its intent against the deterministic constraints defined in its policy. If the intent is compliant, the Sigil execution firewall issues a short-lived, Ed25519-signed JWT. The EVM gateway physically rejects any write operation that does not include this valid attestation.
 
 <Card
-  title="Read the Attestation Specification"
-  icon="file-signature"
-  href="/components/sigil-attestations"
->
-  Explore the canonical specification for generating, binding, and verifying
-  Ed25519 Intent Attestations.
-</Card>
+title="Read the Attestation Specification"
+icon="file-signature"
+href="/components/sigil-attestations"
+
+> Explore the canonical specification for generating, binding, and verifying
+> Ed25519 Intent Attestations.
+> </Card>
 
 ---
 

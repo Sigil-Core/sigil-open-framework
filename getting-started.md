@@ -25,7 +25,7 @@ Before your agent can route a write transaction, it must obtain an **Intent Atte
 **Endpoint:** `POST /v1/authorize`
 
 ```bash
-curl -X POST [https://sign.sigilcore.com/v1/authorize](https://sign.sigilcore.com/v1/authorize) \
+curl -X POST https://sign.sigilcore.com/v1/authorize \
  -H "Content-Type: application/json" \
  -d '{
  "framework": "agentkit",
@@ -62,7 +62,7 @@ Read operations are public. **Write operations require your Intent Attestation.*
 Provide your attestation in the headers using either Authorization: Bearer <jwt> or Sigil-Receipt: <jwt>.
 
 ```bash
-curl -X POST [https://sign.sigilcore.com/rpc/8453](https://sign.sigilcore.com/rpc/8453) \
+curl -X POST https://sign.sigilcore.com/rpc/8453 \
  -H "Content-Type: application/json" \
  -H "Authorization: Bearer eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9..." \
  -d '{
