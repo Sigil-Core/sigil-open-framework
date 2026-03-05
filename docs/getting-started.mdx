@@ -1,40 +1,42 @@
-\---  
-title: "Getting Started"  
-description: "From zero to your first authorized execution in 2 minutes."  
-\---
+---
+title: "Getting Started"
+description: "From zero to your first authorized execution in 2 minutes."
+---
 
-\# Getting Started
+# Getting Started
 
-Sigil Sign is the deterministic execution firewall for agent-driven EVM actions. It sits between your AI agent and the blockchain, ensuring that high-stakes actions cannot execute without explicit authorization\[cite: 1, 2, 3\].
+Sigil Sign is the deterministic execution firewall for agent-driven EVM actions. It sits between your AI agent and the blockchain, ensuring that high-stakes actions cannot execute without explicit authorization[cite: 1, 2, 3].
 
-\*\*Base URL:\*\* \`https://sign.sigilcore.com\` \[cite: 88\]
+**Base URL:** `https://sign.sigilcore.com` [cite: 88]
 
-\#\# The Execution Flow
+## The Execution Flow
 
-Executing an agent-driven transaction is a strict two-step process:  
-1\. \*\*Request Authorization:\*\* Submit your intent to the firewall to receive a short-lived Intent Attestation\[cite: 91\].  
-2\. \*\*Execute:\*\* Submit the transaction to the Sigil RPC/Bundler gateway, attaching the attestation as your authorization bearer token.
+Executing an agent-driven transaction is a strict two-step process:
 
-\---
+1. **Request Authorization:** Submit your intent to the firewall to receive a short-lived Intent Attestation[cite: 91].
+2. **Execute:** Submit the transaction to the Sigil RPC/Bundler gateway, attaching the attestation as your authorization bearer token.
 
-\#\#\# Step 1: Request an Intent Attestation
+---
 
-Before your agent can route a write transaction, it must obtain an \*\*Intent Attestation\*\*\[cite: 91\].
+### Step 1: Request an Intent Attestation
 
-\*\*Endpoint:\*\* \`POST /v1/authorize\`
+Before your agent can route a write transaction, it must obtain an **Intent Attestation**[cite: 91].
 
-\`\`\`bash  
-curl \-X POST \[https://sign.sigilcore.com/v1/authorize\](https://sign.sigilcore.com/v1/authorize) \\  
- \-H "Content-Type: application/json" \\  
- \-d '{  
- "framework": "agentkit",  
- "txCommit": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",  
- "agentId": "agent_alpha_01",  
- "intent": {  
- "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",  
- "amount": "1000000000000"  
- }  
+**Endpoint:** `POST /v1/authorize`
+
+```bash
+curl -X POST [https://sign.sigilcore.com/v1/authorize](https://sign.sigilcore.com/v1/authorize) \
+ -H "Content-Type: application/json" \
+ -d '{
+ "framework": "agentkit",
+ "txCommit": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+ "agentId": "agent_alpha_01",
+ "intent": {
+ "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+ "amount": "1000000000000"
+ }
  }'
+```
 
 **Crucial Formatting Rules:**
 
@@ -44,7 +46,7 @@ curl \-X POST \[https://sign.sigilcore.com/v1/authorize\](https://sign.sigilcore
 
 If your intent passes your ASSURANCE.md policy, you will receive an Ed25519-signed JWT in the intent_attestation field.
 
-### ---
+---
 
 **Step 2: Route the Transaction**
 
@@ -57,21 +59,21 @@ Read operations are public. **Write operations require your Intent Attestation.*
 - Standard EVM: POST /rpc/:chainId
 - Account Abstraction: POST /bundler/:chainId
 
-Provide your attestation in the headers using either Authorization: Bearer \<jwt\> or Sigil-Receipt: \<jwt\>.
+Provide your attestation in the headers using either Authorization: Bearer <jwt> or Sigil-Receipt: <jwt>.
 
-Bash
-
-curl \-X POST \[https://sign.sigilcore.com/rpc/8453\](https://sign.sigilcore.com/rpc/8453) \\  
- \-H "Content-Type: application/json" \\  
- \-H "Authorization: Bearer eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9..." \\  
- \-d '{  
- "jsonrpc": "2.0",  
- "method": "eth_sendRawTransaction",  
- "params": \["0x..."\],  
- "id": 1  
+```bash
+curl -X POST [https://sign.sigilcore.com/rpc/8453](https://sign.sigilcore.com/rpc/8453) \
+ -H "Content-Type: application/json" \
+ -H "Authorization: Bearer eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9..." \
+ -d '{
+ "jsonrpc": "2.0",
+ "method": "eth_sendRawTransaction",
+ "params": ["0x..."],
+ "id": 1
  }'
+```
 
-### ---
+---
 
 **Verifying Attestations Locally**
 
