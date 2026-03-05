@@ -77,7 +77,7 @@ description: "Diagnosing policy violations, validation errors, and on-chain veri
     import { createRemoteJWKSet, jwtVerify } from "jose";
 
     const JWKS = createRemoteJWKSet(
-      new URL("[https://sign.sigilcore.com/.well-known/jwks.json](https://sign.sigilcore.com/.well-known/jwks.json)")
+      new URL("https://sign.sigilcore.com/.well-known/jwks.json")
     );
 
     const { payload } = await jwtVerify(intent_attestation, JWKS, {

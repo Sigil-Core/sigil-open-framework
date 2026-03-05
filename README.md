@@ -67,7 +67,7 @@ capabilities:
   - ERC4337_UserOp_Formatting
 
 # --- SIGIL OPEN FRAMEWORK EXTENSION ---
-  sigil-constraints:
+sigil-constraints:
   enforcement_layer: "Sigil OS"
   policy_uri: "ipfs://QmYourAssurancePolicyHashHere"
   attestation_standard: "sigil-attestations-v1"
@@ -99,7 +99,7 @@ To begin building with the Sigil Open Framework, select the path that fits your 
 ### 🛠️ Start Building Now (Hackathons & Local Dev)
 
 Jump into the local toolkit to simulate the Sigil execution firewall offline. It includes a mock Express.js engine, a Python LangChain authorizer, and an `ASSURANCE.md` template.  
-→ [**Open the Developer Toolkit**](./developer_toolkit)
+→ [**Open the Developer Toolkit**](./developer-toolkit)
 
 ### 📚 Explore the Core Components
 
