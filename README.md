@@ -78,7 +78,7 @@ capabilities:
     - block_sanctioned_entities: true
 ```
 
-If the agent proposes a transaction that violates any rule in the x-sigil-constraints block, the Sigil Open Framework intercepts the request, denies the Intent Attestation, and execution halts instantly at the cryptographic level.
+If the agent proposes a transaction that violates any rule in the sigil-constraints block, the Sigil Open Framework intercepts the request, denies the Intent Attestation, and execution halts instantly at the cryptographic level.
 
 ---
 
