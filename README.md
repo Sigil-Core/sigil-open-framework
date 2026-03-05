@@ -67,7 +67,7 @@ capabilities:
   - ERC4337_UserOp_Formatting
 
 # --- SIGIL OPEN FRAMEWORK EXTENSION ---
-x-sigil-constraints:
+  sigil-constraints:
   enforcement_layer: "Sigil OS"
   policy_uri: "ipfs://QmYourAssurancePolicyHashHere"
   attestation_standard: "sigil-attestations-v1"
