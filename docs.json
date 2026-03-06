@@ -1,5 +1,6 @@
 {
   "name": "Sigil Open Framework",
+  "theme": "mint",
   "navigation": [
     {
       "group": "Overview",
