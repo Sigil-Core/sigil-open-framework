@@ -1,37 +1,49 @@
 {
   "name": "Sigil Open Framework",
   "theme": "mint",
-  "navigation": [
-    {
-      "group": "Overview",
-      "pages": [
-        "introduction",
-        "getting-started",
-        "architecture",
-        "aaif-standards"
-      ]
-    },
-    {
-      "group": "Developer Toolkit",
-      "pages": [
-        "developer-toolkit/quick-start",
-        "developer-toolkit/mock-engine",
-        "developer-toolkit/assurance-policy"
-      ]
-    },
-    {
-      "group": "Core Components",
-      "pages": [
-        "components/open-venture-engine",
-        "components/fiduciary-agent-framework",
-        "components/sigil-attestations"
-      ]
-    },
-    {
-      "group": "Resources",
-      "pages": [
-        "faq"
-      ]
-    }
-  ]
+  "colors": {
+    "primary": "#2563eb",
+    "light": "#60a5fa",
+    "dark": "#1d4ed8"
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "introduction",
+              "getting-started",
+              "architecture",
+              "aaif-standards"
+            ]
+          },
+          {
+            "group": "Developer Toolkit",
+            "pages": [
+              "developer-toolkit/quick-start",
+              "developer-toolkit/mock-engine",
+              "developer-toolkit/assurance-policy"
+            ]
+          },
+          {
+            "group": "Core Components",
+            "pages": [
+              "components/open-venture-engine",
+              "components/fiduciary-agent-framework",
+              "components/sigil-attestations"
+            ]
+          },
+          {
+            "group": "Resources",
+            "pages": [
+              "faq"
+            ]
+          }
+        ]
+      }
+    ]
+  }
 }
