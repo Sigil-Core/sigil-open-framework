@@ -5,22 +5,22 @@ description: "From zero to your first authorized execution in 2 minutes."
 
 # Getting Started
 
-Sigil Sign is the deterministic execution firewall for agent-driven EVM actions. It sits between your AI agent and the blockchain, ensuring that high-stakes actions cannot execute without explicit authorization[cite: 1, 2, 3].
+Sigil Sign is the deterministic execution firewall for agent-driven EVM actions. It sits between your AI agent and the blockchain, ensuring that high-stakes actions cannot execute without explicit authorization.
 
-**Base URL:** `https://sign.sigilcore.com` [cite: 88]
+**Base URL:** `https://sign.sigilcore.com` 
 
 ## The Execution Flow
 
 Executing an agent-driven transaction is a strict two-step process:
 
-1. **Request Authorization:** Submit your intent to the firewall to receive a short-lived Intent Attestation[cite: 91].
+1. **Request Authorization:** Submit your intent to the firewall to receive a short-lived Intent Attestation.
 2. **Execute:** Submit the transaction to the Sigil RPC/Bundler gateway, attaching the attestation as your authorization bearer token.
 
 ---
 
 ### Step 1: Request an Intent Attestation
 
-Before your agent can route a write transaction, it must obtain an **Intent Attestation**[cite: 91].
+Before your agent can route a write transaction, it must obtain an **Intent Attestation**.
 
 **Endpoint:** `POST /v1/authorize`
 
