@@ -3,8 +3,6 @@ title: "Sigil Attestations"
 description: "The canonical standard for cryptographic execution approval."
 ---
 
-# Sigil Attestations
-
 Intent Attestations are the foundational cryptographic primitive of the Sigil Open Framework. They are the mathematical permission slips that allow an agent to execute a transaction.
 
 ## The Standard
