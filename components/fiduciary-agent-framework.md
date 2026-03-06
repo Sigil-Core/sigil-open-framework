@@ -3,8 +3,6 @@ title: "Fiduciary Agent Framework (FAF)"
 description: "The legal-technical bridge for autonomous liability."
 ---
 
-# Fiduciary Agent Framework (FAF)
-
 AI agents are not legal entities. They cannot sign term sheets, act as fiduciaries, or be held liable in a court of law. Handing an AI the private keys to a treasury without a legal wrapper is an unquantifiable liability for human operators.
 
 The **Fiduciary Agent Framework (FAF)** is the legal structuring counterpart to OVE.
