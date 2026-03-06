@@ -5,21 +5,21 @@ description: "The Brain, The Hands, and The Cryptographic Brakes."
 
 # Architecture
 
-AI models are probabilistic. Execution systems must not be[cite: 2].
+AI models are probabilistic. Execution systems must not be.
 
-Sigil Sign operates as a non-custodial, deterministic execution firewall[cite: 4, 6]. It ensures that high-stakes, agent-driven EVM actions physically cannot execute without mathematically proven authorization[cite: 3].
+Sigil Sign operates as a non-custodial, deterministic execution firewall. It ensures that high-stakes, agent-driven EVM actions physically cannot execute without mathematically proven authorization.
 
 ---
 
 ## Core Primitives
 
-The Sigil Open Framework separates autonomous capital deployment into three distinct layers[cite: 4]:
+The Sigil Open Framework separates autonomous capital deployment into three distinct layers:
 
 | Layer            | Component      | Role                                                                                                             |
 | ---------------- | -------------- | ---------------------------------------------------------------------------------------------------------------- |
-| **The Firewall** | **Sigil Sign** | The execution enforcement layer. Proxies RPC/Bundler requests and issues Intent Attestations[cite: 4, 5].        |
-| **The Engine**   | **OVE**        | Open Venture Engine. Orchestrates agent intelligence and formats EVM transactions[cite: 4, 14].                  |
-| **The Rules**    | **FAF**        | Fiduciary Agent Framework. Defines the governance rules and legal parameters the agent must follow[cite: 4, 15]. |
+| **The Firewall** | **Sigil Sign** | The execution enforcement layer. Proxies RPC/Bundler requests and issues Intent Attestations.        |
+| **The Engine**   | **OVE**        | Open Venture Engine. Orchestrates agent intelligence and formats EVM transactions.                  |
+| **The Rules**    | **FAF**        | Fiduciary Agent Framework. Defines the governance rules and legal parameters the agent must follow. |
 
 ---
 
@@ -55,12 +55,12 @@ The gateway routes transactions based on the following fallback logic:
 
 ## Fiduciary Brakes
 
-Fiduciary Brakes are deterministic execution controls[cite: 13]. When an agent requests an attestation via `POST /v1/authorize`, Sigil Sign evaluates the payload against your predefined `ASSURANCE.md` policy.
+Fiduciary Brakes are deterministic execution controls. When an agent requests an attestation via `POST /v1/authorize`, Sigil Sign evaluates the payload against your predefined `ASSURANCE.md` policy.
 
 It deterministically prevents agents from:
 
-- Executing unauthorized transactions[cite: 13].
-- Bypassing governance constraints[cite: 13].
-- Exceeding treasury limits[cite: 13].
+- Executing unauthorized transactions.
+- Bypassing governance constraints.
+- Exceeding treasury limits.
 
-Private keys are **never** stored in Sigil infrastructure[cite: 7]. Sigil signs the _permission_, not the _transaction_.
+Private keys are **never** stored in Sigil infrastructure. Sigil signs the _permission_, not the _transaction_.
