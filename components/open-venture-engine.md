@@ -3,8 +3,6 @@ title: "Open Venture Engine (OVE)"
 description: "The technical execution environment for agentic capital."
 ---
 
-# Open Venture Engine (OVE)
-
 The **Open Venture Engine (OVE)** is the technical enforcement layer of the Sigil Open Framework. It is a pre-wired, Web3-native infrastructure stack that allows anyone to deploy a fully autonomous Venture Capital agent safely.
 
 OVE aggregates best-in-class execution primitives (like Coinbase AgentKit) while structurally enforcing deterministic governance through Sigil’s execution firewall.
