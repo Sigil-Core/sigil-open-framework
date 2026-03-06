@@ -59,7 +59,7 @@ Read operations are public. **Write operations require your Intent Attestation.*
 - Standard EVM: POST /rpc/:chainId
 - Account Abstraction: POST /bundler/:chainId
 
-Provide your attestation in the headers using either Authorization: Bearer <jwt> or Sigil-Receipt: <jwt>.
+Provide your attestation in the headers using either `Authorization: Bearer <jwt>` or `Sigil-Receipt: <jwt>`.
 
 ```bash
 curl -X POST https://sign.sigilcore.com/rpc/8453 \
