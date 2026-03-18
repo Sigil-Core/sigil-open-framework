@@ -98,26 +98,22 @@ Pre-built templates for common deployment contexts (venture capital, treasury ma
 Sigil Lex parses a strict structured Markdown format. Unknown fields are rejected at parse time.
 
 ```markdown
-## version
-1.0.0
+version: 1.0.0
 
-## meta
-agent_name: "My Agent"
-operator: "<OPERATOR_NAME>"
-entity: "<LEGAL_ENTITY>"
-issued: "<YYYY-MM-DDTHH:MM:SSZ>"
+## Class 1: Hard Rules
+max_transaction_eth: 5.0
+allowed_actions: wallet.transfer, contract.call
+allowed_chains: 1, 8453, 42161
+chain_actions:
+  "1": wallet.transfer, contract.call
+  "8453": wallet.transfer
 
-## class1
-- max_transaction_eth: 5.0
-- allowed_actions: [wallet.transfer, contract.call]
-- allowed_chains: [1, 8453, 42161]
+## Class 2: Soft Rules
+daily_limit_eth: 20.0
 
-## class2
-- daily_limit_eth: 20.0
-
-## class3
-- consensus_threshold_eth: 10.0
-- require_hold: false
+## Class 3: Consensus Rules
+consensus_threshold_eth: 10.0
+consensus_require_hold: false
 ```
 
 | Class | Behavior on Violation |

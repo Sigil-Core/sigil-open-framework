@@ -1,31 +1,25 @@
-## version
-1.0.0
+# ASSURANCE Policy
+<!-- Sigil Lex — ASSURANCE.md Template -->
+<!--
+  Copy this file to config/ASSURANCE.md and customise for your deployment.
+  config/ASSURANCE.md is gitignored — never commit the live policy file.
 
-## meta
-agent_name: "My Agent"
-operator: "<OPERATOR_NAME>"
-entity: "<LEGAL_ENTITY>"
-issued: "<YYYY-MM-DDTHH:MM:SSZ>"
+  Sign this file using the Sigil ASSURANCE.md Drafter at sigilcore.com before deploying.
+-->
 
-## class1
-- max_transaction_eth: 5.0
-- allowed_actions: [wallet.transfer, contract.call]
-- allowed_chains: [1, 8453, 42161]
-- chain_actions:
-  - "8453": [wallet.transfer]
-  - "1": [wallet.transfer, contract.call]
+version: 1.0.0
 
-## class2
-- daily_limit_eth: 20.0
+## Class 1: Hard Rules
+max_transaction_eth: 5.0
+allowed_actions: wallet.transfer, contract.call
+allowed_chains: 1, 8453, 42161
+chain_actions:
+  "1": wallet.transfer, contract.call
+  "8453": wallet.transfer
 
-## class3
-- consensus_threshold_eth: 10.0
-- require_hold: false
+## Class 2: Soft Rules
+daily_limit_eth: 20.0
 
-# Sign this file using the Sigil ASSURANCE.md Drafter at sigilcore.com before deploying.
-## signature
-- algorithm: Ed25519
-- policy_hash: PLACEHOLDER
-- operator_signature: PLACEHOLDER
-- operator_public_key: PLACEHOLDER
-- signed_at: PLACEHOLDER
+## Class 3: Consensus Rules
+consensus_threshold_eth: 10.0
+consensus_require_hold: false
