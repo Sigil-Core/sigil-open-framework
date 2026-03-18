@@ -49,7 +49,7 @@ SOF is not a single codebase and not a two-sided product. It is a **composable p
   href="/components/verticals"
 >
   Domain-specific implementations of OEE + FAF. **[Open Venture Engine
-  (OVE)](https://github.com/Sigil-Core/ove)** is the first — OEE pre-wired for
+  (OVE)](https://github.com/Sigil-Core/oee/tree/main/verticals/venture/)** is the first — OEE pre-wired for
   autonomous venture capital, with VC-optimized policy templates, ERC-6551 agent
   identity, and Sigil Action Provider integration. Healthcare, banking, and
   enterprise verticals follow the same pattern: enforcement and legal
