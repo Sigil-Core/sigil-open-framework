@@ -18,7 +18,7 @@ The Sigil Open Framework separates autonomous capital deployment into three dist
 | Layer            | Component      | Role                                                                                                             |
 | ---------------- | -------------- | ---------------------------------------------------------------------------------------------------------------- |
 | **The Firewall** | **Sigil Sign** | The execution enforcement layer. Proxies RPC/Bundler requests and issues Intent Attestations.        |
-| **The Engine**   | **OVE**        | Open Venture Engine. Orchestrates agent intelligence and formats EVM transactions.                  |
+| **The Engine**   | **OEE**        | Open Execution Engine. The domain-agnostic enforcement substrate — policy evaluation, Intent Attestation issuance, and gated RPC/bundler execution. |
 | **The Rules**    | **FAF**        | Fiduciary Agent Framework. Defines the governance rules and legal parameters the agent must follow. |
 
 ---
