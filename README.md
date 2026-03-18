@@ -71,7 +71,7 @@ FAF is what makes OEE legally meaningful.
 
 Vertical boilerplates are domain-specific implementations of OEE + FAF. Each inherits the full enforcement stack and adds domain-appropriate `ASSURANCE.md` policy templates, sector-specific legal wrapper guidance, and integration examples for common agent frameworks in that industry.
 
-**[Open Venture Engine (OVE)](https://github.com/Sigil-Core/ove)** is the first vertical — OEE pre-wired for autonomous venture capital. OVE adds VC-optimized policy templates, ERC-6551 agent identity, Safe treasury custody, Superfluid revenue streaming, and Sigil Action Provider integration for AgentKit.
+**[Open Venture Engine (OVE)](https://github.com/Sigil-Core/oee/tree/main/verticals/venture/)** is the first vertical — OEE pre-wired for autonomous venture capital. OVE adds VC-optimized policy templates, ERC-6551 agent identity, Safe treasury custody, Superfluid revenue streaming, and Sigil Action Provider integration for AgentKit.
 
 Healthcare, banking, and enterprise verticals follow the same architecture. Each new vertical is a deployment context, not a new enforcement mechanism. The enforcement is always OEE.
 
@@ -147,7 +147,7 @@ Jump into the local toolkit to simulate the Sigil execution firewall offline. It
 If you are designing a full production architecture, explore our specialized ecosystem repositories:
 
 1. **Starting from the enforcement layer?** Start with [Open Execution Engine (OEE)](https://github.com/Sigil-Core/oee).
-2. **Building an Agentic VC fund?** Use the [Open Venture Engine (OVE)](https://github.com/Sigil-Core/ove) vertical boilerplate — OEE pre-wired for autonomous venture capital.
+2. **Building an Agentic VC fund?** Use the [Open Venture Engine (OVE)](https://github.com/Sigil-Core/oee/tree/main/verticals/venture/) vertical boilerplate — OEE pre-wired for autonomous venture capital.
 3. **Structuring Legal Compliance?** Start with [Fiduciary Agent Framework (FAF)](https://github.com/Sigil-Core/faf).
 4. **Integrating the API?** Read the underlying [Sigil Attestations Spec](https://github.com/Sigil-Core/sigil-attestations).
 
