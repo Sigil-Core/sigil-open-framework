@@ -1,21 +1,44 @@
 ---
 title: "Open Venture Engine (OVE)"
-description: "The technical execution environment for agentic capital."
+description: "The first OEE vertical — pre-configured for autonomous venture capital and fund deployment."
 ---
 
-The **Open Venture Engine (OVE)** is the technical enforcement layer of the Sigil Open Framework. It is a pre-wired, Web3-native infrastructure stack that allows anyone to deploy a fully autonomous Venture Capital agent safely.
+The **Open Venture Engine (OVE)** is the first vertical boilerplate of the [Open Execution Engine (OEE)](https://github.com/Sigil-Core/oee). OVE lives inside the OEE monorepo at `verticals/venture/` and provides OEE's domain-agnostic enforcement primitives pre-configured for autonomous venture capital.
 
-OVE aggregates best-in-class execution primitives (like Coinbase AgentKit) while structurally enforcing deterministic governance through Sigil’s execution firewall.
+OVE does not contain its own enforcement infrastructure. It configures OEE's — Sigil Sign, Sigil Lex, Intent Attestation issuance, and consensus hold management — for the specific requirements of autonomous fund deployment: spend limits, action allowlists, chain permissions, and consensus gates tuned for fiduciary mandates.
 
-## Core Capabilities
+## What OVE Provides
 
-OVE separates execution into distinct layers, ensuring that the AI (The Brain) never has direct, unmitigated access to the treasury (The Engine).
+OVE inherits everything from OEE core and adds the venture capital layer on top:
 
-It mathematically guarantees the agent cannot:
+- **VC-tuned `ASSURANCE.md` template** — Class 1/2/3 limits pre-set for autonomous fund mandates (~$100k per-transaction cap, ~$75k consensus gate by default)
+- **Agent orchestration boilerplate** — ElizaOS and AgentKit integration examples
+- **Smart contract templates** — ERC-6551 token-bound agent identity, Safe treasury custody, Superfluid revenue streaming
+- **Integration adapters** — Sigil Action Provider wired for direct AgentKit integration
 
-- Drain its own treasury.
-- Execute unauthorized trades.
-- Bypass fiduciary constraints defined in `ASSURANCE.md`.
-- Mutate its own infrastructure without policy approval.
+## Enforcement Model
 
-**View the Repository:** [github.com/Sigil-Core/ove](https://github.com/Sigil-Core/ove)
+OVE enforces authorization deterministically through OEE's three-class policy model:
+
+| Class | Trigger | Outcome |
+|---|---|---|
+| Class 1 | Hard rule violation (amount, chain, action) | `DENIED` immediately |
+| Class 2 | Daily aggregate cap reached | `DENIED` for remainder of period |
+| Class 3 | Consensus threshold exceeded | `PENDING` — hold created in Sigil Command, human approval required |
+
+No capital moves without a valid Intent Attestation.
+
+## Legal Pairing
+
+OVE is designed to deploy alongside the [Fiduciary Agent Framework (FAF)](https://github.com/Sigil-Core/faf). OEE enforcement closes the execution gap. FAF closes the legal gap — wrapping the deployment in an LLC or DAO LLC structure to bound fiduciary liability.
+
+## Repository
+
+OVE lives inside the OEE monorepo:
+
+**[github.com/Sigil-Core/oee/tree/main/verticals/venture/](https://github.com/Sigil-Core/oee/tree/main/verticals/venture/)**
+
+```bash
+git clone https://github.com/Sigil-Core/oee.git
+cd oee/verticals/venture
+```
