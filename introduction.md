@@ -15,32 +15,46 @@ By acting as an umbrella over both technical execution and legal structuring, SO
 
 ---
 
-## Two Halves of the Same Coin
+## A Governed Protocol Stack
 
-SOF is not a single codebase. It is a composable ecosystem of specialized primitives. Developers can snap these components together to build autonomous financial entities, self-driving DAO treasuries, and Agentic VC funds safely.
+SOF is not a single codebase and not a two-sided product. It is a **composable protocol stack** — three layers that bring enforcement, legal governance, and domain-specific deployments together in one architecture. Think of it as a franchise protocol: a universal enforcement substrate, a legal operating standard built on top of it, and vertical boilerplates that pre-assemble both for specific industries.
 
 <CardGroup cols={2}>
   <Card
-    title="The Technical Engine (OVE)"
-    icon="engine"
-    href="/components/open-venture-engine"
+    title="Layer 1: The Enforcement Engine (OEE)"
+    icon="shield"
+    href="/components/open-execution-engine"
   >
-    **Open Venture Engine** acts as the deterministic execution firewall. It
-    mathematically binds the AI to a hard-coded rulebook (`ASSURANCE.md`),
-    ensuring the agent physically cannot execute a transaction without a
-    cryptographically signed Intent Attestation.
+    **Open Execution Engine** is the domain-agnostic execution enforcement
+    substrate. It provides the deterministic primitives every SOF-compliant agent
+    runs on: policy evaluation via Sigil Lex, Intent Attestation issuance,
+    consensus hold management, and gated RPC/bundler execution. Not specific to
+    any industry — it is the substrate.
   </Card>
   <Card
-    title="The Legal Wrapper (FAF)"
+    title="Layer 2: The Legal Governance Layer (FAF)"
     icon="scale-balanced"
     href="/components/fiduciary-agent-framework"
   >
-    **Fiduciary Agent Framework** is the legal-technical bridge. Because OVE
-    guarantees the AI won't go rogue, human operators can safely use FAF to wrap
-    the agent in a traditional legal entity (like an LLC) to assume bounded,
-    quantifiable liability.
+    **Fiduciary Agent Framework** converts OEE's technical enforcement into
+    bounded fiduciary instruments — entity templates, operating agreements, and
+    ASSURANCE.md policy structure so human General Partners can assume
+    quantifiable liability without unlimited personal exposure.
   </Card>
 </CardGroup>
+
+<Card
+  title="Layer 3: Vertical Boilerplates"
+  icon="layers"
+  href="/components/verticals"
+>
+  Domain-specific implementations of OEE + FAF. **[Open Venture Engine
+  (OVE)](https://github.com/Sigil-Core/ove)** is the first — OEE pre-wired for
+  autonomous venture capital, with VC-optimized policy templates, ERC-6551 agent
+  identity, and Sigil Action Provider integration. Healthcare, banking, and
+  enterprise verticals follow the same pattern: enforcement and legal
+  pre-assembled for a deployment context, ready to go.
+</Card>
 
 ---
 

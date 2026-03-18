@@ -12,7 +12,7 @@
 
 The **Sigil Open Framework (SOF)** is a modular, open-source architecture designed to solve the final barrier to autonomous agent adoption: **Liability.**
 
-While standard AI frameworks give agents the intelligence to act, SOF gives them the cryptographic and legal boundaries required to operate safely in the real world. SOF bridges the gap between autonomous code and real-world compliance by acting as an umbrella over two core domains: **Technical Execution** and **Legal Structuring**.
+While standard AI frameworks give agents the intelligence to act, SOF gives them the cryptographic and legal boundaries required to operate safely in the real world. SOF bridges the gap between autonomous code and real-world compliance through a **governed protocol stack**: a domain-agnostic enforcement engine, a legal governance layer, and a set of vertical boilerplates that bring both together for specific deployment contexts.
 
 If standard agentic frameworks are the accelerator pedal, SOF is the cryptographic brake system and the vehicle's registration.
 
@@ -35,7 +35,7 @@ Execution only proceeds if the action carries a valid **Intent Attestation**.
 
 This doctrine is not a feature of any single component. It is the architectural contract that every layer of SOF is designed to enforce:
 
-- **OVE** enforces it technically — no execution without cryptographic authorization
+- **OEE** enforces it technically — no execution without cryptographic authorization
 - **FAF** enforces it legally — no liability exposure without structural governance
 - **Sigil Attestations** proves it cryptographically — every authorized action is verifiable
 
@@ -43,27 +43,43 @@ The doctrine applies at the framework level. Each component implements it within
 
 ---
 
-## The Architecture: Two Halves of the Same Coin
+## The Architecture: A Governed Protocol Stack
 
-SOF is not a single codebase; it is a composable ecosystem of specialized primitives. Developers can snap these components together to build autonomous financial entities, self-driving DAO treasuries, and Agentic VC funds.
+SOF is not a single codebase, and it is not a two-sided product. It is a **composable protocol stack** — three layers, each independently useful, each enabling the one above it.
 
-### 1. The Technical Engine: Open Venture Engine (OVE)
+Think of it as a franchise protocol. The enforcement substrate is universal — every SOF-compliant deployment runs on the same cryptographic enforcement primitives, regardless of industry. The legal layer converts those guarantees into fiduciary instruments. The vertical boilerplates are the franchise concepts: enforcement and legal pre-assembled for a specific deployment context, ready to go.
 
-[**→ View the OVE Repository**](https://github.com/Sigil-Core/ove)
+---
 
-OVE acts as the deterministic execution firewall. It ensures that an AI agent physically cannot execute an on-chain transaction without a cryptographically signed **Intent Attestation**. OVE bounds the AI to a hard-coded rulebook (`ASSURANCE.md`), preventing it from draining treasuries, executing unauthorized trades, or bypassing fiduciary constraints.
+### Layer 1 — The Enforcement Engine: Open Execution Engine (OEE)
 
-### 2. The Legal Wrapper: Fiduciary Agent Framework (FAF)
+[**→ View the OEE Repository**](https://github.com/Sigil-Core/oee)
+
+OEE is the domain-agnostic execution enforcement substrate that every SOF-compliant deployment runs on. It provides the core enforcement primitives: policy evaluation via Sigil Lex, Intent Attestation issuance, consensus hold management, and gated RPC/bundler execution. No transaction executes without cryptographic authorization. No exceptions, no industry carve-outs.
+
+OEE is not specific to venture capital, healthcare, or banking. It is the substrate.
+
+### Layer 2 — The Legal Governance Layer: Fiduciary Agent Framework (FAF)
 
 [**→ View the FAF Repository**](https://github.com/Sigil-Core/faf)
 
-FAF is the legal-technical bridge. Because OVE guarantees the AI won't go rogue, human operators can safely use FAF to wrap the agent in a traditional legal entity (like an LLC). FAF structures the agent's operating authority within a legal entity, allowing human General Partners to assume bounded, quantifiable liability for autonomous capital deployment.
+FAF is the legal-technical bridge. OEE enforces compliance in the execution layer; FAF enforces it in the legal domain — converting OEE's cryptographic guarantees into bounded fiduciary instruments. FAF provides entity templates, operating agreements, and `ASSURANCE.md` policy structure so that human General Partners can assume quantifiable liability for autonomous deployment without unlimited personal exposure.
 
-### 3. The Standard: Sigil Attestations
+FAF is what makes OEE legally meaningful.
+
+### Layer 3 — The Vertical Boilerplates
+
+Vertical boilerplates are domain-specific implementations of OEE + FAF. Each inherits the full enforcement stack and adds domain-appropriate `ASSURANCE.md` policy templates, sector-specific legal wrapper guidance, and integration examples for common agent frameworks in that industry.
+
+**[Open Venture Engine (OVE)](https://github.com/Sigil-Core/ove)** is the first vertical — OEE pre-wired for autonomous venture capital. OVE adds VC-optimized policy templates, ERC-6551 agent identity, Safe treasury custody, Superfluid revenue streaming, and Sigil Action Provider integration for AgentKit.
+
+Healthcare, banking, and enterprise verticals follow the same architecture. Each new vertical is a deployment context, not a new enforcement mechanism. The enforcement is always OEE.
+
+### The Cryptographic Foundation: Sigil Attestations
 
 [**→ View the Attestations Repository**](https://github.com/Sigil-Core/sigil-attestations)
 
-The underlying cryptographic standard powering the entire framework. This repository defines the canonical specification for generating and verifying the short-lived, Ed25519-signed JWTs required for deterministic execution.
+The canonical cryptographic specification underlying every layer. This repository defines the short-lived, Ed25519-signed JWTs — **Intent Attestations** — that serve as cryptographic proof that every authorized execution passed deterministic policy evaluation before it reached the chain.
 
 ---
 
@@ -130,9 +146,10 @@ Jump into the local toolkit to simulate the Sigil execution firewall offline. It
 
 If you are designing a full production architecture, explore our specialized ecosystem repositories:
 
-1. **Building an Agentic Fund?** Start with [Open Venture Engine (OVE)](https://github.com/Sigil-Core/ove).
-2. **Structuring Legal Compliance?** Start with [Fiduciary Agent Framework (FAF)](https://github.com/Sigil-Core/faf).
-3. **Integrating the API?** Read the underlying [Sigil Attestations Spec](https://github.com/Sigil-Core/sigil-attestations).
+1. **Starting from the enforcement layer?** Start with [Open Execution Engine (OEE)](https://github.com/Sigil-Core/oee).
+2. **Building an Agentic VC fund?** Use the [Open Venture Engine (OVE)](https://github.com/Sigil-Core/ove) vertical boilerplate — OEE pre-wired for autonomous venture capital.
+3. **Structuring Legal Compliance?** Start with [Fiduciary Agent Framework (FAF)](https://github.com/Sigil-Core/faf).
+4. **Integrating the API?** Read the underlying [Sigil Attestations Spec](https://github.com/Sigil-Core/sigil-attestations).
 
 For comprehensive developer guides, API references, and architecture deep-dives, visit our official documentation.
 → [**docs.sigilcore.com**](https://docs.sigilcore.com)
