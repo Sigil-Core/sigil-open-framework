@@ -31,7 +31,7 @@
           {
             "group": "Core Components",
             "pages": [
-              "components/open-venture-engine",
+              "components/open-execution-engine",
               "components/fiduciary-agent-framework",
               "components/sigil-attestations"
             ]
