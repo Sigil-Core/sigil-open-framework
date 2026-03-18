@@ -2,8 +2,8 @@
 
 **The open-source standard for cryptographically secured, legally compliant autonomous agents.**
 
-[![Status](https://img.shields.io/badge/status-active--development-black)](#)  
-[![License](https://img.shields.io/badge/license-MIT-blue)](#)  
+[![Status](https://img.shields.io/badge/status-active--development-black)](#)
+[![License](https://img.shields.io/badge/license-MIT-blue)](#)
 [![Ecosystem](https://img.shields.io/badge/ecosystem-Sigil--OS-purple)](#)
 
 ---
@@ -15,6 +15,31 @@ The **Sigil Open Framework (SOF)** is a modular, open-source architecture design
 While standard AI frameworks give agents the intelligence to act, SOF gives them the cryptographic and legal boundaries required to operate safely in the real world. SOF bridges the gap between autonomous code and real-world compliance by acting as an umbrella over two core domains: **Technical Execution** and **Legal Structuring**.
 
 If standard agentic frameworks are the accelerator pedal, SOF is the cryptographic brake system and the vehicle's registration.
+
+---
+
+## The Doctrine of Structural Trust
+
+> Safety is not a property of prompts. Safety is a property of architecture.
+
+The Sigil Open Framework is built on a single, non-negotiable principle: autonomous agents cannot be trusted to self-govern. Trust must be structurally enforced — cryptographically, deterministically, and before execution, not after loss.
+
+Under SOF, every compliant agent operates within these guarantees:
+
+- AI agents **never hold private keys**
+- AI agents **never see raw API credentials**
+- AI agents **cannot execute without deterministic authorization**
+- High-stakes actions **must route through a policy enforcement layer**
+
+Execution only proceeds if the action carries a valid **Intent Attestation**.
+
+This doctrine is not a feature of any single component. It is the architectural contract that every layer of SOF is designed to enforce:
+
+- **OVE** enforces it technically — no execution without cryptographic authorization
+- **FAF** enforces it legally — no liability exposure without structural governance
+- **Sigil Attestations** proves it cryptographically — every authorized action is verifiable
+
+The doctrine applies at the framework level. Each component implements it within its own domain.
 
 ---
 
@@ -32,7 +57,7 @@ OVE acts as the deterministic execution firewall. It ensures that an AI agent ph
 
 [**→ View the FAF Repository**](https://github.com/Sigil-Core/faf)
 
-FAF is the legal-technical bridge. Because OVE guarantees the AI won't go rogue, human operators can safely use FAF to wrap the agent in a traditional legal entity (like an LLC). FAF structures the agent as tokenized on-chain property (ERC-6551), allowing human General Partners to assume bounded, quantifiable liability for autonomous capital deployment.
+FAF is the legal-technical bridge. Because OVE guarantees the AI won't go rogue, human operators can safely use FAF to wrap the agent in a traditional legal entity (like an LLC). FAF structures the agent's operating authority within a legal entity, allowing human General Partners to assume bounded, quantifiable liability for autonomous capital deployment.
 
 ### 3. The Standard: Sigil Attestations
 
@@ -44,7 +69,7 @@ The underlying cryptographic standard powering the entire framework. This reposi
 
 ## Aligning with the Linux Foundation (AAIF)
 
-The Linux Foundation’s Agentic AI Foundation (AAIF) has established open-source standards for how agents are built and connected, primarily through the `AGENTS.md` specification.
+The Linux Foundation's Agentic AI Foundation (AAIF) has established open-source standards for how agents are built and connected, primarily through the `AGENTS.md` specification.
 
 **The Problem:** `AGENTS.md` tells the world what an agent is **capable** of doing. It does not dictate what the agent **cannot** do.
 
@@ -78,13 +103,13 @@ sigil-constraints:
     - block_sanctioned_entities: true
 ```
 
-If the agent proposes a transaction that violates any rule in the sigil-constraints block, the Sigil Open Framework intercepts the request, denies the Intent Attestation, and execution halts instantly at the cryptographic level.
+If the agent proposes a transaction that violates any rule in the `sigil-constraints` block, the Sigil Open Framework intercepts the request, denies the Intent Attestation, and execution halts instantly at the cryptographic level.
 
 ---
 
-**Human-in-the-Loop Oversight**
+## Human-in-the-Loop Oversight
 
-SOF ensures that while execution is autonomous, oversight is absolute. Through integrations with **Sigil Sentry** (the mobile command center), human partners retain:
+SOF ensures that while execution is autonomous, oversight is absolute. Through integrations with **Sigil Command** (the web and mobile control plane), human operators retain:
 
 - **Real-time Execution Monitoring:** View intent proposals before they hit the chain.
 - **High-Value Approvals:** Require manual cryptographic countersignatures for specific thresholds.
@@ -98,7 +123,7 @@ To begin building with the Sigil Open Framework, select the path that fits your 
 
 ### 🛠️ Start Building Now (Hackathons & Local Dev)
 
-Jump into the local toolkit to simulate the Sigil execution firewall offline. It includes a mock Express.js engine, a Python LangChain authorizer, and an `ASSURANCE.md` template.  
+Jump into the local toolkit to simulate the Sigil execution firewall offline. It includes a mock Express.js engine, a Python LangChain authorizer, and an `ASSURANCE.md` template.
 → [**Open the Developer Toolkit**](./developer-toolkit)
 
 ### 📚 Explore the Core Components
@@ -109,7 +134,5 @@ If you are designing a full production architecture, explore our specialized eco
 2. **Structuring Legal Compliance?** Start with [Fiduciary Agent Framework (FAF)](https://github.com/Sigil-Core/faf).
 3. **Integrating the API?** Read the underlying [Sigil Attestations Spec](https://github.com/Sigil-Core/sigil-attestations).
 
-For comprehensive developer guides, API references, and architecture deep-dives, visit our official documentation.  
+For comprehensive developer guides, API references, and architecture deep-dives, visit our official documentation.
 → [**docs.sigilcore.com**](https://docs.sigilcore.com)
-
----
