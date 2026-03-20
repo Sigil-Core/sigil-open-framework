@@ -1,0 +1,6 @@
+Contact: mailto:security@sigilcore.com
+Expires: 2027-03-19T00:00:00.000Z
+Preferred-Languages: en
+Policy: https://sigilcore.com/security
+Hiring: https://sigilcore.com
+Canonical: https://sigilcore.com/.well-known/security.txt
