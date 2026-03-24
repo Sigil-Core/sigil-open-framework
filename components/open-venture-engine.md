@@ -23,7 +23,7 @@ OVE enforces authorization deterministically through OEE's three-class policy mo
 | Class | Trigger | Outcome |
 |---|---|---|
 | Class 1 | Hard rule violation (amount, chain, action) | `DENIED` immediately |
-| Class 2 | Daily aggregate cap reached | `DENIED` for remainder of period |
+| Class 2 | Daily aggregate cap reached | `APPROVED` with informational flag — never a hard denial |
 | Class 3 | Consensus threshold exceeded | `PENDING` — hold created in Sigil Command, human approval required |
 
 No capital moves without a valid Intent Attestation.
