@@ -4,7 +4,7 @@
   Copy this file to config/ASSURANCE.md and customise for your deployment.
   config/ASSURANCE.md is gitignored — never commit the live policy file.
 
-  Sign this file using the Sigil ASSURANCE.md Drafter at sigilcore.com before deploying.
+  Sign this file using Sigil Warrant at sigilcore.com/tools/warrant before deploying.
 -->
 
 version: 1.0.0
