@@ -23,7 +23,7 @@ No transaction may execute on-chain without passing this pipeline.
 | Class | Enforcement | Outcome on Violation |
 |---|---|---|
 | **Class 1** | Hard limits — max transaction size, action allowlist, chain allowlist, per-chain action overrides | `DENIED` immediately |
-| **Class 2** | Soft limits — daily aggregate ETH cap | `DENIED` once cap is reached |
+| **Class 2** | Soft limits — daily aggregate ETH cap | `APPROVED` with informational flag — never a hard denial |
 | **Class 3** | Consensus gates — threshold above which human approval is required | `PENDING` — durable hold created in Sigil Command |
 
 Class 3 holds are stored with a 24-hour TTL. Execution remains blocked until the hold is resolved through Sigil Command. This is the structural implementation of human-in-the-loop governance — not optional monitoring, but enforced at the cryptographic level.
