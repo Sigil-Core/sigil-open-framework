@@ -63,13 +63,13 @@ OEE is not specific to venture capital, healthcare, or banking. It is the substr
 
 [**→ View the FAF Repository**](https://github.com/Sigil-Core/faf)
 
-FAF is the legal-technical bridge. OEE enforces compliance in the execution layer; FAF enforces it in the legal domain — converting OEE's cryptographic guarantees into bounded fiduciary instruments. FAF provides entity templates, operating agreements, and `ASSURANCE.md` policy structure so that human General Partners can assume quantifiable liability for autonomous deployment without unlimited personal exposure.
+FAF is the legal-technical bridge. OEE enforces compliance in the execution layer; FAF enforces it in the legal domain — converting OEE's cryptographic guarantees into bounded fiduciary instruments. FAF provides entity templates, operating agreements, and `warranty.md` policy structure so that human General Partners can assume quantifiable liability for autonomous deployment without unlimited personal exposure.
 
 FAF is what makes OEE legally meaningful.
 
 ### Layer 3 — The Vertical Boilerplates
 
-Vertical boilerplates are domain-specific implementations of OEE + FAF. Each inherits the full enforcement stack and adds domain-appropriate `ASSURANCE.md` policy templates, sector-specific legal wrapper guidance, and integration examples for common agent frameworks in that industry.
+Vertical boilerplates are domain-specific implementations of OEE + FAF. Each inherits the full enforcement stack and adds domain-appropriate `warranty.md` policy templates, sector-specific legal wrapper guidance, and integration examples for common agent frameworks in that industry.
 
 **[Open Venture Engine (OVE)](https://github.com/Sigil-Core/oee/tree/main/verticals/venture/)** is the first vertical — OEE pre-wired for autonomous venture capital. OVE adds VC-optimized policy templates, ERC-6551 agent identity, Safe treasury custody, Superfluid revenue streaming, and Sigil Action Provider integration for AgentKit.
 
@@ -139,7 +139,7 @@ To begin building with the Sigil Open Framework, select the path that fits your 
 
 ### 🛠️ Start Building Now (Hackathons & Local Dev)
 
-Jump into the local toolkit to simulate the Sigil execution firewall offline. It includes a mock Express.js engine, a Python LangChain authorizer, and an `ASSURANCE.md` template.
+Jump into the local toolkit to simulate the Sigil execution firewall offline. It includes a mock Express.js engine, a Python LangChain authorizer, and a `warranty.md` template.
 → [**Open the Developer Toolkit**](./developer-toolkit)
 
 ### 📚 Explore the Core Components
