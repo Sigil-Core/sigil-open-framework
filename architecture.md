@@ -55,7 +55,7 @@ The gateway routes transactions based on the following fallback logic:
 
 ## Fiduciary Brakes
 
-Fiduciary Brakes are deterministic execution controls. When an agent requests an attestation via `POST /v1/authorize`, Sigil Sign evaluates the payload against your predefined `ASSURANCE.md` policy.
+Fiduciary Brakes are deterministic execution controls. When an agent requests an attestation via `POST /v1/authorize`, Sigil Sign evaluates the payload against your predefined `warranty.md` policy.
 
 It deterministically prevents agents from:
 

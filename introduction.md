@@ -38,7 +38,7 @@ SOF is not a single codebase and not a two-sided product. It is a **composable p
   >
     **Fiduciary Agent Framework** converts OEE's technical enforcement into
     bounded fiduciary instruments — entity templates, operating agreements, and
-    ASSURANCE.md policy structure so human General Partners can assume
+    warranty.md policy structure so human General Partners can assume
     quantifiable liability without unlimited personal exposure.
   </Card>
 </CardGroup>
