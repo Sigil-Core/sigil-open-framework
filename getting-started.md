@@ -15,17 +15,17 @@ Sigil Sign is the deterministic execution firewall for agent-driven EVM actions.
 
 Before sigil-sign will start, two things must be in place. Without both, the service throws on startup and refuses to authorize anything. This is intentional — the service will not run without a verified operator policy.
 
-### 1. A signed ASSURANCE.md file
+### 1. A signed warranty.md file
 
-Your ASSURANCE.md defines what your agent is allowed to do. Starting with this sprint, the file must be signed with your Ed25519 operator key. An unsigned policy file is rejected at startup.
+Your warranty.md defines what your agent is allowed to do. Starting with this sprint, the file must be signed with your Ed25519 operator key. An unsigned policy file is rejected at startup.
 
 **Use [Sigil Warrant](https://sigilcore.com/tools/warrant)** to:
 - Generate your Ed25519 keypair in the browser (no key material ever leaves your machine)
 - Define your policy using a structured form
-- Download a signed ASSURANCE.md with your operator signature embedded
+- Download a signed warranty.md with your operator signature embedded
 - Get your `LEX_OPERATOR_PUBLIC_KEY` value ready to paste
 
-Deploy the signed ASSURANCE.md to your server and set `LEX_ASSURANCE_PATH` to its location. If you omit this path, the service looks for `config/ASSURANCE.md` relative to `process.cwd()`.
+Deploy the signed warranty.md to your server and set `LEX_WARRANTY_PATH` to its location. If you omit this path, the service looks for `config/warranty.md` relative to `process.cwd()`.
 
 ### 2. LEX_OPERATOR_PUBLIC_KEY environment variable
 
@@ -44,7 +44,7 @@ This variable must be present in `.env.local` (development) or your production e
 **Together, these two items form the cryptographic chain:**
 `operator signature → policy content → Intent Attestation JWT`
 
-Every attestation your service issues is verifiably linked to the exact policy version you signed and deployed. If anyone modifies the ASSURANCE.md after signing, Sigil Lex detects it on the next restart and refuses to start.
+Every attestation your service issues is verifiably linked to the exact policy version you signed and deployed. If anyone modifies the warranty.md after signing, Sigil Lex detects it on the next restart and refuses to start.
 
 > **Sigil Warrant** is the tool that satisfies both requirements. It lives at
 > [sigilcore.com/tools/warrant](https://sigilcore.com/tools/warrant).
@@ -88,10 +88,10 @@ curl -X POST https://sign.sigilcore.com/v1/authorize \
 
 - `framework`: Must be exactly `"agentkit"` or `"eliza"`.
 - `txCommit`: Must be a lowercase 64-character hex SHA-256 string. **Do not include a `0x` prefix.**
-- `chainId`: Must be in your ASSURANCE.md `allowed_chains` list. Supported values: 1, 10, 56, 137, 999, 8453, 42161.
-- `intent.action`: Must be in your ASSURANCE.md `allowed_actions` list (or the per-chain override for the requested chain).
+- `chainId`: Must be in your warranty.md `allowed_chains` list. Supported values: 1, 10, 56, 137, 999, 8453, 42161.
+- `intent.action`: Must be in your warranty.md `allowed_actions` list (or the per-chain override for the requested chain).
 
-If your intent passes your ASSURANCE.md policy, you will receive an Ed25519-signed JWT in the `intent_attestation` field. The JWT embeds a `policyHash` — a SHA-256 of the exact policy content that was evaluated, excluding the signature block. This is your cryptographic proof that the correct policy version was in effect.
+If your intent passes your warranty.md policy, you will receive an Ed25519-signed JWT in the `intent_attestation` field. The JWT embeds a `policyHash` — a SHA-256 of the exact policy content that was evaluated, excluding the signature block. This is your cryptographic proof that the correct policy version was in effect.
 
 ---
 
@@ -134,9 +134,9 @@ Verification rules are strictly defined in our canonical specification: [sigil-a
 
 ## Defining Your Policy
 
-Your ASSURANCE.md defines three enforcement classes Sigil Lex evaluates at runtime.
+Your warranty.md defines three enforcement classes Sigil Lex evaluates at runtime.
 
-**Use [Sigil Warrant](https://sigilcore.com/tools/warrant)** to generate a signed policy interactively. The tool produces a signed `ASSURANCE.md` with an embedded Ed25519 operator signature — the cryptographic proof that the policy evaluated at runtime is the one you authorized.
+**Use [Sigil Warrant](https://sigilcore.com/tools/warrant)** to generate a signed policy interactively. The tool produces a signed `warranty.md` with an embedded Ed25519 operator signature — the cryptographic proof that the policy evaluated at runtime is the one you authorized.
 
 Pre-built templates for common deployment contexts are available in the [FAF policy-templates directory](https://github.com/Sigil-Core/faf/tree/main/policy-templates).
 
@@ -174,4 +174,4 @@ sigil-sig: <base64url-ed25519-signature>
 
 ### Updating Your Policy
 
-If you update your ASSURANCE.md, you must re-sign it with Sigil Warrant before redeploying. An updated but unsigned policy will be rejected at startup. The version field in your policy should be incremented to reflect the change — this makes the new `policyHash` in subsequent attestations distinguishable from the previous version.
+If you update your warranty.md, you must re-sign it with Sigil Warrant before redeploying. An updated but unsigned policy will be rejected at startup. The version field in your policy should be incremented to reflect the change — this makes the new `policyHash` in subsequent attestations distinguishable from the previous version.
