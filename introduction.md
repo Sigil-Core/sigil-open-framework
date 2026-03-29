@@ -7,7 +7,7 @@ description: "The open-source standard for cryptographically secured, legally co
 
 The **Sigil Open Framework (SOF)** is a modular, open-source architecture designed to solve the final barrier to autonomous agent adoption: **Liability.**
 
-Standard AI frameworks give agents the intelligence to act. The Linux Foundation’s Agentic AI Foundation (AAIF) has established open-source standards (`AGENTS.md`) for how these agents are built and connected. But standard frameworks act only as the accelerator pedal—they tell the agent what to do, but they cannot physically prevent the agent from doing something catastrophic.
+Standard AI frameworks give agents the intelligence to act. The Linux Foundation's Agentic AI Foundation (AAIF) has established open-source standards (`AGENTS.md`) for how these agents are built and connected. But standard frameworks act only as the accelerator pedal—they tell the agent what to do, but they cannot physically prevent the agent from doing something catastrophic.
 
 **SOF is the cryptographic brake system and the vehicle's registration.**
 
@@ -55,6 +55,34 @@ SOF is not a single codebase and not a two-sided product. It is a **composable p
   enterprise verticals follow the same pattern: enforcement and legal
   pre-assembled for a deployment context, ready to go.
 </Card>
+
+---
+
+## Client-Side Enforcement: Agent Hooks
+
+The protocol stack governs what happens at the execution layer. `@sigilcore/agent-hooks` is the client-side package that connects your agent framework to that layer — intercepting every tool call before it executes and routing it through Sigil Sign for policy evaluation.
+
+Without agent-hooks, Sigil governs EVM transactions. With agent-hooks, Sigil governs **any agent action on any framework**: bash commands, HTTP requests, file writes, wallet signing, and email sends. The agent never reaches the API — or the blockchain — without a verified clearance.
+
+<CardGroup cols={2}>
+  <Card
+    title="Agent Hooks Overview"
+    icon="plug"
+    href="/agent-hooks/overview"
+  >
+    Install `@sigilcore/agent-hooks` and connect Claude Code, ELIZA, LangChain,
+    or any framework to your Sigil policy in minutes.
+  </Card>
+  <Card
+    title="AgentPay (WLFI) Compatibility"
+    icon="wallet"
+    href="/agent-hooks/agentpay"
+  >
+    `agent-hooks` is fully compatible with the AgentPay SDK. USD1 transfers on
+    Ethereum and BNB Smart Chain route through your Sigil policy before the
+    transaction is signed.
+  </Card>
+</CardGroup>
 
 ---
 
