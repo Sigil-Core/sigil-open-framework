@@ -17,13 +17,14 @@ Before sigil-sign will start, two things must be in place. Without both, the ser
 
 ### 1. A signed warranty.md file
 
-Your warranty.md defines what your agent is allowed to do. Starting with this sprint, the file must be signed with your Ed25519 operator key. An unsigned policy file is rejected at startup.
+Your warranty.md defines what your agent is allowed to do. The file must be signed with your Ed25519 operator key. An unsigned policy file is rejected at startup.
 
-**Use [Sigil Warrant](https://sigilcore.com/tools/warrant)** to:
-- Generate your Ed25519 keypair in the browser (no key material ever leaves your machine)
-- Define your policy using a structured form
-- Download a signed warranty.md with your operator signature embedded
-- Get your `LEX_OPERATOR_PUBLIC_KEY` value ready to paste
+**Use [Sigil Warrant](https://sigilcore.com/tools/warrant)** to generate, sign, and download your `warranty.md`. Two paths are available:
+
+- **Warrant Builder** — guided step-by-step flow covering all four policy blocks. No policy syntax required. Recommended for first-time operators.
+- **Manual Warrant** — write your policy directly in the `warranty.md` format. Full control over every field.
+
+Both paths generate your Ed25519 keypair in the browser (no key material ever leaves your machine), sign the policy, and provide your `LEX_OPERATOR_PUBLIC_KEY` value ready to paste.
 
 Deploy the signed warranty.md to your server and set `LEX_WARRANTY_PATH` to its location. If you omit this path, the service looks for `config/warranty.md` relative to `process.cwd()`.
 
@@ -48,7 +49,7 @@ Every attestation your service issues is verifiably linked to the exact policy v
 
 > **Sigil Warrant** is the tool that satisfies both requirements. It lives at
 > [sigilcore.com/tools/warrant](https://sigilcore.com/tools/warrant).
-> Use it to generate your keypair, define your policy, and download the
+> Use the guided Builder or Manual flow to generate your keypair, define your policy, and download the
 > signed file. The whole flow takes under two minutes.
 
 ---
