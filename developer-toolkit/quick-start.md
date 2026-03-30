@@ -5,13 +5,13 @@ description: "Run the Sigil execution firewall locally for offline agent testing
 
 # Developer Toolkit: Quick Start
 
-The Developer Toolkit provides a localized testing environment to build and validate your Agentic VC or DAO treasury integrations entirely offline. You can test your agent's reasoning and policy compliance before ever interacting with the live Sigil OS production engine.
+The Developer Toolkit provides a localized testing environment to build and validate your agent integrations entirely offline. You can test your agent's reasoning and policy compliance before ever interacting with the live Sigil Sign production firewall.
 
 ## The Workflow
 
 The local toolkit simulates the exact production flow:
 
-1. Your agent reads the `ASSURANCE.md` policy.
+1. Your agent reads the `warranty.md` policy.
 2. The agent proposes a transaction to the local Mock Engine.
 3. The Mock Engine evaluates the intent and either deterministically rejects it or issues a simulated Ed25519 Intent Attestation.
 
