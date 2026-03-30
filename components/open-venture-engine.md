@@ -11,20 +11,21 @@ OVE does not contain its own enforcement infrastructure. It configures OEE's —
 
 OVE inherits everything from OEE core and adds the venture capital layer on top:
 
-- **VC-tuned `ASSURANCE.md` template** — Class 1/2/3 limits pre-set for autonomous fund mandates (~$100k per-transaction cap, ~$75k consensus gate by default)
+- **VC-tuned `warranty.md` template** — EVM limits pre-set for autonomous fund mandates (~$100k per-transaction cap, ~$75k consensus gate by default)
 - **Agent orchestration boilerplate** — ElizaOS and AgentKit integration examples
 - **Smart contract templates** — ERC-6551 token-bound agent identity, Safe treasury custody, Superfluid revenue streaming
 - **Integration adapters** — Sigil Action Provider wired for direct AgentKit integration
 
 ## Enforcement Model
 
-OVE enforces authorization deterministically through OEE's three-class policy model:
+OVE enforces authorization deterministically through OEE's typed-block policy model:
 
-| Class | Trigger | Outcome |
+| Block | Trigger | Outcome |
 |---|---|---|
-| Class 1 | Hard rule violation (amount, chain, action) | `DENIED` immediately |
-| Class 2 | Daily aggregate cap reached | `APPROVED` with informational flag — never a hard denial |
-| Class 3 | Consensus threshold exceeded | `PENDING` — hold created in Sigil Command, human approval required |
+| `## evm` | Hard rule violation (amount, chain, action) or consensus threshold exceeded | `DENIED` immediately or `PENDING` hold |
+| `## tool_calls` | Disallowed tool, blocked command, domain, or path | `DENIED` immediately |
+| `## custom` | Operator-defined field or string match | `DENIED` immediately |
+| `## soft_limits` | Daily aggregate cap reached | `APPROVED` with informational flag — never a hard denial |
 
 No capital moves without a valid Intent Attestation.
 
