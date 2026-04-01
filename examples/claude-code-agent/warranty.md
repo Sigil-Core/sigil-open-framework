@@ -1,7 +1,9 @@
+---
+title: "Claude Code Agent"
+description: "Warranty policy for an autonomous coding agent: blocks destructive shell commands, restricts file writes to the working directory, requires human approval for git push to main."
+---
+
 # Warranty Policy — Claude Code Agent
-# Constrains an autonomous coding agent: blocks destructive shell commands,
-# restricts file writes to the working directory, requires human approval
-# for git push to main.
 
 version: 1.0.0
 

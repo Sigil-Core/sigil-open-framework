@@ -1,6 +1,9 @@
+---
+title: "API Integration Agent"
+description: "Warranty policy for an autonomous API agent: blocks requests to non-allowlisted domains, rate limits outbound calls. Built for LangChain/ELIZA pipelines."
+---
+
 # Warranty Policy — API Integration Agent
-# Constrains an autonomous API agent: blocks requests to non-allowlisted
-# domains, rate limits outbound calls. Built for LangChain/ELIZA pipelines.
 
 version: 1.0.0
 

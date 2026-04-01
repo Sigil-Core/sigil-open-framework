@@ -1,6 +1,9 @@
+---
+title: "DeFi Token Swap Agent"
+description: "Warranty policy for an autonomous yield agent with per-tx limits, chain allowlisting, sanctioned address blocking, and human approval above threshold."
+---
+
 # Warranty Policy — DeFi Token Swap Agent
-# Autonomous yield agent with per-tx limits, chain allowlisting,
-# sanctioned address blocking, and human approval above threshold.
 
 version: 1.0.0
 
