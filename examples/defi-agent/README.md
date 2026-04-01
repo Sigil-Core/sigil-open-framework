@@ -1,0 +1,1 @@
+This agent autonomously swaps tokens and deploys capital across DeFi protocols. Without policy, it could drain a treasury in a single transaction or route funds to sanctioned addresses. This warranty.md caps per-tx value, allowlists chains, blocks OFAC-sanctioned addresses, and requires human approval above a threshold.
