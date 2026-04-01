@@ -1,0 +1,60 @@
+{
+  "name": "Sigil Open Framework",
+  "theme": "mint",
+  "colors": {
+    "primary": "#2563eb",
+    "light": "#60a5fa",
+    "dark": "#1d4ed8"
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "introduction",
+              "getting-started",
+              "architecture",
+              "aaif-standards"
+            ]
+          },
+          {
+            "group": "Developer Toolkit",
+            "pages": [
+              "developer-toolkit/quick-start",
+              "developer-toolkit/mock-engine",
+              "developer-toolkit/warranty-policy"
+            ]
+          },
+          {
+            "group": "Agent Hooks",
+            "pages": [
+              "agent-hooks/overview",
+              "agent-hooks/claude-code",
+              "agent-hooks/eliza",
+              "agent-hooks/langchain",
+              "agent-hooks/agentpay"
+            ]
+          },
+          {
+            "group": "Core Components",
+            "pages": [
+              "components/open-execution-engine",
+              "components/open-venture-engine",
+              "components/fiduciary-agent-framework",
+              "components/sigil-attestations"
+            ]
+          },
+          {
+            "group": "Resources",
+            "pages": [
+              "faq"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
