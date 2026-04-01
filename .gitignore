@@ -35,3 +35,8 @@ yarn-error.log*
 # Build output
 dist/
 build/
+
+# Private agent config
+agents-global.md
+architecture.md
+docs.json
