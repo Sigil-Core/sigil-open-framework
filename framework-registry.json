@@ -1,0 +1,95 @@
+{
+  "$schema": "https://sigilcore.com/schemas/framework-registry.json",
+  "version": "1.0.0",
+  "validation": {
+    "rule": "non-empty string, max 64 characters, lowercase alphanumeric and hyphens only",
+    "pattern": "^[a-z0-9][a-z0-9-]{0,63}$",
+    "unknown_frameworks": "accepted with warning log"
+  },
+  "frameworks": [
+    {
+      "id": "agentkit",
+      "name": "Coinbase AgentKit",
+      "category": "evm",
+      "adapter": "checkAnthropicToolUse",
+      "docs": "agent-hooks/claude-code"
+    },
+    {
+      "id": "eliza",
+      "name": "ElizaOS",
+      "category": "autonomous",
+      "adapter": "checkElizaAction",
+      "docs": "agent-hooks/eliza"
+    },
+    {
+      "id": "agentpay",
+      "name": "USD1 AgentPay (WLFI)",
+      "category": "evm",
+      "adapter": "checkIntent",
+      "docs": "agent-hooks/agentpay"
+    },
+    {
+      "id": "openclaw",
+      "name": "OpenClaw",
+      "category": "autonomous",
+      "adapter": "checkIntent",
+      "docs": null
+    },
+    {
+      "id": "nanoclaw",
+      "name": "Nanoclaw",
+      "category": "autonomous",
+      "adapter": "checkIntent",
+      "docs": null
+    },
+    {
+      "id": "ironclaw",
+      "name": "Ironclaw",
+      "category": "autonomous",
+      "adapter": "checkIntent",
+      "docs": null
+    },
+    {
+      "id": "nanobot",
+      "name": "Nanobot",
+      "category": "autonomous",
+      "adapter": "checkIntent",
+      "docs": null
+    },
+    {
+      "id": "hermes",
+      "name": "Hermes Agent",
+      "category": "autonomous",
+      "adapter": "checkIntent",
+      "docs": null
+    },
+    {
+      "id": "langchain",
+      "name": "LangChain",
+      "category": "tool",
+      "adapter": "wrapLangChainTool",
+      "docs": "agent-hooks/langchain"
+    },
+    {
+      "id": "anthropic-sdk",
+      "name": "Claude Code / Anthropic SDK",
+      "category": "tool",
+      "adapter": "checkAnthropicToolUse",
+      "docs": "agent-hooks/claude-code"
+    },
+    {
+      "id": "openai-sdk",
+      "name": "OpenAI Agents SDK",
+      "category": "tool",
+      "adapter": "checkIntent",
+      "docs": null
+    },
+    {
+      "id": "demo",
+      "name": "Demo / Testing",
+      "category": "testing",
+      "adapter": null,
+      "docs": null
+    }
+  ]
+}

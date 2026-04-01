@@ -35,12 +35,22 @@ PENDING  → action held for human approval
 
 ## Supported Frameworks
 
-| Framework | Adapter |
-|---|---|
-| Claude Code / Anthropic SDK | `checkAnthropicToolUse` |
-| ELIZA | `checkElizaAction` |
-| LangChain | `wrapLangChainTool` |
-| Any framework | `checkIntent` (generic) |
+| Framework | ID | Adapter |
+|---|---|---|
+| Coinbase AgentKit | `agentkit` | `checkAnthropicToolUse` |
+| ElizaOS | `eliza` | `checkElizaAction` |
+| USD1 AgentPay (WLFI) | `agentpay` | `checkIntent` |
+| OpenClaw | `openclaw` | `checkIntent` |
+| Nanoclaw | `nanoclaw` | `checkIntent` |
+| Ironclaw | `ironclaw` | `checkIntent` |
+| Nanobot | `nanobot` | `checkIntent` |
+| Hermes Agent | `hermes` | `checkIntent` |
+| LangChain | `langchain` | `wrapLangChainTool` |
+| Claude Code / Anthropic SDK | `anthropic-sdk` | `checkAnthropicToolUse` |
+| OpenAI Agents SDK | `openai-sdk` | `checkIntent` |
+| Any framework | (custom) | `checkIntent` (generic) |
+
+See the [Framework Registry](../framework-registry) for the full list and custom framework usage.
 
 ## Governed Actions
 
