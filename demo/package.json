@@ -1,0 +1,12 @@
+{
+  "name": "@sigilcore/demo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "demo": "tsx demo.ts"
+  },
+  "devDependencies": {
+    "tsx": "^4.0.0",
+    "typescript": "^5.4.0"
+  }
+}

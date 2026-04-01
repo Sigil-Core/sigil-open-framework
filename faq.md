@@ -136,7 +136,7 @@ description: "Diagnosing policy violations, validation errors, startup failures,
     before policy evaluation even began.
 
     **Common culprits:**
-    - **`framework`:** Must be exactly `"agentkit"` or `"eliza"`. `"coinbase-agentkit"` will fail.
+    - **`framework`:** Must be a non-empty string (lowercase alphanumeric and hyphens, max 64 chars). See the [Framework Registry](framework-registry) for known values. Unknown framework strings are accepted with a warning log.
     - **`txCommit`:** Must be a lowercase 64-character hex string. **Remove the `0x` prefix.**
     - **`chainId`:** Ensure you are targeting an allowlisted chain (1, 8453, 42161, 10, 137, 56, 999).
     - **`intent.action`:** Must match an entry in your warranty.md `allowed_actions`
