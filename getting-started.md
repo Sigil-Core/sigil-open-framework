@@ -87,7 +87,7 @@ curl -X POST https://sign.sigilcore.com/v1/authorize \
 
 **Crucial Formatting Rules:**
 
-- `framework`: Must be exactly `"agentkit"` or `"eliza"`.
+- `framework`: A string identifying your agent framework (e.g. `"agentkit"`, `"eliza"`, `"langchain"`). Any non-empty string is accepted. See the [Framework Registry](framework-registry) for known values.
 - `txCommit`: Must be a lowercase 64-character hex SHA-256 string. **Do not include a `0x` prefix.**
 - `chainId`: Must be in your warranty.md `allowed_chains` list. Supported values: 1, 10, 56, 137, 999, 8453, 42161.
 - `intent.action`: Must be in your warranty.md `allowed_actions` list (or the per-chain override for the requested chain).
