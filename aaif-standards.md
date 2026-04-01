@@ -15,9 +15,9 @@ The Sigil Open Framework (SOF) natively adopts the AAIF standards but introduces
 
 While AAIF defines the agent's capabilities, the Sigil extension defines its deterministic limits.
 
-### Example: `AGENTS.md` with SOF Constraints
+### Example: `AGENTS.md` with SOF Warranty Policy
 
-When building an SOF-compliant agent, your `AGENTS.md` file will include standard AAIF routing, accompanied by the `sigil-constraints` block:
+When building an SOF-compliant agent, your `AGENTS.md` file will include standard AAIF routing, accompanied by the `sigil-warranty` block that maps directly to the agent's `warranty.md` typed-block structure:
 
 ```yaml
 name: "Alpha Yield Agent"
@@ -29,15 +29,25 @@ capabilities:
   - Market_Analysis
   - ERC4337_UserOp_Formatting
 
-# --- SIGIL OPEN FRAMEWORK EXTENSION ---
-sigil-constraints:
-  enforcement_layer: "Sigil OS"
-  policy_uri: "ipfs://QmYourAssurancePolicyHashHere"
+# --- SIGIL OPEN FRAMEWORK: WARRANTY POLICY ---
+sigil-warranty:
+  enforcement_layer: "Sigil Lex"
+  policy_uri: "ipfs://QmYourWarrantyPolicyHashHere"
   attestation_standard: "sigil-attestations-v1"
-  deterministic_rules:
-    - max_transaction_value: "50000 USDC"
-    - permitted_contracts: ["0xDefiRouterAddress1", "0xDefiRouterAddress2"]
-    - block_sanctioned_entities: true
+  warranty_blocks:
+    evm:
+      max_transaction_eth: 5.0
+      allowed_actions: ["wallet.transfer", "contract.call"]
+      allowed_chains: [1, 8453, 42161, 10, 137]
+      chain_actions:
+        "8453": ["contract.call"]
+      consensus_threshold_eth: 3.0
+    tool_calls:
+      allowed: ["bash", "web_fetch", "file_write"]
+      bash_blocked_commands: ["rm -rf", "curl"]
+    custom:
+      - deny_string: "DROP TABLE"
+      - deny_if: "metadata.email_to contains @competitor.com"
 ```
 
-If the agent proposes a transaction that violates any rule mapped within these constraints, the Sigil execution firewall intercepts the request and denies the Intent Attestation. Execution halts instantly at the cryptographic level.
+If the agent proposes a transaction that violates any rule in its `warranty.md` policy blocks, Sigil Lex intercepts the request and denies the Intent Attestation. Execution halts instantly at the cryptographic level.
