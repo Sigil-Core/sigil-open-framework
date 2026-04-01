@@ -22,9 +22,9 @@ consensus_threshold_eth: 1.0
 consensus_require_hold: true
 
 ## custom
-# Block known sanctioned or high-risk addresses
-deny_if.intent.targetAddress equals "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
-deny_if.intent.targetAddress equals "0x00000000000000000000000000000000DeaDBeef"
+# Block OFAC-sanctioned addresses (Tornado Cash examples)
+deny_if.intent.targetAddress equals "0x722122dF12D4e14e13Ac3b6895a86e84145b6967"
+deny_if.intent.targetAddress equals "0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b"
 
 # Block interactions with unverified routers
 deny_if.intent.metadata.contract_name contains "unverified"

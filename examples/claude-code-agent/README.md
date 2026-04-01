@@ -1,0 +1,1 @@
+This agent runs Claude Code unsupervised to write, test, and ship code. Without policy, it could `rm -rf /`, push untested code to main, or exfiltrate credentials from your environment. This warranty.md blocks destructive commands, restricts file writes to the working directory, and requires human approval for pushes to main.
