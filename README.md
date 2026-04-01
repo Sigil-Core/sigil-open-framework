@@ -110,7 +110,7 @@ capabilities:
 # --- SIGIL OPEN FRAMEWORK EXTENSION ---
 sigil-constraints:
   enforcement_layer: "Sigil OS"
-  policy_uri: "ipfs://QmYourAssurancePolicyHashHere"
+  policy_uri: "ipfs://QmYourWarrantyMDHashHere"
   attestation_standard: "sigil-attestations-v1"
   deterministic_rules:
     - max_transaction_value: "50000 USDC"
