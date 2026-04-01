@@ -1,0 +1,1 @@
+This agent makes autonomous API calls to external services in a LangChain or ELIZA pipeline. Without policy, it could POST sensitive data to arbitrary endpoints or SSRF into your cloud metadata. This warranty.md blocks requests to internal networks and cloud metadata endpoints, prevents credential leakage, and rate-limits outbound calls.
