@@ -48,6 +48,14 @@
             ]
           },
           {
+            "group": "Examples",
+            "pages": [
+              "examples/defi-agent/warranty",
+              "examples/claude-code-agent/warranty",
+              "examples/api-agent/warranty"
+            ]
+          },
+          {
             "group": "Resources",
             "pages": [
               "faq"
