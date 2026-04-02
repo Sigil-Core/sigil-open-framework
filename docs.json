@@ -43,7 +43,6 @@
             "group": "Core Components",
             "pages": [
               "components/open-execution-engine",
-              "components/open-venture-engine",
               "components/fiduciary-agent-framework",
               "components/sigil-attestations"
             ]
