@@ -46,7 +46,7 @@ SOF is not a single codebase and not a two-sided product. It is a **composable p
 <Card
   title="Layer 3: Vertical Boilerplates"
   icon="layers"
-  href="/components/open-venture-engine"
+  href="/components/open-execution-engine"
 >
   Domain-specific implementations of OEE + FAF. **[Open Venture Engine
   (OVE)](https://github.com/Sigil-Core/oee/tree/main/verticals/venture/)** is the first — OEE pre-wired for
