@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 # ============================================================================
 SIGIL_API_ENDPOINT = os.getenv("SIGIL_API_ENDPOINT", "http://localhost:3000/v1/authorize")
 SIGIL_API_KEY = os.getenv("SIGIL_API_KEY", "DEV_MOCK_KEY_123")
-ASSURANCE_POLICY_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "ASSURANCE.md"))
+WARRANTY_POLICY_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "warranty.md"))
 
 class SigilAuthInput(BaseModel):
     to_address: str = Field(description="The destination wallet or smart contract address (0x...).")
@@ -21,9 +21,9 @@ class SigilAuthInput(BaseModel):
     call_data: str = Field(default="0x", description="The raw hex call data for the transaction, if applicable.")
 
 def get_deterministic_policy() -> dict:
-    """Extracts and parses the YAML block from the assurance template"""
+    """Extracts and parses the YAML block from the warranty policy"""
     try:
-        with open(ASSURANCE_POLICY_PATH, 'r') as file:
+        with open(WARRANTY_POLICY_PATH, 'r') as file:
             content = file.read()
             
         match = re.search(r'```yaml\n(.*?)\n```', content, re.DOTALL)
