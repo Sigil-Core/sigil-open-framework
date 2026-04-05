@@ -30,10 +30,10 @@ yarn-error.log*
 # Build output
 dist/
 build/
-# Private agent config
+# Internal-only files (never commit to public repos)
 agents-global.md
-# Internal agent context
-architecture-internal-only.md
-
-# Agent context shim for Claude Code (canonical context is in AGENTS.md)
+_MANIFEST.md
 CLAUDE.md
+AGENTS.md
+architecture-internal-only.md
+.claude/
