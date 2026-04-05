@@ -13,24 +13,24 @@ Sigil is a composable protocol stack. Three layers — enforcement, legal govern
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                        Agent Framework                       │
-│           (Claude Code, ELIZA, LangChain, AgentKit)         │
+│                        Agent Framework                      │
+│           (e.g., Claude Code, ELIZA, LangChain, AgentKit)   │
 └────────────────────────┬────────────────────────────────────┘
                          │  @sigilcore/agent-hooks
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                     Sigil Sign (OEE)                         │
-│                                                              │
+│                     Sigil Sign (OEE)                        │
+│                                                             │
 │  Intent Declaration → Sigil Lex Policy Evaluation           │
-│       ↓                    ↓                    ↓            │
-│    APPROVED             PENDING              DENIED          │
-│  (attestation)      (consensus hold)     (hard block)        │
+│       ↓                    ↓                    ↓           │
+│    APPROVED             PENDING              DENIED         │
+│  (attestation)      (consensus hold)     (hard block)       │
 └────────────────────────┬────────────────────────────────────┘
                          │  Intent Attestation JWT (Ed25519)
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
-│               Sigil RPC / Bundler Gateway                    │
-│      (rejects write operations without valid attestation)    │
+│               Sigil RPC / Bundler Gateway                   │
+│      (rejects write operations without valid attestation)   │
 └────────────────────────┬────────────────────────────────────┘
                          │
                          ▼
