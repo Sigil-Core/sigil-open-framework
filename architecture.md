@@ -179,15 +179,14 @@ This is the primary mechanism for human oversight in high-stakes autonomous depl
 
 ## Deployment Model
 
-Sigil Sign is self-hosted. You own the execution firewall, the policy, and the keys. NVIDIA does not hold your keys, evaluate your intents, or have visibility into your agent's activity.
+SOF runs on the Sigil API — hosted Intent Attestation backed by SOC 2 Type I controls, a verifiable audit chain, and usage-based pricing that scales with your deployment.
 
-The minimum deployment surface:
+**Start free.** Register your email at [sigilcore.com/tools/keys](https://sigilcore.com/tools/keys) to receive a Developer tier key — 1,000 governed actions per month, no account required.
 
-```
-sigil-sign/          # OEE instance (Express.js)
-  ├── config/
-  │   └── warranty.md   # signed operator policy
-  └── .env.local         # LEX_OPERATOR_PUBLIC_KEY
-```
+**Scale on demand.** When you outgrow the free tier, upgrade to $25/month — includes 10,000 governed actions, $0.002 per action above that. → [sigilcore.com/tools/upgrade](https://sigilcore.com/tools/upgrade)
 
-For NemoClaw deployments, OEE can be added as a sidecar to the hardened blueprint, providing intent-layer governance alongside NemoClaw's OS-level sandbox protections.
+**Enterprise and regulated deployments** with dedicated infrastructure, custom SLAs, and audit support are available through [Sigil Governance](https://sigilgovernance.com).
+
+---
+
+*Need to run your own signing infrastructure? `sigil-sign` is MIT-licensed and self-hostable. For most teams, managing your own cryptographic signing layer is unnecessary overhead — the Sigil API handles it.*
