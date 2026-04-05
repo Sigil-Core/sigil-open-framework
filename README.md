@@ -45,7 +45,7 @@ The doctrine applies at the framework level. Each component implements it within
 
 ## The Architecture: A Governed Protocol Stack
 
-SOF is not a single codebase, and it is not a two-sided product. It is a **composable protocol stack** — three layers, each independently useful, each enabling the one above it.
+SOF is not a single codebase, it is a **composable protocol stack** — three layers, each independently useful, each enabling the one above it.
 
 Think of it as a franchise protocol. The enforcement substrate is universal — every SOF-compliant deployment runs on the same cryptographic enforcement primitives, regardless of industry. The legal layer converts those guarantees into fiduciary instruments. The vertical boilerplates are the franchise concepts: enforcement and legal pre-assembled for a specific deployment context, ready to go.
 
