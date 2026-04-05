@@ -34,3 +34,6 @@ build/
 agents-global.md
 # Internal agent context
 architecture-internal-only.md
+
+# Agent context shim for Claude Code (canonical context is in AGENTS.md)
+CLAUDE.md
