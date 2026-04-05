@@ -1,6 +1,6 @@
 # Sigil Open Framework (SOF)
 
-**The open-source standard for cryptographically secured, legally compliant autonomous agents.**
+**The missing policy layer between your agent and production.**
 
 [![Status](https://img.shields.io/badge/status-active--development-black)](#)
 [![License](https://img.shields.io/badge/license-MIT-blue)](#)
@@ -10,7 +10,7 @@
 
 ## Executive Summary
 
-The **Sigil Open Framework (SOF)** is a modular, open-source architecture designed to solve the final barrier to autonomous agent adoption: **Liability.**
+The **Sigil Open Framework (SOF)** is the open-source policy engine that sits between your agent and production. Define what's allowed once. Everything else is blocked automatically — before it fires.
 
 While standard AI frameworks give agents the intelligence to act, SOF gives them the cryptographic and legal boundaries required to operate safely in the real world. SOF bridges the gap between autonomous code and real-world compliance through a **governed protocol stack**: a domain-agnostic enforcement engine, a legal governance layer, and a set of vertical boilerplates that bring both together for specific deployment contexts.
 
