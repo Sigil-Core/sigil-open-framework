@@ -6,6 +6,26 @@ description: "Diagnosing policy violations, validation errors, startup failures,
 ## Setup & Deployment
 
 <AccordionGroup>
+  <Accordion title="Can I use Sigil without self-hosting?">
+    **Yes. The Sigil API is the recommended path for most teams.**
+
+    Register at [sigilcore.com/tools/keys](https://sigilcore.com/tools/keys)
+    to receive a Developer tier API key — 1,000 governed actions per month, free.
+    The hosted API handles signing infrastructure, key management, and attestation
+    issuance. You still define your own policy via
+    [Sigil Warrant](https://sigilcore.com/tools/warrant) and retain full control
+    over what your agents can and cannot do.
+
+    **Pricing:**
+    - **Developer:** Free — 1,000 governed actions/month
+    - **Growth:** $25/month — 10,000 governed actions, $0.002 per action above
+    - **Enterprise:** Custom — dedicated infrastructure, SLAs, audit support via
+      [Sigil Governance](https://sigilgovernance.com)
+
+    Self-hosting `sigil-sign` is available for teams that require it (MIT-licensed),
+    but for most deployments the API is faster to set up and lower maintenance.
+  </Accordion>
+
   <Accordion title="My service failed to start. What does 'warranty.md is missing a ## signature block' mean?">
     Starting with the GAP-001 sprint, Sigil Lex requires every warranty.md to
     be cryptographically signed before it will evaluate policy. An unsigned file

@@ -1,23 +1,46 @@
 ---
 title: "Introduction"
-description: "The open-source standard for cryptographically secured, legally compliant autonomous agents."
+description: "The open-source policy engine that sits between your agent and production."
 ---
 
 # Sigil Open Framework (SOF)
 
-The **Sigil Open Framework (SOF)** is a modular, open-source architecture designed to solve the final barrier to autonomous agent adoption: **Liability.**
+The **Sigil Open Framework (SOF)** is the open-source policy engine that sits between your agent and production. Define what's allowed once. Everything else is blocked automatically — before it fires.
 
-Standard AI frameworks give agents the intelligence to act. The Linux Foundation's Agentic AI Foundation (AAIF) has established open-source standards (`AGENTS.md`) for how these agents are built and connected. But standard frameworks act only as the accelerator pedal—they tell the agent what to do, but they cannot physically prevent the agent from doing something catastrophic.
+While standard AI frameworks give agents the intelligence to act, SOF gives them the cryptographic and legal boundaries required to operate safely in the real world. SOF bridges the gap between autonomous code and real-world compliance through a **governed protocol stack**: a domain-agnostic enforcement engine, a legal governance layer, and a set of vertical boilerplates that bring both together for specific deployment contexts.
 
-**SOF is the cryptographic brake system and the vehicle's registration.**
+If standard agentic frameworks are the accelerator pedal, SOF is the cryptographic brake system and the vehicle's registration.
 
-By acting as an umbrella over both technical execution and legal structuring, SOF bridges the gap between autonomous code and real-world compliance.
+---
+
+## The Doctrine of Structural Trust
+
+> Safety is not a property of prompts. Safety is a property of architecture.
+
+The Sigil Open Framework is built on a single, non-negotiable principle: autonomous agents cannot be trusted to self-govern. Trust must be structurally enforced — cryptographically, deterministically, and before execution, not after loss.
+
+Under SOF, every compliant agent operates within these guarantees:
+
+- AI agents **never hold private keys**
+- AI agents **never see raw API credentials**
+- AI agents **cannot execute without deterministic authorization**
+- High-stakes actions **must route through a policy enforcement layer**
+
+Execution only proceeds if the action carries a valid **Intent Attestation**.
+
+This doctrine is not a feature of any single component. It is the architectural contract that every layer of SOF is designed to enforce:
+
+- **OEE** enforces it technically — no execution without cryptographic authorization
+- **FAF** enforces it legally — no liability exposure without structural governance
+- **Sigil Attestations** proves it cryptographically — every authorized action is verifiable
 
 ---
 
 ## A Governed Protocol Stack
 
-SOF is not a single codebase and not a two-sided product. It is a **composable protocol stack** — three layers that bring enforcement, legal governance, and domain-specific deployments together in one architecture. Think of it as a franchise protocol: a universal enforcement substrate, a legal operating standard built on top of it, and vertical boilerplates that pre-assemble both for specific industries.
+SOF is not a single codebase. It is a **composable protocol stack** — three layers, each independently useful, each enabling the one above it.
+
+Think of it as a franchise protocol. The enforcement substrate is universal — every SOF-compliant deployment runs on the same cryptographic enforcement primitives, regardless of industry. The legal layer converts those guarantees into fiduciary instruments. The vertical boilerplates are the franchise concepts: enforcement and legal pre-assembled for a specific deployment context, ready to go.
 
 <CardGroup cols={2}>
   <Card

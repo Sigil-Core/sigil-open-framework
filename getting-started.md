@@ -11,9 +11,33 @@ Sigil Sign is the deterministic execution firewall for agent-driven EVM actions.
 
 ---
 
+## API Quick Start
+
+The fastest path to your first governed action. The Sigil API handles signing infrastructure, key management, and attestation issuance so you do not have to run anything yourself.
+
+**1. Get your API key.** Register your email at [sigilcore.com/tools/keys](https://sigilcore.com/tools/keys) to receive a Developer tier key. 1,000 governed actions per month, free.
+
+**2. Sign your warranty.md.** Use [Sigil Warrant](https://sigilcore.com/tools/warrant) to define your policy and generate a signed `warranty.md`. The tool produces your Ed25519 keypair in the browser, signs the policy, and gives you your `LEX_OPERATOR_PUBLIC_KEY` value.
+
+**3. Authorize your first action.** Submit an intent to `POST /v1/authorize` with your API key. If the intent passes your policy, you receive an Ed25519-signed JWT. Attach it to your transaction via `Authorization: Bearer <jwt>` and route through the Sigil RPC gateway.
+
+That is the complete flow. The sections below cover each step in detail.
+
+**Pricing tiers:**
+
+| Tier | Cost | Governed actions |
+|---|---|---|
+| Developer | Free | 1,000/month |
+| Growth | $25/month | 10,000/month, $0.002 per action above |
+| Enterprise | Custom | Dedicated infrastructure, custom SLAs, audit support via [Sigil Governance](https://sigilgovernance.com) |
+
+> Need to run your own signing infrastructure? `sigil-sign` is MIT-licensed and self-hostable. See the [Self-hosted deployment](#self-hosted-deployment) section below. For most teams, managing your own cryptographic signing layer is unnecessary overhead.
+
+---
+
 ## Before You Deploy: Two Prerequisites
 
-Before sigil-sign will start, two things must be in place. Without both, the service throws on startup and refuses to authorize anything. This is intentional — the service will not run without a verified operator policy.
+Whether you use the hosted Sigil API or self-host sigil-sign, two things must be in place. Without both, the service refuses to authorize anything. This is intentional — the service will not run without a verified operator policy.
 
 ### 1. A signed warranty.md file
 
@@ -187,3 +211,20 @@ sigil-sig: <base64url-ed25519-signature>
 ### Updating Your Policy
 
 If you update your warranty.md, you must re-sign it with Sigil Warrant before redeploying. An updated but unsigned policy will be rejected at startup. The version field in your policy should be incremented to reflect the change — this makes the new `policyHash` in subsequent attestations distinguishable from the previous version.
+
+---
+
+## Self-hosted Deployment
+
+`sigil-sign` is MIT-licensed and can be run on your own infrastructure. This path gives you full control over the execution firewall, policy storage, and signing keys. For most teams, the hosted Sigil API is the faster and lower-maintenance option.
+
+The minimum deployment surface:
+
+```
+sigil-sign/
+  ├── config/
+  │   └── warranty.md   # signed operator policy
+  └── .env.local         # LEX_OPERATOR_PUBLIC_KEY
+```
+
+Set `LEX_OPERATOR_PUBLIC_KEY` in `.env.local` and place your signed `warranty.md` at the path `LEX_WARRANTY_PATH` points to (defaults to `config/warranty.md`). The prerequisites and execution flow documented above apply identically to self-hosted deployments.
