@@ -134,15 +134,5 @@ sigil-vault audit verify   # Verify hash chain integrity
 - **Hash-chained audit log** — append-only JSONL linking Intent Attestation to capability release to execution outcome. Cryptographically verifiable chain integrity via `sigil-vault audit verify`.
 - **5-second hard cap** — the entire request lifecycle (auth, attestation validation, credential fetch, injection, forwarding) must complete within 5 seconds.
 
----
-
-## Relationship to OneCLI
-
-Vault's MITM gateway architecture is informed by [OneCLI](https://github.com/anthropics/one-cli) (Apache 2.0, Anthropic) — the open-source credential vault for AI agents. Vault extends the mechanical substrate with:
-
-- **Intent Attestation gate** — cryptographic proof from Sigil Sign before any credential release (OneCLI has no policy gate)
-- **Enterprise backends** — on-demand credential fetch from HashiCorp, AWS, Azure, GCP (OneCLI stores secrets locally)
-- **Hash-chained audit** — cryptographically verifiable event trail (OneCLI logs per-request only)
-- **Compliance posture** — designed for ISO 42001, ISO 27001, SOC 2 Type 2
 
 **View the Repository:** [github.com/Sigil-Core/sigil-vault](https://github.com/Sigil-Core/sigil-vault)
