@@ -231,6 +231,116 @@ description: "Diagnosing policy violations, validation errors, startup failures,
 
 ---
 
+## Sigil Command
+
+<AccordionGroup>
+  <Accordion title="What is Sigil Command?">
+    Sigil Command is the read-only operator console for Sigil Sign. It displays
+    a real-time violation log — every `DENIED`, `PENDING`, and `APPROVED` policy
+    enforcement event for your API key. It is available at
+    [command.sigilcore.com](https://command.sigilcore.com).
+
+    Command is included with every Sigil Sign API key, including the free
+    Developer tier. No separate signup is required.
+  </Accordion>
+
+  <Accordion title="How do I sign in to Command?">
+    Command uses **passwordless magic link authentication**:
+
+    1. Go to [command.sigilcore.com](https://command.sigilcore.com)
+    2. Enter the email address associated with your Sigil Sign API key
+    3. Check your inbox for a magic link from `keys@sigilcore.com` (expires in 10 minutes)
+    4. Click the link — your browser creates a session (24-hour validity)
+
+    If the email does not arrive, check your spam folder. The sender is
+    `keys@sigilcore.com`.
+  </Accordion>
+
+  <Accordion title="Can I see other users' violations in Command?">
+    **No.** Tenant isolation is enforced server-side. The API pins the
+    `api_key_id` from your session JWT on every request — the client cannot
+    override it. You can only see enforcement events for your own API key.
+  </Accordion>
+
+  <Accordion title="Can I edit or delete violations in Command?">
+    **No.** Command is strictly read-only. Violation records are the
+    authoritative audit trail of your policy enforcement and cannot be modified
+    or deleted from the UI.
+  </Accordion>
+
+  <Accordion title="I don't see any violations. Is something broken?">
+    If your violation log is empty, your agent has not triggered any policy
+    enforcement events yet. To confirm the pipeline is working:
+
+    1. Submit a test intent to `POST /v1/authorize` that intentionally breaches
+       your warranty.md (e.g. exceed `max_transaction_eth` or use a blocked tool)
+    2. The `DENIED` event should appear in Command within seconds
+
+    If the denial still does not appear, verify your API key is active and the
+    email you used to sign in matches the one on the key.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Sigil Vault
+
+<AccordionGroup>
+  <Accordion title="What is Sigil Vault?">
+    Sigil Vault is the **just-in-time (JIT) credential broker** for the Sigil
+    ecosystem. It ensures that autonomous agents can use external credentials —
+    API keys, cloud secrets, MPC co-signatures — without ever possessing them.
+
+    Vault is not a secrets manager. It does not store credentials. It intercepts
+    agent requests via a localhost MITM proxy, validates a cryptographic Intent
+    Attestation from Sigil Sign, fetches a short-lived credential from your own
+    infrastructure (HashiCorp Vault, AWS, Azure, GCP), injects it into the
+    outbound request, and purges it from memory.
+  </Accordion>
+
+  <Accordion title="Does Sigil Vault store my credentials?">
+    **Never.** Vault is explicitly non-custodial. Credentials are fetched
+    on-demand from your own backend infrastructure, injected into the outbound
+    request, and immediately zeroed from memory. No credential persists in Vault
+    between requests.
+
+    Vault supports HashiCorp Vault, AWS Secrets Manager, AWS STS, Azure Key
+    Vault, and GCP Secret Manager as credential sources. Your secrets stay in
+    your infrastructure.
+  </Accordion>
+
+  <Accordion title="How does Vault relate to Sigil Sign?">
+    Vault extends Sigil Sign's authorization model from on-chain execution to
+    off-chain credential access. The flow is:
+
+    1. Agent submits intent to Sigil Sign (`POST /v1/authorize`)
+    2. Sigil Sign evaluates the intent against your warranty.md policy
+    3. If approved, Sigil Sign issues an Ed25519 Intent Attestation
+    4. Agent presents the attestation to Vault with its outbound request
+    5. Vault validates the attestation, fetches the credential, and injects it
+
+    Without a valid Intent Attestation, Vault does not release any credential.
+  </Accordion>
+
+  <Accordion title="What happens if the attestation is missing or invalid?">
+    Vault has **zero fail-open paths**. A missing, invalid, expired, or replayed
+    attestation results in a hard 403 rejection. There is no fallback, no
+    degraded mode, and no bypass. An unknown or revoked agent token is also
+    rejected. Backend timeouts return 504 — never a blind passthrough.
+  </Accordion>
+
+  <Accordion title="Is Sigil Vault available now?">
+    Vault is in **active development**. The architecture is finalized and
+    implementation is underway. The MVP includes the MITM gateway, CLI
+    management commands, credential backend adapters, and a local dashboard.
+
+    See the [Sigil Vault component page](/components/sigil-vault) for the full
+    Getting Started guide and architecture details.
+  </Accordion>
+</AccordionGroup>
+
+---
+
 ## Key Custody & Security
 
 <AccordionGroup>

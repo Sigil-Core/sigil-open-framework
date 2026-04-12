@@ -81,6 +81,35 @@ Think of it as a franchise protocol. The enforcement substrate is universal — 
 
 ---
 
+## Operator Surface: Command & Vault
+
+The protocol stack governs execution. These two components extend governance into the human layer and the credential layer.
+
+<CardGroup cols={2}>
+  <Card
+    title="Sigil Command"
+    icon="terminal"
+    href="/components/sigil-command"
+  >
+    **Operator console.** Read-only, real-time violation log for every policy
+    enforcement event on your API key. Magic link auth, included on every tier.
+    See what your firewall is doing, resolve consensus holds, and audit agent
+    behavior.
+  </Card>
+  <Card
+    title="Sigil Vault"
+    icon="vault"
+    href="/components/sigil-vault"
+  >
+    **JIT credential broker.** Non-custodial, cryptographically-gated credential
+    injection for agent requests. Agents never possess API keys or cloud secrets
+    — Vault fetches them on-demand from your own infrastructure after validating
+    an Intent Attestation.
+  </Card>
+</CardGroup>
+
+---
+
 ## Client-Side Enforcement: Agent Hooks
 
 The protocol stack governs what happens at the execution layer. `@sigilcore/agent-hooks` is the client-side package that connects your agent framework to that layer — intercepting every tool call before it executes and routing it through Sigil Sign for policy evaluation.

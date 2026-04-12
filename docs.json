@@ -44,7 +44,9 @@
             "pages": [
               "components/open-execution-engine",
               "components/fiduciary-agent-framework",
-              "components/sigil-attestations"
+              "components/sigil-attestations",
+              "components/sigil-command",
+              "components/sigil-vault"
             ]
           },
           {
