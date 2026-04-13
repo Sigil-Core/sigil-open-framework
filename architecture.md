@@ -86,9 +86,7 @@ FAF does not replace legal counsel. It assembles the standard structural compone
 
 Vertical boilerplates pre-assemble OEE + FAF for a specific deployment context. Rather than composing the enforcement and legal layers from scratch, operators start with a pre-wired boilerplate for their industry and customize from there.
 
-The first vertical is the **Open Venture Engine** — OEE configured for autonomous venture capital, with VC-optimized `warranty.md` defaults, ERC-6551 token-bound agent identities, Safe treasury custody, and Superfluid revenue streaming. It lives at `oee/verticals/venture/` in the OEE monorepo.
-
-Healthcare, banking, and enterprise verticals follow the same pattern: enforcement and legal pre-assembled for a deployment context.
+Each vertical inherits OEE's enforcement primitives and adds domain-appropriate `warranty.md` templates, legal wrapper guidance, and integration examples. Healthcare, banking, and enterprise verticals follow the same pattern: enforcement and legal pre-assembled for a deployment context.
 
 ---
 

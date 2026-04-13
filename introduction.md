@@ -69,14 +69,13 @@ Think of it as a franchise protocol. The enforcement substrate is universal — 
 <Card
   title="Layer 3: Vertical Boilerplates"
   icon="layers"
-  href="/components/open-execution-engine"
+  href="/architecture#layer-3-vertical-boilerplates"
 >
-  Domain-specific implementations of OEE + FAF. **[Open Venture Engine
-  (OVE)](https://github.com/Sigil-Core/oee/tree/main/verticals/venture/)** is the first — OEE pre-wired for
-  autonomous venture capital, with VC-optimized policy templates, ERC-6551 agent
-  identity, and Sigil Action Provider integration. Healthcare, banking, and
-  enterprise verticals follow the same pattern: enforcement and legal
-  pre-assembled for a deployment context, ready to go.
+  Domain-specific implementations of OEE + FAF. Each vertical inherits the full
+  enforcement stack and adds domain-appropriate warranty.md policy templates,
+  sector-specific legal wrapper guidance, and integration examples. Healthcare,
+  banking, and enterprise verticals follow the same pattern: enforcement and
+  legal pre-assembled for a deployment context, ready to go.
 </Card>
 
 ---

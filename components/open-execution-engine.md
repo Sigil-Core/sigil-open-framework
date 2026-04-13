@@ -33,14 +33,9 @@ Consensus holds (`PENDING`) are stored with a 24-hour TTL. Execution remains blo
 
 ## Verticals
 
-OEE verticals are domain-specific implementations of the enforcement stack:
+OEE verticals are domain-specific implementations of the enforcement stack. Each vertical inherits OEE's enforcement primitives and adds domain-appropriate `warranty.md` templates, legal wrapper guidance, and integration examples.
 
-| Vertical | Domain | Repository |
+| Vertical | Domain | Status |
 |---|---|---|
-| Open Venture Engine (OVE) | Autonomous venture capital | [`oee/verticals/venture/`](https://github.com/Sigil-Core/oee/tree/main/verticals/venture/) |
 | Open Healthcare Engine (OHE) | Clinical AI agents | Planned |
 | Open Banking Engine (OBE) | Treasury and financial agents | Planned |
-
-Each vertical inherits OEE's enforcement primitives and adds domain-appropriate `warranty.md` templates, legal wrapper guidance, and integration examples.
-
-**View the Repository:** [github.com/Sigil-Core/oee](https://github.com/Sigil-Core/oee)
