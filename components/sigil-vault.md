@@ -11,6 +11,21 @@ Vault is **not a secrets manager**. It does not store or custody secrets. It is 
 
 ---
 
+## The Enterprise Fragmentation Problem
+
+Most enterprises operate with decades of accumulated systems: on-premises databases, cloud infrastructure that was lifted-and-shifted without modernization, and a long tail of SaaS tools — each with its own credential model. Autonomous agents cannot tap into these systems in a unified way without a credential injection layer that bridges the gap between the agent's reasoning context and the access controls each system requires.
+
+Vault solves this structurally:
+
+- **Agents never receive standing credentials** — no agent holds a long-lived API key or cloud secret. Every request is gated by a cryptographic Intent Attestation before any credential is released.
+- **Any credential backend, one integration** — Vault abstracts across HashiCorp Vault, AWS Secrets Manager, AWS STS, Azure Key Vault, GCP Secret Manager, and environment variables. Your agents call one proxy; Vault handles the fragmented backend.
+- **Legacy systems gain agent-safe access** — systems that were never designed for autonomous AI access (internal databases, enterprise SaaS, healthcare platforms, financial APIs) can be safely surfaced to agents through Vault's attestation-gated injection model.
+- **No organizational change required** — agents route through Vault's local proxy. Your existing credential infrastructure stays in place. No migration, no re-architecture.
+
+This is the missing integration layer for enterprises deploying agents into fragmented, legacy-heavy environments.
+
+---
+
 ## How It Works
 
 Vault operates as a localhost MITM TLS proxy that sits between your agent and external services:
@@ -53,7 +68,9 @@ Agent Intent
   → External service (Stripe, OpenAI, cloud APIs)
 ```
 
-Without Vault, Sigil governs EVM transactions. With Vault, Sigil governs **any authenticated external call** — API keys for Stripe, OpenAI, Salesforce, database credentials, cloud platform tokens.
+Without Vault, Sigil governs EVM transactions. With Vault, Sigil governs **any authenticated external call** — API keys for Stripe, OpenAI, Salesforce, database credentials, cloud platform tokens, internal enterprise systems.
+
+For enterprises with fragmented or legacy infrastructure, Vault is the bridge that makes those systems agent-accessible without exposing credentials to the agent's reasoning context or requiring re-architecture of existing backend systems.
 
 ---
 
