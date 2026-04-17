@@ -37,3 +37,7 @@ CLAUDE.md
 AGENTS.md
 architecture-internal-only.md
 .claude/
+
+# Internal-only agent context — not for public repos
+AGENTS.md
+SERVICE.md
