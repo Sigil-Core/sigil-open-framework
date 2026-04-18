@@ -1,59 +1,42 @@
-# .coderabbit.yaml — drop into each repo root
-# Adjust path_instructions per repo; this example covers both
-# agent-hooks (npm/TS) and agent-hooks-rs (Rust/crates.io) patterns.
+# .coderabbit.yaml — sigil-open-framework (documentation/specification repo)
 
 reviews:
-  # Auto-review every PR
   auto_review:
     enabled: true
 
   path_instructions:
-    # Rust-specific paths (agent-hooks-rs)
-    - path: "src/**/*.rs"
+    - path: "architecture.md"
       instructions: |
-        - Verify unsafe blocks are justified and documented.
-        - Check error handling uses thiserror or anyhow consistently.
-        - Flag any unwrap() or expect() outside of tests.
-        - Confirm public API changes are semver-appropriate.
+        Canonical public architecture document for the Sigil Open Framework.
+        - Verify all component descriptions match current implementations.
+        - Check that the three-layer model (Firewall/Engine/Rules) is consistently described.
+        - Flag any claims about features not yet shipped.
+        - Cryptographic descriptions must be precise.
 
-    - path: "deny.toml"
+    - path: "components/**/*.md"
       instructions: |
-        - Verify license exceptions are scoped to exact crate+version.
-        - Flag any blanket license allows.
-        - Check advisory ignores have expiration comments or upstream references.
+        Component specification documents covering OEE, FAF, sigil-attestations, sigil-command, and sigil-vault.
+        - Verify each component spec is current with its corresponding repo.
+        - Check cross-references between components for consistency.
+        - Flag stale version numbers or outdated API descriptions.
 
-    - path: "Cargo.toml"
+    - path: "framework-registry.json"
       instructions: |
-        - Confirm version follows semver.
-        - Check for wildcard dependency versions.
-        - Verify publish metadata (description, license, repository) is present.
+        Registry of supported agent frameworks.
+        - Verify each entry has all required fields.
+        - Check that listed frameworks match what agent-hooks and agent-hooks-rs actually support.
 
-    # TypeScript/Node paths (agent-hooks)
-    - path: "src/**/*.ts"
+    - path: "framework-registry.md"
       instructions: |
-        - Check for proper error handling (no swallowed promises).
-        - Verify exported types are documented.
-        - Flag any use of 'any' type.
-
-    - path: "package.json"
-      instructions: |
-        - Confirm version follows semver.
-        - Check that publish metadata (name, version, main/exports, license) is present.
-        - Flag missing or overly broad files/exports config.
-
-    # Tests in either language
-    - path: "tests/**"
-      instructions: |
-        Ensure tests cover edge cases, not just happy paths.
-        Flag tests that assert on implementation details rather than behavior.
+        Human-readable documentation of the framework registry.
+        - Must stay in sync with framework-registry.json.
+        - Flag any framework listed in one but not the other.
 
     - path: "**/*.md"
       instructions: |
-        Check for accuracy against the current code.
-        Flag stale references or outdated instructions.
+        Check for internal consistency across all documents. Flag contradictions.
+        This is a public-facing repo — language should be precise and professional.
 
   path_filters:
-    - "!target/**"
-    - "!node_modules/**"
-    - "!dist/**"
-    - "!*.lock"
+    - "!.claude/**"
+    - "!demo/**"
