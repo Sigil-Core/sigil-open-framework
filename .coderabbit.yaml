@@ -1,0 +1,59 @@
+# .coderabbit.yaml — drop into each repo root
+# Adjust path_instructions per repo; this example covers both
+# agent-hooks (npm/TS) and agent-hooks-rs (Rust/crates.io) patterns.
+
+reviews:
+  # Auto-review every PR
+  auto_review:
+    enabled: true
+
+  path_instructions:
+    # Rust-specific paths (agent-hooks-rs)
+    - path: "src/**/*.rs"
+      instructions: |
+        - Verify unsafe blocks are justified and documented.
+        - Check error handling uses thiserror or anyhow consistently.
+        - Flag any unwrap() or expect() outside of tests.
+        - Confirm public API changes are semver-appropriate.
+
+    - path: "deny.toml"
+      instructions: |
+        - Verify license exceptions are scoped to exact crate+version.
+        - Flag any blanket license allows.
+        - Check advisory ignores have expiration comments or upstream references.
+
+    - path: "Cargo.toml"
+      instructions: |
+        - Confirm version follows semver.
+        - Check for wildcard dependency versions.
+        - Verify publish metadata (description, license, repository) is present.
+
+    # TypeScript/Node paths (agent-hooks)
+    - path: "src/**/*.ts"
+      instructions: |
+        - Check for proper error handling (no swallowed promises).
+        - Verify exported types are documented.
+        - Flag any use of 'any' type.
+
+    - path: "package.json"
+      instructions: |
+        - Confirm version follows semver.
+        - Check that publish metadata (name, version, main/exports, license) is present.
+        - Flag missing or overly broad files/exports config.
+
+    # Tests in either language
+    - path: "tests/**"
+      instructions: |
+        Ensure tests cover edge cases, not just happy paths.
+        Flag tests that assert on implementation details rather than behavior.
+
+    - path: "**/*.md"
+      instructions: |
+        Check for accuracy against the current code.
+        Flag stale references or outdated instructions.
+
+  path_filters:
+    - "!target/**"
+    - "!node_modules/**"
+    - "!dist/**"
+    - "!*.lock"
