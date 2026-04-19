@@ -138,6 +138,7 @@ it's done", or any summary of completed work. Do not wait to be asked.
 | `faf`                  | Public     | Fiduciary Agent Framework                                           |
 | `oee`                  | Public     | Open Execution Engine                                               |
 | `agent-hooks`          | Public     | PreToolUse interceptor npm package                                  |
+| `agent-hooks-rs`       | Public     | Rust client + IronClaw hook adapter for Sigil pre-tool authorization|
 | `mcp-proxy`            | Private    | MCP proxy for agent tooling                                         |
 
 ---
