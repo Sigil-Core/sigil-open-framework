@@ -40,3 +40,13 @@ architecture-internal-only.md
 # Internal-only agent context — not for public repos
 AGENTS.md
 SERVICE.md
+
+# SOPS/age secrets — never commit
+.age-key
+secrets.yaml.bak*
+bin/sops
+bin/age
+bin/age-keygen
+
+# Release automation state
+.release-draft-count.json
