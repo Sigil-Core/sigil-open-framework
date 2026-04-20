@@ -1,0 +1,5 @@
+# SOPS config for Sigil secrets. Encrypts all *.yaml files in this dir
+# with the age recipient below. Generated 2026-04-14.
+creation_rules:
+  - path_regex: secrets\.ya?ml$
+    age: "age1xkp0flds64yr3jvhdj4uq42wqqnxvr4qfs6ygxr2tv2e7v4jngdqr7gnzj"
