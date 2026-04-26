@@ -101,6 +101,31 @@ Report all three layers explicitly.
 - Never push `claude.md` or `CLAUDE.md` to any repo. It is .gitignored
   and exists only as a local shim for Claude Code compatibility.
 
+### CodeRabbit Pre-Commit Review Gate
+
+Before creating any commit that includes agent-authored code or repo changes,
+run a CodeRabbit review from the target repo and resolve the findings.
+
+Required sequence:
+1. Finish the intended edit and normal verification first.
+2. Run `coderabbit auth status --agent`. If the CLI is unavailable or not
+   authenticated, stop and report the blocker instead of committing.
+3. Run `coderabbit review --type uncommitted --agent` before `git commit`.
+   If the change has already been committed locally for review purposes, run
+   `coderabbit review --type committed --agent` before amending, squashing,
+   pushing, or opening a PR.
+4. Treat actionable CodeRabbit findings as blocking. Fix them, rerun the
+   same CodeRabbit command, and continue only when the review is clean or the
+   remaining finding is explicitly documented as a false positive / accepted
+   risk.
+5. Include the CodeRabbit command and raw result in the handoff or review
+   evidence bundle whenever committing or responding to review findings.
+
+Do not create, amend, squash, cherry-pick, or push an agent-authored commit
+until CodeRabbit has reviewed it. If CodeRabbit is unavailable, do not bypass
+the gate unless the user explicitly instructs a bypass after being told the
+review did not complete.
+
 ---
 
 ## Documentation Sync Rule
@@ -192,7 +217,7 @@ it's done", or any summary of completed work. Do not wait to be asked.
   before any infra-touching sprint.
 - Cross-repo infrastructure reference (Cloudflare LBs, shared Postgres,
   Tailscale, deploy procedures):
-  `/Users/vernon/Documents/Developer/Sigil/Gateway Architecture.md`
+  `/Users/vernon/Documents/Cowork/Claude Context/Sigil/architecture/gateway-architecture.md`
 - GCP credentials on production droplets (NYC2 and AMS3) live at
   `/root/.config/gcloud/`. Do not move, symlink, or duplicate them.
 - All production infrastructure is managed as code through Pulumi.
