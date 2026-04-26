@@ -61,7 +61,9 @@
           {
             "group": "Resources",
             "pages": [
-              "faq"
+              "faq",
+              "pre-execution-enforcement-gap",
+              "control-mapping"
             ]
           }
         ]
