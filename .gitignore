@@ -50,3 +50,6 @@ bin/age-keygen
 
 # Release automation state
 .release-draft-count.json
+
+# GitHub token for scheduled task access to private repos
+.gh-token
