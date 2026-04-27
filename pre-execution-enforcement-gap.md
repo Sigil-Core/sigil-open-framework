@@ -2,11 +2,6 @@
 title: "The Pre-Execution Enforcement Gap"
 description: "A position paper on pre-execution enforcement as the missing control family for agentic AI governance."
 ---
-
-# The Pre-Execution Enforcement Gap
-
-A Position Paper on Agentic AI Governance
-
 Vernon Wharff<br />
 Sigil Core<br />
 April 2026 — v1.0
