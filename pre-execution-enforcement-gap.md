@@ -6,7 +6,7 @@ Vernon Wharff<br />
 Sigil Core<br />
 April 2026 — v1.0
 
-[Download the PDF version here](https://docs.sigilcore.com/pre-execution-enforcement-gap)
+[Download the PDF version here](https://sigilgovernance.lovable.app/The_Pre-Execution_Enforcement_Gap_-_Sigil_Open_Framework.pdf)
 
 ## Summary
 
