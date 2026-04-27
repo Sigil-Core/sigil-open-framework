@@ -6,6 +6,8 @@ Vernon Wharff<br />
 Sigil Core<br />
 April 2026 — v1.0
 
+[Download the PDF version here](https://docs.sigilcore.com/pre-execution-enforcement-gap)
+
 ## Summary
 
 AI governance standards now tell organizations how to define policy, allocate responsibility, assess risk, monitor behavior, and document outcomes. Agentic systems expose the remaining gap. Documentation can tell an agent what should happen. Evaluation can estimate what an agent might do. Monitoring can record what an agent did. Pre-execution enforcement controls what an agent can do. This paper names that gap the Pre-Execution Enforcement Gap and argues that high-stakes agent actions should pass through deterministic policy evaluation before they reach tools, credentials, wallets, APIs, or infrastructure. The Sigil Open Framework (SOF) proposes an execution control layer for that gap, using signed Sigil Warrants, Intent Attestations, holds, denials, and audit evidence to bind human intent to machine action.
