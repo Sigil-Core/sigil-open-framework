@@ -64,7 +64,7 @@ When Sigil denies or holds an action, `checkAnthropicToolUse` returns a `tool_re
   tool_use_id: block.id,
   content: JSON.stringify({
     sigil_decision: 'DENIED',
-    sigil_error_code: 'LEX_TOOL_CALL_BLOCKED_COMMAND',
+    sigil_error_code: 'SIGIL_POLICY_VIOLATION_BLOCKED_COMMAND',
     sigil_message: 'Command contains blocked string: rm -rf',
     sigil_action_taken: 'halted',
     sigil_next_steps: 'Do not attempt to reframe or retry this action.',

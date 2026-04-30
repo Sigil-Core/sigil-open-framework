@@ -53,7 +53,7 @@ Think of it as a franchise protocol. The enforcement substrate is universal — 
 
 ### Layer 1 — The Enforcement Engine: Open Execution Engine (OEE)
 
-OEE is the domain-agnostic execution enforcement substrate that every SOF-compliant deployment runs on. It provides the core enforcement primitives: policy evaluation via Sigil Lex, Intent Attestation issuance, consensus hold management, and gated RPC/bundler execution. No transaction executes without cryptographic authorization. No exceptions, no industry carve-outs.
+OEE is the domain-agnostic execution enforcement substrate that every SOF-compliant deployment runs on. It provides the core enforcement primitives: policy evaluation via Sigil Sign, Intent Attestation issuance, consensus hold management, and gated RPC/bundler execution. No transaction executes without cryptographic authorization. No exceptions, no industry carve-outs.
 
 OEE is not specific to venture capital, healthcare, or banking. It is the substrate.
 
@@ -105,7 +105,7 @@ capabilities:
 
 # --- SIGIL OPEN FRAMEWORK: WARRANTY POLICY ---
 sigil-warranty:
-  enforcement_layer: "Sigil Lex"
+  enforcement_layer: "Sigil Sign"
   policy_uri: "ipfs://QmYourWarrantyPolicyHashHere"
   attestation_standard: "sigil-attestations-v1"
   warranty_blocks:
@@ -124,7 +124,7 @@ sigil-warranty:
       - deny_if: "metadata.email_to contains @competitor.com"
 ```
 
-If the agent proposes a transaction that violates any rule in its `warranty.md` policy blocks, Sigil Lex intercepts the request, denies the Intent Attestation, and execution halts instantly at the cryptographic level.
+If the agent proposes a transaction that violates any rule in its `warranty.md` policy blocks, Sigil Sign intercepts the request, denies the Intent Attestation, and execution halts instantly at the cryptographic level.
 
 ---
 

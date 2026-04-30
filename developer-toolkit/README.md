@@ -22,7 +22,7 @@ The execution engine requires a signed `warranty.md` file to enforce boundaries.
 
 2. Generate your Ed25519 keypair, define your policy rules, sign, and download `warranty.md`.
 
-3. Deploy the signed file to your server and set `LEX_WARRANTY_PATH` to its location. Set `LEX_OPERATOR_PUBLIC_KEY` to the public key value Sigil Warrant provides.
+3. Deploy the signed file to your server and set `WARRANTY_PATH` to its location. Set `SIGIL_OPERATOR_PUBLIC_KEY` to the public key value Sigil Warrant provides.
 
 ### Step 2: Boot the Mock Execution Engine
 

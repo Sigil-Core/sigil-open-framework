@@ -31,7 +31,7 @@ capabilities:
 
 # --- SIGIL OPEN FRAMEWORK: WARRANTY POLICY ---
 sigil-warranty:
-  enforcement_layer: "Sigil Lex"
+  enforcement_layer: "Sigil Sign"
   policy_uri: "ipfs://QmYourWarrantyPolicyHashHere"
   attestation_standard: "sigil-attestations-v1"
   warranty_blocks:
@@ -50,4 +50,4 @@ sigil-warranty:
       - deny_if: "metadata.email_to contains @competitor.com"
 ```
 
-If the agent proposes a transaction that violates any rule in its `warranty.md` policy blocks, Sigil Lex intercepts the request and denies the Intent Attestation. Execution halts instantly at the cryptographic level.
+If the agent proposes a transaction that violates any rule in its `warranty.md` policy blocks, Sigil Sign intercepts the request and denies the Intent Attestation. Execution halts instantly at the cryptographic level.
