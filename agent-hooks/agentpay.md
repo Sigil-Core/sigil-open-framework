@@ -46,7 +46,7 @@ USD1 is pre-configured on:
 | Ethereum | `1` | `0x8d0D000Ee44948FC98c9B98A4FA4921476f08B0d` |
 | BNB Smart Chain | `56` | `0x8d0D000Ee44948FC98c9B98A4FA4921476f08B0d` |
 
-Both chains are already in Sigil Lex's supported EVM chain set. No policy changes required to govern USD1 transfers on either chain.
+Both chains are already in Sigil Sign's supported EVM chain set. No policy changes required to govern USD1 transfers on either chain.
 
 ## Policy Configuration
 

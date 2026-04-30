@@ -34,7 +34,7 @@ const safeTool = wrapLangChainTool(myTool, config);
 // The wrapped tool behaves identically to the original
 // Except every call() is gated by Sigil policy first
 const result = await safeTool.call('rm -rf /tmp/important');
-// result = '{"sigil_decision":"DENIED","sigil_error_code":"LEX_TOOL_CALL_BLOCKED_COMMAND"...}'
+// result = '{"sigil_decision":"DENIED","sigil_error_code":"SIGIL_POLICY_VIOLATION_BLOCKED_COMMAND"...}'
 ```
 
 The JSON rejection is returned as the tool output string — LangChain agents receive it as a tool result and adjust their reasoning accordingly.

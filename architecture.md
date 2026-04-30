@@ -21,7 +21,7 @@ Sigil is a composable protocol stack. Three layers — enforcement, legal govern
 ┌─────────────────────────────────────────────────────────────┐
 │                     Sigil Sign (OEE)                        │
 │                                                             │
-│  Intent Declaration → Sigil Lex Policy Evaluation           │
+│  Intent Declaration → Sigil Sign Policy Evaluation           │
 │       ↓                    ↓                    ↓           │
 │    APPROVED             PENDING              DENIED         │
 │  (attestation)      (consensus hold)     (hard block)       │
@@ -98,9 +98,9 @@ Every intent that passes through OEE follows the same four-step sequence:
 
 The agent submits a structured JSON payload describing what it is about to do — action type, target, value, chain, and any relevant metadata. This happens before any execution attempt.
 
-**2. Policy Evaluation (Sigil Lex)**
+**2. Policy Evaluation (Sigil Sign)**
 
-Sigil Lex reads the operator's `warranty.md` at runtime and evaluates the intent against four typed policy blocks:
+Sigil Sign reads the operator's `warranty.md` at runtime and evaluates the intent against four typed policy blocks:
 
 | Block | Type | Behavior on violation |
 |---|---|---|
@@ -111,7 +111,7 @@ Sigil Lex reads the operator's `warranty.md` at runtime and evaluates the intent
 
 **3. Authorization Decision**
 
-Sigil Lex returns one of three decisions:
+Sigil Sign returns one of three decisions:
 
 - `APPROVED` — intent is within policy. A signed Intent Attestation is issued immediately.
 - `DENIED` — intent violates a hard policy rule. No attestation. Execution is blocked.
@@ -127,9 +127,9 @@ The Sigil RPC and Bundler gateway reject any write operation that does not prese
 
 ### Ed25519 Keypair
 
-Every operator generates an Ed25519 keypair when they create their `warranty.md` policy. The private key signs the policy. The public key is deployed as `LEX_OPERATOR_PUBLIC_KEY`.
+Every operator generates an Ed25519 keypair when they create their `warranty.md` policy. The private key signs the policy. The public key is deployed as `SIGIL_OPERATOR_PUBLIC_KEY`.
 
-Sigil Lex verifies the policy signature against this key at startup. If the policy has been modified after signing, Lex detects it and refuses to start. This makes the policy tamper-evident — any post-deployment modification breaks the signature chain.
+Sigil Sign verifies the policy signature against this key at startup. If the policy has been modified after signing, Sigil Sign detects it and refuses to start. This makes the policy tamper-evident — any post-deployment modification breaks the signature chain.
 
 ### Intent Attestation JWT
 

@@ -50,7 +50,7 @@ Think of it as a franchise protocol. The enforcement substrate is universal — 
   >
     **Open Execution Engine** is the domain-agnostic execution enforcement
     substrate. It provides the deterministic primitives every SOF-compliant agent
-    runs on: policy evaluation via Sigil Lex, Intent Attestation issuance,
+    runs on: policy evaluation via Sigil Sign, Intent Attestation issuance,
     consensus hold management, and gated RPC/bundler execution. Not specific to
     any industry — it is the substrate.
   </Card>

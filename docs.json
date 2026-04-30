@@ -26,7 +26,8 @@
             "pages": [
               "developer-toolkit/quick-start",
               "developer-toolkit/mock-engine",
-              "developer-toolkit/warranty-policy"
+              "developer-toolkit/warranty-policy",
+              "developer-toolkit/testing"
             ]
           },
           {

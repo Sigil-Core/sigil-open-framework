@@ -12,7 +12,7 @@ OEE is not specific to venture capital, healthcare, or banking. It is the substr
 Every SOF-compliant agent routes high-stakes actions through the same enforcement pipeline:
 
 1. **Intent Declaration** — the agent submits a structured transaction intent to the Sigil execution firewall.
-2. **Policy Evaluation** — Sigil Lex reads the operator's `warranty.md` at runtime and deterministically evaluates the intent against the typed-block policy schema.
+2. **Policy Evaluation** — Sigil Sign reads the operator's `warranty.md` at runtime and deterministically evaluates the intent against the typed-block policy schema.
 3. **Authorization Decision** — the firewall returns an approved Intent Attestation, a denial, or a consensus hold requiring human approval.
 4. **Gated Execution** — the RPC/bundler gateway rejects any write operation that does not carry a valid, matching attestation.
 
