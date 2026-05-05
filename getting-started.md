@@ -5,9 +5,21 @@ description: "From zero to your first authorized execution in 2 minutes."
 
 # Getting Started
 
-Sigil Sign is the deterministic execution firewall for agent-driven EVM actions. It sits between your AI agent and the blockchain, ensuring that high-stakes actions cannot execute without explicit authorization.
+Sigil Sign is the reference implementation of the [SOF enforcement specification](/conformance) — a deterministic execution firewall for agent-driven EVM actions. It sits between your AI agent and the blockchain, ensuring that high-stakes actions cannot execute without explicit authorization.
 
 **Base URL:** `https://sign.sigilcore.com`
+
+---
+
+## Choose Your Path
+
+Three roles, three starting points:
+
+- **Integrating an agent with SOF?** This page is for you. Use the Sigil API or self-host the reference implementation. The API Quick Start below is the fastest route.
+- **Hacking on SOF locally?** Use the [Developer Toolkit](/developer-toolkit/quick-start) — mock Express.js engine and Python LangChain authorizer, no API key required.
+- **Building your own SOF-conforming signer?** (Audit firms, custodians, enterprise security teams.) Read the [Conformance Contract](/conformance) — it defines what your implementation must honor to interoperate with the SOF ecosystem.
+
+The remainder of this guide assumes you are integrating an agent and using the reference implementation, hosted or self-hosted.
 
 ---
 
@@ -17,7 +29,7 @@ The fastest path to your first governed action. The Sigil API handles signing in
 
 **1. Get your API key.** Register your email at [sigilcore.com/tools/keys](https://sigilcore.com/tools/keys) to receive a Developer tier key. 1,000 governed actions per month, free.
 
-**2. Sign your warranty.md.** Use [Sigil Warrant](https://sigilcore.com/tools/warrant) to define your policy and generate a signed `warranty.md`. The tool produces your Ed25519 keypair in the browser, signs the policy, and gives you your `SIGIL_OPERATOR_PUBLIC_KEY` value.
+**2. Sign your warranty.md.** Use [Sigil Warrant](https://sigilcore.com/tools/warrant) to define your policy and generate a signed `warranty.md`. The tool produces your Ed25519 keypair in the browser, signs the policy, and gives you your `LEX_OPERATOR_PUBLIC_KEY` value.
 
 **3. Authorize your first action.** Submit an intent to `POST /v1/authorize` with your API key. If the intent passes your policy, you receive an Ed25519-signed JWT. Attach it to your transaction via `Authorization: Bearer <jwt>` and route through the Sigil RPC gateway.
 
@@ -48,28 +60,28 @@ Your warranty.md defines what your agent is allowed to do. The file must be sign
 - **Warrant Builder** — guided step-by-step flow covering all four policy blocks. No policy syntax required. Recommended for first-time operators.
 - **Manual Warrant** — write your policy directly in the `warranty.md` format. Full control over every field.
 
-Both paths generate your Ed25519 keypair in the browser (no key material ever leaves your machine), sign the policy, and provide your `SIGIL_OPERATOR_PUBLIC_KEY` value ready to paste.
+Both paths generate your Ed25519 keypair in the browser (no key material ever leaves your machine), sign the policy, and provide your `LEX_OPERATOR_PUBLIC_KEY` value ready to paste.
 
-Deploy the signed warranty.md to your server and set `WARRANTY_PATH` to its location. If you omit this path, the service looks for `config/warranty.md` relative to `process.cwd()`.
+Deploy the signed warranty.md to your server and set `LEX_WARRANTY_PATH` to its location. If you omit this path, the service looks for `config/warranty.md` relative to `process.cwd()`.
 
-### 2. SIGIL_OPERATOR_PUBLIC_KEY environment variable
+### 2. LEX_OPERATOR_PUBLIC_KEY environment variable
 
-Set this to the base64url-encoded public key value Sigil Warrant gives you in Step 1. Sigil Sign verifies your policy signature against this key at startup.
+Set this to the base64url-encoded public key value Sigil Warrant gives you in Step 1. Sigil Lex verifies your policy signature against this key at startup.
 
 ```bash
-SIGIL_OPERATOR_PUBLIC_KEY=<base64url-encoded-public-key>
+LEX_OPERATOR_PUBLIC_KEY=<base64url-encoded-public-key>
 ```
 
 This variable must be present in `.env.local` (development) or your production environment. If it is missing, the service throws with:
 
 ```
-[Sigil] SIGIL_OPERATOR_PUBLIC_KEY is not set.
+[Lex] LEX_OPERATOR_PUBLIC_KEY is not set.
 ```
 
 **Together, these two items form the cryptographic chain:**
 `operator signature → policy content → Intent Attestation JWT`
 
-Every attestation your service issues is verifiably linked to the exact policy version you signed and deployed. If anyone modifies the warranty.md after signing, Sigil Sign detects it on the next restart and refuses to start.
+Every attestation your service issues is verifiably linked to the exact policy version you signed and deployed. If anyone modifies the warranty.md after signing, Sigil Lex detects it on the next restart and refuses to start.
 
 > **Sigil Warrant** is the tool that satisfies both requirements. It lives at
 > [sigilcore.com/tools/warrant](https://sigilcore.com/tools/warrant).
@@ -159,7 +171,7 @@ Verification rules are strictly defined in our canonical specification: [sigil-a
 
 ## Defining Your Policy
 
-Your warranty.md uses typed section blocks. Sigil Sign evaluates them at runtime to govern agent behavior.
+Your warranty.md uses typed section blocks. Sigil Lex evaluates them at runtime to govern agent behavior.
 
 **Use [Sigil Warrant](https://sigilcore.com/tools/warrant)** to generate a signed policy interactively. The tool produces a signed `warranty.md` with an embedded Ed25519 operator signature — the cryptographic proof that the policy evaluated at runtime is the one you authorized.
 
@@ -167,7 +179,7 @@ Pre-built templates for common deployment contexts are available in the [FAF pol
 
 ### Policy Format Reference
 
-Sigil Sign parses a strict structured Markdown format. At least one of `## evm`, `## tool_calls`, or `## custom` is required. Unknown fields are rejected at parse time. The `## signature` block at the end is generated by Sigil Warrant — do not edit it manually.
+Sigil Lex parses a strict structured Markdown format. At least one of `## evm`, `## tool_calls`, or `## custom` is required. Unknown fields are rejected at parse time. The `## signature` block at the end is generated by Sigil Warrant — do not edit it manually.
 
 ```markdown
 version: 1.0.0
@@ -224,7 +236,17 @@ The minimum deployment surface:
 sigil-sign/
   ├── config/
   │   └── warranty.md   # signed operator policy
-  └── .env.local         # SIGIL_OPERATOR_PUBLIC_KEY
+  └── .env.local         # LEX_OPERATOR_PUBLIC_KEY
 ```
 
-Set `SIGIL_OPERATOR_PUBLIC_KEY` in `.env.local` and place your signed `warranty.md` at the path `WARRANTY_PATH` points to (defaults to `config/warranty.md`). The prerequisites and execution flow documented above apply identically to self-hosted deployments.
+Set `LEX_OPERATOR_PUBLIC_KEY` in `.env.local` and place your signed `warranty.md` at the path `LEX_WARRANTY_PATH` points to (defaults to `config/warranty.md`). The prerequisites and execution flow documented above apply identically to self-hosted deployments.
+
+---
+
+## Building a Conforming Signer
+
+If you are an audit firm, custody provider, or enterprise security team building your own SOF-conforming signer rather than running the reference implementation, the integration path is different. Start with the [Conformance Contract](/conformance) — it defines exactly what your signer must implement (six MUST clauses) and what it may extend.
+
+The [sigil-attestations specification](https://github.com/Sigil-Core/sigil-attestations) defines the wire format. The Conformance Contract defines the obligations against that format. Together they are the complete contract for any third-party signer.
+
+Until the SOF Conformance Test Suite ships, conformance is asserted by the signer operator and verified through direct integration testing with the reference implementation at `sign.sigilcore.com`. See the [self-assertion protocol](/conformance#self-assertion-interim) for the registry process.

@@ -1,20 +1,23 @@
 # Sigil Open Framework (SOF)
 
-**The missing policy layer between your agent and production.**
+**The open specification for cryptographic pre-execution authorization of autonomous AI agents.**
 
 [![Status](https://img.shields.io/badge/status-active--development-black)](#)
 [![License](https://img.shields.io/badge/license-MIT-blue)](#)
+[![Spec](https://img.shields.io/badge/spec-sigil--attestations--v1-blue)](https://github.com/Sigil-Core/sigil-attestations)
 [![Ecosystem](https://img.shields.io/badge/ecosystem-Sigil--OS-purple)](#)
 
 ---
 
 ## Executive Summary
 
-The **Sigil Open Framework (SOF)** is the open-source policy engine that sits between your agent and production. Define what's allowed once. Everything else is blocked automatically — before it fires.
+The **Sigil Open Framework (SOF)** is an open specification for cryptographic pre-execution authorization of autonomous AI agents. Define what's allowed once, in policy. Everything else is blocked automatically — before it fires.
 
-While standard AI frameworks give agents the intelligence to act, SOF gives them the cryptographic and legal boundaries required to operate safely in the real world. SOF bridges the gap between autonomous code and real-world compliance through a **governed protocol stack**: a domain-agnostic enforcement engine, a legal governance layer, and a set of vertical boilerplates that bring both together for specific deployment contexts.
+SOF defines a protocol contract that conforming signers, policy engines, and legal wrappers implement to give autonomous agents the cryptographic and legal boundaries required to operate safely in production. The specification is implementation-agnostic by design: any signer that issues conforming Intent Attestations against a `warranty.md` policy is a valid SOF implementation.
 
-If standard agentic frameworks are the accelerator pedal, SOF is the cryptographic brake system and the vehicle's registration.
+Sigil Core publishes the reference implementation. Independent implementations — by audit firms, custodians, enterprise security teams, or any third party — are explicitly welcome and structurally accommodated.
+
+If standard agentic frameworks are the accelerator pedal, SOF is the cryptographic brake protocol. The reference implementation is one engine that speaks it. Others can speak it too.
 
 ---
 
@@ -24,58 +27,119 @@ If standard agentic frameworks are the accelerator pedal, SOF is the cryptograph
 
 The Sigil Open Framework is built on a single, non-negotiable principle: autonomous agents cannot be trusted to self-govern. Trust must be structurally enforced — cryptographically, deterministically, and before execution, not after loss.
 
-Under SOF, every compliant agent operates within these guarantees:
+Under SOF, every conforming agent operates within these guarantees:
 
 - AI agents **never hold private keys**
 - AI agents **never see raw API credentials**
 - AI agents **cannot execute without deterministic authorization**
 - High-stakes actions **must route through a policy enforcement layer**
 
-Execution only proceeds if the action carries a valid **Intent Attestation**.
+Execution only proceeds if the action carries a valid **Intent Attestation** issued by a conforming signer.
 
-This doctrine is not a feature of any single component. It is the architectural contract that every layer of SOF is designed to enforce:
+This doctrine is enforced at the specification level. Every SOF-conforming implementation — reference or third-party — must uphold it within its own domain:
 
-- **OEE** enforces it technically — no execution without cryptographic authorization
+- **Conforming signers** enforce it technically — no execution without cryptographic authorization
 - **FAF** enforces it legally — no liability exposure without structural governance
 - **Sigil Attestations** proves it cryptographically — every authorized action is verifiable
 
-The doctrine applies at the framework level. Each component implements it within its own domain.
+The doctrine is the contract. Implementations are the means.
 
 ---
 
 ## The Architecture: A Governed Protocol Stack
 
-SOF is not a single codebase, it is a **composable protocol stack** — three layers, each independently useful, each enabling the one above it.
+SOF is not a single codebase. It is a **composable protocol stack** — a specification at the center, with three implementation layers around it, each independently useful, each enabling the one above it.
 
-Think of it as a franchise protocol. The enforcement substrate is universal — every SOF-compliant deployment runs on the same cryptographic enforcement primitives, regardless of industry. The legal layer converts those guarantees into fiduciary instruments. The vertical boilerplates are the franchise concepts: enforcement and legal pre-assembled for a specific deployment context, ready to go.
+The conformance contract is universal: every SOF-conforming deployment, regardless of vendor, runs against the same cryptographic specification. The legal layer converts those guarantees into fiduciary instruments. The vertical boilerplates are pre-assembled deployments — enforcement and legal wired together for a specific industry context.
 
 ---
 
-### Layer 1 — The Enforcement Engine: Open Execution Engine (OEE)
+### The Conformance Contract: Sigil Attestations
 
-OEE is the domain-agnostic execution enforcement substrate that every SOF-compliant deployment runs on. It provides the core enforcement primitives: policy evaluation via Sigil Sign, Intent Attestation issuance, consensus hold management, and gated RPC/bundler execution. No transaction executes without cryptographic authorization. No exceptions, no industry carve-outs.
+[**→ View the Attestations Repository**](https://github.com/Sigil-Core/sigil-attestations)
 
-OEE is not specific to venture capital, healthcare, or banking. It is the substrate.
+The `sigil-attestations` specification is the conformance target for the entire SOF ecosystem. It is the contract every conforming implementation must honor.
+
+The specification defines:
+
+- The structure and claim set of short-lived, Ed25519-signed JWTs (**Intent Attestations**)
+- JWKS publication requirements for conforming signers
+- Chain binding and commit binding semantics
+- The verification protocol used by gated execution layers (RPC gateways, bundlers, capability brokers)
+
+Any signer — the reference implementation, an audit firm's productized signer, an enterprise's internal signer — that issues attestations conforming to this specification is a valid SOF signer. The `warranty.md` policy schema is the second half of the conformance surface: the attestation spec defines the cryptographic envelope; `warranty.md` defines the policy semantics evaluated before each attestation is issued.
+
+The contract is the specification. Not any single engine. Not any single product.
+
+---
+
+### Layer 1 — The Reference Enforcement Engine: Open Execution Engine (OEE)
+
+OEE is the reference implementation of the SOF enforcement specification. It implements every required primitive: policy evaluation via Sigil Lex, Intent Attestation issuance, consensus hold management, and gated RPC/bundler execution. It is the engine Sigil Core publishes and operates at sign.sigilcore.com.
+
+OEE is one valid SOF engine. It is not the only one. Alternative engines may conform to the specification and interoperate within the same governance stack — see [Implementing a Conforming Signer](#implementing-a-conforming-signer) below.
+
+What every conforming engine must guarantee: no transaction executes without cryptographic authorization. No exceptions, no industry carve-outs.
+
+---
 
 ### Layer 2 — The Legal Governance Layer: Fiduciary Agent Framework (FAF)
 
 [**→ View the FAF Repository**](https://github.com/Sigil-Core/faf)
 
-FAF is the legal-technical bridge. OEE enforces compliance in the execution layer; FAF enforces it in the legal domain — converting OEE's cryptographic guarantees into bounded fiduciary instruments. FAF provides entity templates, operating agreements, and `warranty.md` policy structure so that human General Partners can assume quantifiable liability for autonomous deployment without unlimited personal exposure.
+FAF is the legal-technical bridge. The enforcement layer enforces compliance technically; FAF enforces it in the legal domain — converting cryptographic guarantees from any conforming signer into bounded fiduciary instruments. FAF provides entity templates, operating agreements, and `warranty.md` policy structure so that human General Partners can assume quantifiable liability for autonomous deployment without unlimited personal exposure.
 
-FAF is what makes OEE legally meaningful.
+FAF makes the conformance contract legally meaningful.
+
+---
 
 ### Layer 3 — The Vertical Boilerplates
 
-Vertical boilerplates are domain-specific implementations of OEE + FAF. Each inherits the full enforcement stack and adds domain-appropriate `warranty.md` policy templates, sector-specific legal wrapper guidance, and integration examples for common agent frameworks in that industry.
+Vertical boilerplates are domain-specific implementations of conforming signer + FAF, pre-assembled for specific deployment contexts. Each inherits the full enforcement stack and adds domain-appropriate `warranty.md` policy templates, sector-specific legal wrapper guidance, and integration examples for common agent frameworks in that industry.
 
-Each vertical inherits the full enforcement stack and adds domain-appropriate `warranty.md` policy templates, sector-specific legal wrapper guidance, and integration examples. Healthcare, banking, and enterprise verticals follow the same architecture. Each new vertical is a deployment context, not a new enforcement mechanism. The enforcement is always OEE.
+Healthcare, banking, and enterprise verticals follow the same architecture. Each new vertical is a deployment context, not a new enforcement mechanism. The conformance contract is constant.
 
-### The Cryptographic Foundation: Sigil Attestations
+---
 
-[**→ View the Attestations Repository**](https://github.com/Sigil-Core/sigil-attestations)
+## Implementing a Conforming Signer
 
-The canonical cryptographic specification underlying every layer. This repository defines the short-lived, Ed25519-signed JWTs — **Intent Attestations** — that serve as cryptographic proof that every authorized execution passed deterministic policy evaluation before it reached the chain.
+SOF is a specification, not a product. Sigil Core publishes the reference implementation. Other parties — particularly audit firms, custodians, and enterprise security teams that already hold trusted third-party relationships — are explicitly welcome to implement conforming signers.
+
+This section is for anyone building one.
+
+### What a Conforming Signer MUST Do
+
+A signer that conforms to SOF MUST:
+
+1. **Accept intent submissions** at a documented HTTP endpoint with the request semantics defined in the [sigil-attestations specification](https://github.com/Sigil-Core/sigil-attestations).
+2. **Evaluate the submitted intent** against the operator's `warranty.md` policy, supporting at minimum the Class 1 (structural) rule classes defined in the specification.
+3. **Issue Ed25519-signed JWTs** that conform to the Intent Attestation claim set, including chain binding, commit binding, and expiry semantics.
+4. **Publish a JWKS endpoint** at `/.well-known/jwks.json` so gated execution layers can verify issued attestations.
+5. **Reject non-conforming intents** with structured denial responses, not silent passthrough.
+
+### What a Conforming Signer MAY Do
+
+A conforming signer MAY:
+
+- Implement higher rule classes (Class 2 semantic, Class 3 consensus) beyond the Class 1 minimum
+- Add additional claims to issued JWTs, provided the required claim set is preserved
+- Integrate with downstream capability brokers (Sigil Vault or equivalent) for credential release
+- Operate as a third-party notary, an in-tenant signer, or a hybrid — all are valid deployment models
+- Brand and market the implementation under the implementer's own name
+
+### Conformance Verification
+
+The **SOF Conformance Test Suite** is in development and will provide:
+
+- A vector-based test harness covering required attestation semantics
+- An interoperability checklist for integration with gated execution layers
+- A public registry of certified conforming implementations
+
+Until the test suite ships, conformance is asserted by the signer operator and verified through direct integration testing with the reference implementation at sign.sigilcore.com. To express interest in early access, open an issue on the [sigil-attestations](https://github.com/Sigil-Core/sigil-attestations) repository.
+
+### Why Build a Conforming Signer
+
+Audit firms, custody providers, and enterprises with existing trusted third-party relationships can implement SOF as a way to extend that trust surface to autonomous agent deployments — without ceding the customer relationship to a new infrastructure vendor. The customer keeps the relationship. The implementer keeps the brand. The market gets multiple signers. The specification wins.
 
 ---
 
@@ -85,11 +149,11 @@ The Linux Foundation's Agentic AI Foundation (AAIF) has established open-source 
 
 **The Problem:** `AGENTS.md` tells the world what an agent is **capable** of doing. It does not dictate what the agent **cannot** do.
 
-**The SOF Solution:** The Sigil Open Framework natively wraps AAIF standards but introduces a mandatory **Security & Execution Constraints** block. While AAIF defines the capabilities, Sigil defines the deterministic limits.
+**The SOF Solution:** The Sigil Open Framework natively wraps AAIF standards but introduces a mandatory **Security & Execution Constraints** block for SOF-conforming agents. In portable manifests, this block appears under the standardized `sof-warranty` key. While AAIF defines the capabilities, SOF defines the deterministic limits — and any conforming signer can enforce them.
 
 ### Example: Extending `AGENTS.md` with SOF
 
-When building an SOF-compliant agent, your `AGENTS.md` file will include the standard AAIF routing, accompanied by the Sigil cryptographic constraints:
+When building an SOF-conforming agent, your `AGENTS.md` file will include the standard AAIF routing, accompanied by SOF cryptographic constraints:
 
 ```yaml
 # AGENTS.md (AAIF + Sigil SOF Extension)
@@ -103,9 +167,9 @@ capabilities:
   - Market_Analysis
   - ERC4337_UserOp_Formatting
 
-# --- SIGIL OPEN FRAMEWORK: WARRANTY POLICY ---
-sigil-warranty:
-  enforcement_layer: "Sigil Sign"
+# --- SIGIL OPEN FRAMEWORK: SECURITY & EXECUTION CONSTRAINTS ---
+sof-warranty:
+  enforcement_layer: "sigil-lex"          # any conforming signer identifier
   policy_uri: "ipfs://QmYourWarrantyPolicyHashHere"
   attestation_standard: "sigil-attestations-v1"
   warranty_blocks:
@@ -124,7 +188,9 @@ sigil-warranty:
       - deny_if: "metadata.email_to contains @competitor.com"
 ```
 
-If the agent proposes a transaction that violates any rule in its `warranty.md` policy blocks, Sigil Sign intercepts the request, denies the Intent Attestation, and execution halts instantly at the cryptographic level.
+The `sof-warranty.enforcement_layer` field accepts any conforming signer identifier. The reference implementation registers as `sigil-lex`. Third-party signers register their own identifiers.
+
+If the agent proposes a transaction that violates any rule in its `warranty.md` policy blocks, the conforming signer intercepts the request, denies the Intent Attestation, and execution halts at the cryptographic level.
 
 ---
 
@@ -136,23 +202,37 @@ SOF ensures that while execution is autonomous, oversight is absolute. Through i
 - **High-Value Approvals:** Require manual cryptographic countersignatures for specific thresholds.
 - **The Kill Switch:** An emergency pause that instantly revokes the agent's capability to generate valid attestations.
 
+Conforming signers MAY expose equivalent oversight surfaces on their own implementations.
+
 ---
 
 ## Getting Started
 
-To begin building with the Sigil Open Framework, select the path that fits your needs:
+To begin building with the Sigil Open Framework, select the path that fits your role.
 
 ### 🛠️ Start Building Now (Hackathons & Local Dev)
 
 Jump into the local toolkit to simulate the Sigil execution firewall offline. It includes a mock Express.js engine, a Python LangChain authorizer, and a `warranty.md` template.
+
 → [**Open the Developer Toolkit**](./developer-toolkit)
 
 ### 📚 Explore the Core Components
 
-If you are designing a full production architecture, explore our specialized ecosystem repositories:
+If you are designing a full production architecture, explore the specialized ecosystem repositories:
 
 1. **Structuring Legal Compliance?** Start with [Fiduciary Agent Framework (FAF)](https://github.com/Sigil-Core/faf).
-2. **Integrating the API?** Read the underlying [Sigil Attestations Spec](https://github.com/Sigil-Core/sigil-attestations).
+2. **Integrating the API?** Read the [Sigil Attestations Specification](https://github.com/Sigil-Core/sigil-attestations).
 
-For comprehensive developer guides, API references, and architecture deep-dives, visit our official documentation.
+### 🤝 Building a Conforming Signer
+
+If you are an audit firm, custody provider, or enterprise security team building your own SOF-conforming signer, start with the specification itself.
+
+→ [**Read the Sigil Attestations Specification**](https://github.com/Sigil-Core/sigil-attestations)
+
+The SOF Conformance Test Suite is in development. To express interest in early access or coordinate on conformance verification, open an issue on the Attestations repository.
+
+---
+
+For comprehensive developer guides, API references, and architecture deep-dives, visit the official documentation.
+
 → [**docs.sigilcore.com**](https://docs.sigilcore.com)
