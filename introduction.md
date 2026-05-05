@@ -1,15 +1,17 @@
 ---
 title: "Introduction"
-description: "The open-source policy engine that sits between your agent and production."
+description: "An open specification for cryptographic pre-execution authorization of autonomous AI agents."
 ---
 
 # Sigil Open Framework (SOF)
 
-The **Sigil Open Framework (SOF)** is the open-source policy engine that sits between your agent and production. Define what's allowed once. Everything else is blocked automatically — before it fires.
+The **Sigil Open Framework (SOF)** is an open specification for cryptographic pre-execution authorization of autonomous AI agents. Define what's allowed once, in policy. Everything else is blocked automatically — before it fires.
 
-While standard AI frameworks give agents the intelligence to act, SOF gives them the cryptographic and legal boundaries required to operate safely in the real world. SOF bridges the gap between autonomous code and real-world compliance through a **governed protocol stack**: a domain-agnostic enforcement engine, a legal governance layer, and a set of vertical boilerplates that bring both together for specific deployment contexts.
+SOF defines a protocol contract that conforming signers, policy engines, and legal wrappers implement to give autonomous agents the cryptographic and legal boundaries required to operate safely in production. The specification is implementation-agnostic by design: any signer that issues conforming Intent Attestations against a `warranty.md` policy is a valid SOF implementation.
 
-If standard agentic frameworks are the accelerator pedal, SOF is the cryptographic brake system and the vehicle's registration.
+Sigil Core publishes the reference implementation. Independent implementations — by audit firms, custodians, enterprise security teams, or any third party — are explicitly welcome and structurally accommodated. The full conformance contract is documented in [Conformance](/conformance).
+
+If standard agentic frameworks are the accelerator pedal, SOF is the cryptographic brake protocol. The reference implementation is one engine that speaks it. Others can speak it too.
 
 ---
 
@@ -19,18 +21,18 @@ If standard agentic frameworks are the accelerator pedal, SOF is the cryptograph
 
 The Sigil Open Framework is built on a single, non-negotiable principle: autonomous agents cannot be trusted to self-govern. Trust must be structurally enforced — cryptographically, deterministically, and before execution, not after loss.
 
-Under SOF, every compliant agent operates within these guarantees:
+Under SOF, every conforming agent operates within these guarantees:
 
 - AI agents **never hold private keys**
 - AI agents **never see raw API credentials**
 - AI agents **cannot execute without deterministic authorization**
 - High-stakes actions **must route through a policy enforcement layer**
 
-Execution only proceeds if the action carries a valid **Intent Attestation**.
+Execution only proceeds if the action carries a valid **Intent Attestation** issued by a conforming signer.
 
-This doctrine is not a feature of any single component. It is the architectural contract that every layer of SOF is designed to enforce:
+This doctrine is enforced at the specification level. Every SOF-conforming implementation — reference or third-party — must uphold it within its own domain:
 
-- **OEE** enforces it technically — no execution without cryptographic authorization
+- **Conforming signers** enforce it technically — no execution without cryptographic authorization
 - **FAF** enforces it legally — no liability exposure without structural governance
 - **Sigil Attestations** proves it cryptographically — every authorized action is verifiable
 
@@ -38,51 +40,60 @@ This doctrine is not a feature of any single component. It is the architectural 
 
 ## A Governed Protocol Stack
 
-SOF is not a single codebase. It is a **composable protocol stack** — three layers, each independently useful, each enabling the one above it.
-
-Think of it as a franchise protocol. The enforcement substrate is universal — every SOF-compliant deployment runs on the same cryptographic enforcement primitives, regardless of industry. The legal layer converts those guarantees into fiduciary instruments. The vertical boilerplates are the franchise concepts: enforcement and legal pre-assembled for a specific deployment context, ready to go.
+SOF is a **composable protocol stack** — a specification at the center, with three implementation layers around it. The conformance contract is universal: every SOF-conforming deployment, regardless of vendor, runs against the same cryptographic specification. The legal layer converts those guarantees into fiduciary instruments. The vertical boilerplates are pre-assembled deployments — enforcement and legal wired together for a specific industry context.
 
 <CardGroup cols={2}>
   <Card
-    title="Layer 1: The Enforcement Engine (OEE)"
+    title="The Conformance Contract"
+    icon="file-signature"
+    href="/conformance"
+  >
+    The conformance target every SOF implementation must honor. Defines Intent
+    Attestation structure, JWKS publication, chain binding, and the verification
+    protocol used by gated execution layers. Not a product — the specification
+    itself.
+  </Card>
+  <Card
+    title="Layer 1: Reference Engine (OEE)"
     icon="shield"
     href="/components/open-execution-engine"
   >
-    **Open Execution Engine** is the domain-agnostic execution enforcement
-    substrate. It provides the deterministic primitives every SOF-compliant agent
-    runs on: policy evaluation via Sigil Sign, Intent Attestation issuance,
-    consensus hold management, and gated RPC/bundler execution. Not specific to
-    any industry — it is the substrate.
-  </Card>
-  <Card
-    title="Layer 2: The Legal Governance Layer (FAF)"
-    icon="scale-balanced"
-    href="/components/fiduciary-agent-framework"
-  >
-    **Fiduciary Agent Framework** converts OEE's technical enforcement into
-    bounded fiduciary instruments — entity templates, operating agreements, and
-    warranty.md policy structure so human General Partners can assume
-    quantifiable liability without unlimited personal exposure.
+    **Open Execution Engine** is the reference implementation of the SOF
+    enforcement specification. Policy evaluation via Sigil Lex, Intent
+    Attestation issuance, consensus hold management, and gated RPC/bundler
+    execution. One valid signer; not the only valid one.
   </Card>
 </CardGroup>
 
-<Card
-  title="Layer 3: Vertical Boilerplates"
-  icon="layers"
-  href="/architecture#layer-3-vertical-boilerplates"
->
-  Domain-specific implementations of OEE + FAF. Each vertical inherits the full
-  enforcement stack and adds domain-appropriate warranty.md policy templates,
-  sector-specific legal wrapper guidance, and integration examples. Healthcare,
-  banking, and enterprise verticals follow the same pattern: enforcement and
-  legal pre-assembled for a deployment context, ready to go.
-</Card>
+<CardGroup cols={2}>
+  <Card
+    title="Layer 2: Legal Governance (FAF)"
+    icon="scale-balanced"
+    href="/components/fiduciary-agent-framework"
+  >
+    **Fiduciary Agent Framework** converts cryptographic guarantees from any
+    conforming signer into bounded fiduciary instruments — entity templates,
+    operating agreements, and warranty.md policy structure so human General
+    Partners can assume quantifiable liability without unlimited personal
+    exposure.
+  </Card>
+  <Card
+    title="Layer 3: Vertical Boilerplates"
+    icon="layers"
+    href="/architecture#layer-3-vertical-boilerplates"
+  >
+    Domain-specific implementations of conforming signer + FAF, pre-assembled
+    for specific deployment contexts. Healthcare, banking, and enterprise
+    verticals follow the same pattern. The conformance contract is constant;
+    the deployment context is what varies.
+  </Card>
+</CardGroup>
 
 ---
 
 ## Operator Surface: Command & Vault
 
-The protocol stack governs execution. These two components extend governance into the human layer and the credential layer.
+The protocol stack governs execution. These two components extend governance into the human layer and the credential layer. Both are part of the reference implementation; conforming signers MAY expose equivalent surfaces.
 
 <CardGroup cols={2}>
   <Card
@@ -111,9 +122,9 @@ The protocol stack governs execution. These two components extend governance int
 
 ## Client-Side Enforcement: Agent Hooks
 
-The protocol stack governs what happens at the execution layer. `@sigilcore/agent-hooks` is the client-side package that connects your agent framework to that layer — intercepting every tool call before it executes and routing it through Sigil Sign for policy evaluation.
+The protocol stack governs what happens at the execution layer. `@sigilcore/agent-hooks` is the client-side package that connects your agent framework to that layer — intercepting every tool call before it executes and routing it through a conforming signer for policy evaluation.
 
-Without agent-hooks, Sigil governs EVM transactions. With agent-hooks, Sigil governs **any agent action on any framework**: bash commands, HTTP requests, file writes, wallet signing, and email sends. The agent never reaches the API — or the blockchain — without a verified clearance.
+Without agent-hooks, SOF governs EVM transactions. With agent-hooks, SOF governs **any agent action on any framework**: bash commands, HTTP requests, file writes, wallet signing, and email sends. The agent never reaches the API — or the blockchain — without a verified clearance.
 
 <CardGroup cols={2}>
   <Card
@@ -141,9 +152,9 @@ Without agent-hooks, Sigil governs EVM transactions. With agent-hooks, Sigil gov
 
 The entire framework relies on a single cryptographic primitive: the **Intent Attestation**.
 
-Before an agent can execute a transaction on-chain, it must evaluate its intent against the deterministic constraints defined in its policy. If the intent is compliant, the Sigil execution firewall issues a short-lived, Ed25519-signed JWT. The EVM gateway physically rejects any write operation that does not include this valid attestation.
+Before an agent can execute a transaction on-chain, it must evaluate its intent against the deterministic constraints defined in its policy. If the intent is compliant, a conforming signer issues a short-lived, Ed25519-signed JWT. The EVM gateway physically rejects any write operation that does not include this valid attestation.
 
-<Card title="Read the Attestation Specification" icon="file-signature" href="/components/sigil-attestations">
+<Card title="Read the Attestation Specification" icon="file-signature" href="/sigil-attestations">
   Explore the canonical specification for generating, binding, and verifying
   Ed25519 Intent Attestations.
 </Card>
@@ -152,20 +163,32 @@ Before an agent can execute a transaction on-chain, it must evaluate its intent 
 
 ## Start Building
 
-Choose your path to get started with the Sigil Open Framework.
+Choose the path that fits your role.
 
-<CardGroup cols={2}>
+<CardGroup cols={3}>
   <Card
     title="Developer Toolkit"
     icon="code"
     href="/developer-toolkit/quick-start"
   >
-    **Fastest time to value.** Download our local testing environment to
-    simulate the Sigil execution firewall offline. Includes a mock Express.js
-    engine and Python LangChain authorizer.
+    **Fastest time to value.** Local testing environment to simulate the Sigil
+    execution firewall offline. Mock Express.js engine and Python LangChain
+    authorizer.
   </Card>
   <Card title="Getting Started API" icon="bolt" href="/getting-started">
-    **Ready for production.** Learn the exact two-step flow to request an Intent
-    Attestation and route a live transaction through the Sigil gateway.
+    **Ready for production.** Two-step flow to request an Intent Attestation
+    and route a live transaction through the reference Sigil gateway.
+  </Card>
+  <Card
+    title="Build a Conforming Signer"
+    icon="file-contract"
+    href="/conformance"
+  >
+    **For audit firms, custodians, and enterprise security teams.** The
+    conformance contract — what a conforming signer must implement, what it
+    may extend, and how to register an implementation.
   </Card>
 </CardGroup>
+
+
+---

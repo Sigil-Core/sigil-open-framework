@@ -6,6 +6,12 @@
     "light": "#60a5fa",
     "dark": "#1d4ed8"
   },
+  "redirects": [
+    {
+      "source": "/components/sigil-attestations",
+      "destination": "/sigil-attestations"
+    }
+  ],
   "navigation": {
     "tabs": [
       {
@@ -19,6 +25,13 @@
               "architecture",
               "aaif-standards",
               "framework-registry"
+            ]
+          },
+          {
+            "group": "Conformance",
+            "pages": [
+              "conformance",
+              "sigil-attestations"
             ]
           },
           {
@@ -45,7 +58,6 @@
             "pages": [
               "components/open-execution-engine",
               "components/fiduciary-agent-framework",
-              "components/sigil-attestations",
               "components/sigil-command",
               "components/sigil-vault"
             ]

@@ -40,11 +40,15 @@ Sigil is a composable protocol stack. Three layers — enforcement, legal govern
 
 The agent never reaches the execution target — on-chain or off — without a valid Intent Attestation. The gateway is the physical enforcement point. The firewall is where policy is evaluated. The agent hooks are the interception layer. Each is independently meaningful; together they form the complete enforcement chain.
 
+The diagram above describes the request path through the **reference implementation** (Sigil Sign / OEE). Any conforming signer implements an equivalent path against the same specification — see [Conformance](/conformance) for the contract every implementation must honor.
+
 ---
 
 ## Layer 1: Open Execution Engine (OEE)
 
-OEE is the domain-agnostic enforcement substrate. It does not know what industry you are deploying in. It does not know what your agent is trying to accomplish. It knows only what your policy permits — and it enforces that, deterministically, on every intent.
+OEE is the reference implementation of the SOF enforcement specification. It is one valid signer, not the only valid one — see [Conformance](/conformance) for the obligations any third-party implementation may meet to interoperate with the same governance stack.
+
+OEE itself is domain-agnostic. It does not know what industry you are deploying in. It does not know what your agent is trying to accomplish. It knows only what your policy permits — and it enforces that, deterministically, on every intent.
 
 **Core responsibilities:**
 
@@ -65,7 +69,7 @@ OEE is the domain-agnostic enforcement substrate. It does not know what industry
 
 ## Layer 2: Fiduciary Agent Framework (FAF)
 
-FAF converts OEE's technical enforcement into bounded legal instruments. A `warranty.md` policy defines what an agent is technically permitted to do. FAF defines who is legally responsible for that policy — and to what limit.
+FAF converts the cryptographic guarantees from any conforming signer into bounded legal instruments. A `warranty.md` policy defines what an agent is technically permitted to do. FAF defines who is legally responsible for that policy — and to what limit.
 
 **Core responsibilities:**
 
@@ -84,9 +88,9 @@ FAF does not replace legal counsel. It assembles the standard structural compone
 
 ## Layer 3: Vertical Boilerplates
 
-Vertical boilerplates pre-assemble OEE + FAF for a specific deployment context. Rather than composing the enforcement and legal layers from scratch, operators start with a pre-wired boilerplate for their industry and customize from there.
+Vertical boilerplates pre-assemble a conforming signer (OEE in the reference deployment) + FAF for a specific deployment context. Rather than composing the enforcement and legal layers from scratch, operators start with a pre-wired boilerplate for their industry and customize from there.
 
-Each vertical inherits OEE's enforcement primitives and adds domain-appropriate `warranty.md` templates, legal wrapper guidance, and integration examples. Healthcare, banking, and enterprise verticals follow the same pattern: enforcement and legal pre-assembled for a deployment context.
+Each vertical inherits the conforming signer's enforcement primitives and adds domain-appropriate `warranty.md` templates, legal wrapper guidance, and integration examples. Healthcare, banking, and enterprise verticals follow the same pattern: enforcement and legal pre-assembled for a deployment context. Policy templates are signer-agnostic at the specification level — they conform to the SOF Conformance Contract and work with any conforming signer.
 
 ---
 
@@ -125,6 +129,8 @@ The Sigil RPC and Bundler gateway reject any write operation that does not prese
 
 ## Cryptographic Architecture
 
+The cryptographic primitives below describe the contract every conforming signer must honor. The reference implementation (Sigil Sign / OEE) is described in detail; alternative signers implement the same primitives against the same specification.
+
 ### Ed25519 Keypair
 
 Every operator generates an Ed25519 keypair when they create their `warranty.md` policy. The private key signs the policy. The public key is deployed as `SIGIL_OPERATOR_PUBLIC_KEY`.
@@ -145,9 +151,11 @@ The `policyHash` is the cryptographic link between the attestation and the exact
 
 ### JWK Verification
 
-Intent Attestations can be verified independently against Sigil's published JWK set at `GET /.well-known/jwks.json`. No Sigil infrastructure required for verification — any JWT library that supports EdDSA can verify an attestation locally.
+Intent Attestations can be verified independently against the issuing signer's published JWK set at `GET /.well-known/jwks.json`. The reference implementation publishes its keys at `https://sign.sigilcore.com/.well-known/jwks.json`; third-party conforming signers publish their own at their own domains.
 
-<Card title="Sigil Attestations" icon="file-signature" href="/components/sigil-attestations">
+No Sigil infrastructure required for verification — any JWT library that supports EdDSA can verify a conforming attestation locally.
+
+<Card title="Sigil Attestations" icon="file-signature" href="/sigil-attestations">
   Full attestation specification — JWT structure, verification rules, and policyHash binding.
 </Card>
 
@@ -177,13 +185,15 @@ This is the primary mechanism for human oversight in high-stakes autonomous depl
 
 ## Deployment Model
 
-SOF runs on the Sigil API — hosted Intent Attestation backed by SOC 2 Type I controls, a verifiable audit chain, and usage-based pricing that scales with your deployment.
+The reference SOF implementation is operated by Sigil Core as a hosted service at the Sigil API. Intent Attestation issuance is backed by SOC 2 Type I controls, a verifiable audit chain, and usage-based pricing that scales with your deployment.
 
 **Start free.** Register your email at [sigilcore.com/tools/keys](https://sigilcore.com/tools/keys) to receive a Developer tier key — 1,000 governed actions per month, no account required.
 
 **Scale on demand.** When you outgrow the free tier, upgrade to $25/month — includes 10,000 governed actions, $0.002 per action above that. → [sigilcore.com/tools/upgrade](https://sigilcore.com/tools/upgrade)
 
 **Enterprise and regulated deployments** with dedicated infrastructure, custom SLAs, and audit support are available through [Sigil Governance](https://sigilgovernance.com).
+
+**Other paths.** The reference implementation is one of many possible signers. Operators with existing trusted relationships (audit firms, custodians, enterprise security teams) may prefer a third-party conforming signer over either Sigil-hosted or self-hosted reference. See the [Conformance Registry](/conformance#registry-of-conforming-implementations) for the current list.
 
 ---
 
