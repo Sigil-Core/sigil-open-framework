@@ -155,7 +155,7 @@ Intent Attestations can be verified independently against the issuing signer's p
 
 No Sigil infrastructure required for verification — any JWT library that supports EdDSA can verify a conforming attestation locally.
 
-<Card title="Sigil Attestations" icon="file-signature" href="/components/sigil-attestations">
+<Card title="Sigil Attestations" icon="file-signature" href="/sigil-attestations">
   Full attestation specification — JWT structure, verification rules, and policyHash binding.
 </Card>
 
