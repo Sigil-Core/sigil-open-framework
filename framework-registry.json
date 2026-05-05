@@ -1,6 +1,14 @@
 {
   "$schema": "https://sigilcore.com/schemas/framework-registry.json",
   "version": "1.0.0",
+  "registry_type": "agent_frameworks",
+  "description": "Identifies agent frameworks that submit intents to a conforming SOF signer. Distinct from the registry of conforming signers (the authorization side).",
+  "related_registries": {
+    "conforming_signers": {
+      "description": "Registry of SOF-conforming signer implementations \u2014 the systems that issue Intent Attestations.",
+      "url": "https://github.com/Sigil-Core/sigil-open-framework/blob/main/conformance.md#registry-of-conforming-implementations"
+    }
+  },
   "validation": {
     "rule": "non-empty string, max 64 characters, lowercase alphanumeric and hyphens only",
     "pattern": "^[a-z0-9][a-z0-9-]{0,63}$",
