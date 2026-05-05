@@ -5,9 +5,21 @@ description: "From zero to your first authorized execution in 2 minutes."
 
 # Getting Started
 
-Sigil Sign is the deterministic execution firewall for agent-driven EVM actions. It sits between your AI agent and the blockchain, ensuring that high-stakes actions cannot execute without explicit authorization.
+Sigil Sign is the reference implementation of the [SOF enforcement specification](/conformance) — a deterministic execution firewall for agent-driven EVM actions. It sits between your AI agent and the blockchain, ensuring that high-stakes actions cannot execute without explicit authorization.
 
 **Base URL:** `https://sign.sigilcore.com`
+
+---
+
+## Choose Your Path
+
+Three roles, three starting points:
+
+- **Integrating an agent with SOF?** This page is for you. Use the Sigil API or self-host the reference implementation. The API Quick Start below is the fastest route.
+- **Hacking on SOF locally?** Use the [Developer Toolkit](/developer-toolkit/quick-start) — mock Express.js engine and Python LangChain authorizer, no API key required.
+- **Building your own SOF-conforming signer?** (Audit firms, custodians, enterprise security teams.) Read the [Conformance Contract](/conformance) — it defines what your implementation must honor to interoperate with the SOF ecosystem.
+
+The remainder of this guide assumes you are integrating an agent and using the reference implementation, hosted or self-hosted.
 
 ---
 
@@ -228,3 +240,13 @@ sigil-sign/
 ```
 
 Set `LEX_OPERATOR_PUBLIC_KEY` in `.env.local` and place your signed `warranty.md` at the path `LEX_WARRANTY_PATH` points to (defaults to `config/warranty.md`). The prerequisites and execution flow documented above apply identically to self-hosted deployments.
+
+---
+
+## Building a Conforming Signer
+
+If you are an audit firm, custody provider, or enterprise security team building your own SOF-conforming signer rather than running the reference implementation, the integration path is different. Start with the [Conformance Contract](/conformance) — it defines exactly what your signer must implement (six MUST clauses) and what it may extend.
+
+The [sigil-attestations specification](https://github.com/Sigil-Core/sigil-attestations) defines the wire format. The Conformance Contract defines the obligations against that format. Together they are the complete contract for any third-party signer.
+
+Until the SOF Conformance Test Suite ships, conformance is asserted by the signer operator and verified through direct integration testing with the reference implementation at `sign.sigilcore.com`. See the [self-assertion protocol](/conformance#self-assertion-interim) for the registry process.

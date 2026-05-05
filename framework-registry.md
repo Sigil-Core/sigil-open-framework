@@ -7,6 +7,10 @@ description: "Supported and custom agent framework identifiers for the /v1/autho
 
 The `framework` field in every `/v1/authorize` request identifies which agent framework is submitting the intent. Sigil uses this for telemetry, adapter routing, and audit logs. **Policy evaluation is framework-agnostic** — your `warranty.md` governs what the agent can do regardless of which framework it runs on.
 
+<Note>
+  **Two registries, two roles.** This page lists agent **frameworks** — the systems that *submit* intents (the agent side). For the registry of conforming **signers** — the systems that *issue* Intent Attestations (the authorization side) — see the [Conformance Registry](/conformance#registry-of-conforming-implementations). The two registries are independent: any framework can submit intents to any conforming signer.
+</Note>
+
 ## Validation
 
 The `framework` field accepts any non-empty string matching:
