@@ -1,0 +1,120 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Sigil Open Framework — Reference Implementation",
+    "version": "1.0.0",
+    "summary": "Public endpoints exposed by the SOF reference implementation at sign.sigilcore.com.",
+    "description": "The Sigil Open Framework (SOF) is a specification, not a hosted API. This document describes only the public, unauthenticated endpoints exposed by the SOF reference implementation at sign.sigilcore.com — useful for verifying SOF conformance, fetching the JWKS, and basic liveness checks.\n\nAuthenticated `/v1/*` endpoints (Receipts, Holds, Warranties, Stripe, Webhooks, Authorize) require a Sigil API key from https://sigilcore.com and are documented separately in the developer portal.\n\nSee https://github.com/Sigil-Core/sigil-open-framework for the full specification.",
+    "contact": {
+      "name": "Sigil",
+      "url": "https://sigilcore.com"
+    },
+    "license": {
+      "name": "Apache-2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://sign.sigilcore.com",
+      "description": "Production reference implementation"
+    },
+    {
+      "url": "https://sign-test.sigilcore.com",
+      "description": "Test environment"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Service",
+      "description": "Service liveness and identity."
+    },
+    {
+      "name": "Conformance",
+      "description": "Endpoints that let any client discover what SOF profile and capabilities this deployment supports, and verify the keys it signs receipts with."
+    }
+  ],
+  "paths": {
+    "/healthz": {
+      "get": {
+        "tags": ["Service"],
+        "summary": "Service liveness check",
+        "description": "Returns 200 once the reference implementation's blocking boot path (secrets, signer init, database migrations) has completed. Cloudflare Load Balancer health checks point at this path.",
+        "operationId": "getHealthz",
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status"],
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": ["ok"]
+                    }
+                  }
+                },
+                "example": { "status": "ok" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/.well-known/jwks.json": {
+      "get": {
+        "tags": ["Conformance"],
+        "summary": "JSON Web Key Set",
+        "description": "Returns the public keys used to verify Sigil receipt JWTs. Standard JWKS document per RFC 7517. Clients SHOULD cache and follow standard JWKS rotation rules.",
+        "operationId": "getJwks",
+        "responses": {
+          "200": {
+            "description": "JWKS document",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["keys"],
+                  "properties": {
+                    "keys": {
+                      "type": "array",
+                      "description": "Public JWKs that this origin uses to sign receipts.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/.well-known/sof-conformance.json": {
+      "get": {
+        "tags": ["Conformance"],
+        "summary": "SOF conformance declaration",
+        "description": "Returns this deployment's SOF conformance declaration: the framework version it claims conformance to, the profile, capability set, and a verifiable link back to the spec. Used by Sigil-aware clients to negotiate behaviour and by auditors to verify implementation claims.",
+        "operationId": "getSofConformance",
+        "responses": {
+          "200": {
+            "description": "Conformance declaration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "Schema is intentionally open — see https://sigilcore.com for the current SOF conformance schema."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
