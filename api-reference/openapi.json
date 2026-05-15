@@ -1,10 +1,9 @@
 {
-  "openapi": "3.1.0",
+  "openapi": "3.0.3",
   "info": {
     "title": "Sigil Open Framework — Reference Implementation",
     "version": "1.0.0",
-    "summary": "Public endpoints exposed by the SOF reference implementation at sign.sigilcore.com.",
-    "description": "The Sigil Open Framework (SOF) is a specification, not a hosted API. This document describes only the public, unauthenticated endpoints exposed by the SOF reference implementation at sign.sigilcore.com — useful for verifying SOF conformance, fetching the JWKS, and basic liveness checks.\n\nAuthenticated `/v1/*` endpoints (Receipts, Holds, Warranties, Stripe, Webhooks, Authorize) require a Sigil API key from https://sigilcore.com and are documented separately in the developer portal.\n\nSee https://github.com/Sigil-Core/sigil-open-framework for the full specification.",
+    "description": "The Sigil Sign reference implementation exposes the SOF conformance surface plus the operational endpoints used by Sigil Open Framework clients. Every request that mutates state requires a Sigil API key presented as `Authorization: Bearer sk_sigil_...`. Production keys are rejected with `SIGIL_API_KEY_WRONG_ENV` on the test environment, and vice versa.",
     "contact": {
       "name": "Sigil",
       "url": "https://sigilcore.com"
@@ -21,42 +20,67 @@
     },
     {
       "url": "https://sign-test.sigilcore.com",
-      "description": "Test environment"
+      "description": "Test environment (non-production mirror, isolated billing and metering)"
     }
   ],
   "tags": [
     {
-      "name": "Service",
-      "description": "Service liveness and identity."
+      "name": "Authorization",
+      "description": "Core intent authorization and policy evaluation"
+    },
+    {
+      "name": "Warranty",
+      "description": "Policy deployment and management"
+    },
+    {
+      "name": "Holds",
+      "description": "Consensus hold inspection"
+    },
+    {
+      "name": "Webhooks",
+      "description": "Webhook registration and lifecycle"
+    },
+    {
+      "name": "Keys",
+      "description": "API key registration"
+    },
+    {
+      "name": "RPC",
+      "description": "JSON-RPC and bundler gateways"
     },
     {
       "name": "Conformance",
-      "description": "Endpoints that let any client discover what SOF profile and capabilities this deployment supports, and verify the keys it signs receipts with."
+      "description": "Public conformance surface (JWKS, healthz, SOF conformance descriptor)"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
     }
   ],
   "paths": {
     "/healthz": {
       "get": {
-        "tags": ["Service"],
-        "summary": "Service liveness check",
-        "description": "Returns 200 once the reference implementation's blocking boot path (secrets, signer init, database migrations) has completed. Cloudflare Load Balancer health checks point at this path.",
-        "operationId": "getHealthz",
+        "tags": [
+          "Conformance"
+        ],
+        "summary": "Liveness probe",
+        "description": "Returns 200 with `{ \"status\": \"ok\" }` when the service is ready.",
+        "security": [],
         "responses": {
           "200": {
-            "description": "Service is healthy",
+            "description": "Service is ready",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": ["status"],
                   "properties": {
                     "status": {
                       "type": "string",
-                      "enum": ["ok"]
+                      "example": "ok"
                     }
                   }
-                },
-                "example": { "status": "ok" }
+                }
               }
             }
           }
@@ -65,10 +89,12 @@
     },
     "/.well-known/jwks.json": {
       "get": {
-        "tags": ["Conformance"],
-        "summary": "JSON Web Key Set",
-        "description": "Returns the public keys used to verify Sigil receipt JWTs. Standard JWKS document per RFC 7517. Clients SHOULD cache and follow standard JWKS rotation rules.",
-        "operationId": "getJwks",
+        "tags": [
+          "Conformance"
+        ],
+        "summary": "JWKS for Intent Attestation verification",
+        "description": "Public JSON Web Key Set used by clients to verify Ed25519 signatures on Intent Attestations. The endpoint is intentionally unauthenticated per the SOF conformance specification.",
+        "security": [],
         "responses": {
           "200": {
             "description": "JWKS document",
@@ -76,14 +102,35 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": ["keys"],
                   "properties": {
                     "keys": {
                       "type": "array",
-                      "description": "Public JWKs that this origin uses to sign receipts.",
                       "items": {
                         "type": "object",
-                        "additionalProperties": true
+                        "properties": {
+                          "kty": {
+                            "type": "string",
+                            "example": "OKP"
+                          },
+                          "crv": {
+                            "type": "string",
+                            "example": "Ed25519"
+                          },
+                          "kid": {
+                            "type": "string"
+                          },
+                          "x": {
+                            "type": "string"
+                          },
+                          "use": {
+                            "type": "string",
+                            "example": "sig"
+                          },
+                          "alg": {
+                            "type": "string",
+                            "example": "EdDSA"
+                          }
+                        }
                       }
                     }
                   }
@@ -96,22 +143,552 @@
     },
     "/.well-known/sof-conformance.json": {
       "get": {
-        "tags": ["Conformance"],
-        "summary": "SOF conformance declaration",
-        "description": "Returns this deployment's SOF conformance declaration: the framework version it claims conformance to, the profile, capability set, and a verifiable link back to the spec. Used by Sigil-aware clients to negotiate behaviour and by auditors to verify implementation claims.",
-        "operationId": "getSofConformance",
+        "tags": [
+          "Conformance"
+        ],
+        "summary": "SOF conformance descriptor",
+        "description": "Returns the conformance classes and capabilities supported by this signer.",
+        "security": [],
         "responses": {
           "200": {
-            "description": "Conformance declaration",
+            "description": "Conformance descriptor"
+          }
+        }
+      }
+    },
+    "/v1/authorize": {
+      "post": {
+        "tags": [
+          "Authorization"
+        ],
+        "summary": "Submit an intent for policy authorization",
+        "description": "Evaluates an Intent against the deployed warranty.md policy bound to the presenting API key. On approval the response includes a signed Intent Attestation JWT. On denial the response carries a machine-readable error code (e.g. `SIGIL_POLICY_VIOLATION_AMOUNT_EXCEEDED`). Rate-limited to 50 requests per minute per source.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthorizeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Approved or DENIED decision",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "additionalProperties": true,
-                  "description": "Schema is intentionally open — see https://sigilcore.com for the current SOF conformance schema."
+                  "$ref": "#/components/schemas/AuthorizeResponse"
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "Policy violation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthorizeResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "No policy deployed for this API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/v1/authorize/test-run": {
+      "post": {
+        "tags": [
+          "Authorization"
+        ],
+        "summary": "Simulate authorization with no side effects",
+        "description": "Evaluates the same Intent shape as /v1/authorize against the deployed policy, without issuing an attestation, creating a hold, or firing webhooks. Always returns the strict enforcement-mode decision; if SIGIL_MODE=OBSERVE is active, the response includes `observe_mode_active: true` so callers can distinguish strict from observed outcomes. Test-run rows are excluded from monthly quotas.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthorizeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Simulated decision",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthorizeResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/v1/warranty/deploy": {
+      "post": {
+        "tags": [
+          "Warranty"
+        ],
+        "summary": "Deploy a signed warranty.md policy to an API key",
+        "description": "Binds a signed warranty.md to the presenting API key. The body carries the warranty.md content and an operator signature. Future calls to /v1/authorize for this key evaluate against the deployed policy. Rate-limited to 20 deploys per minute per source.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "warranty",
+                  "signature"
+                ],
+                "properties": {
+                  "warranty": {
+                    "type": "string",
+                    "description": "Full warranty.md text"
+                  },
+                  "signature": {
+                    "type": "string",
+                    "description": "Ed25519 signature of the operator over warranty content"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Policy deployed; response includes policyHash bound to the key"
+          },
+          "400": {
+            "description": "Invalid warranty.md or signature"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/v1/holds/{holdId}": {
+      "get": {
+        "tags": [
+          "Holds"
+        ],
+        "summary": "Fetch the state of a consensus hold",
+        "description": "Returns the current state of a hold (PENDING, APPROVED, DENIED, EXPIRED) plus the source intent and policy reference. Holds expire at 24 hours by default. Rate-limited to 30 lookups per minute.",
+        "parameters": [
+          {
+            "name": "holdId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The hold identifier returned when the policy required consensus"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Hold state"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Hold not found or expired"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/v1/webhooks": {
+      "get": {
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "List webhooks registered to the presenting key",
+        "responses": {
+          "200": {
+            "description": "Array of webhook descriptors"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Register a webhook",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "url",
+                  "events"
+                ],
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "events": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "secret": {
+                    "type": "string",
+                    "description": "Shared secret for HMAC signature verification"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Webhook registered"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/webhooks/{id}": {
+      "delete": {
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Remove a registered webhook",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Webhook removed"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Webhook not found"
+          }
+        }
+      }
+    },
+    "/v1/keys/register": {
+      "post": {
+        "tags": [
+          "Keys"
+        ],
+        "summary": "Register a new Sigil API key",
+        "description": "Public registration endpoint. Subject to a strict rate limit (5 attempts per hour per source). Returns a new sk_sigil_... API key on success.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "organization": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Key issued"
+          },
+          "400": {
+            "description": "Invalid registration payload"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/rpc/{chainId}": {
+      "post": {
+        "tags": [
+          "RPC"
+        ],
+        "summary": "JSON-RPC gateway, scoped to an allowlisted EVM chain",
+        "description": "Forwards a JSON-RPC payload to the upstream provider for the specified chain. Only chains on the validator allowlist are accepted (chainId 1 and 8453 as of this spec version). Authenticated.",
+        "parameters": [
+          {
+            "name": "chainId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "EVM chain id (e.g. 1 for mainnet, 8453 for Base)"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Standard JSON-RPC 2.0 request"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "JSON-RPC response"
+          },
+          "400": {
+            "description": "Chain not allowlisted"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/bundler/{chainId}": {
+      "post": {
+        "tags": [
+          "RPC"
+        ],
+        "summary": "ERC-4337 bundler gateway",
+        "description": "Forwards ERC-4337 user-operation traffic to the upstream bundler for the specified chain.",
+        "parameters": [
+          {
+            "name": "chainId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bundler response"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "sk_sigil_... API key",
+        "description": "Sigil API key presented as `Authorization: Bearer sk_sigil_...`. Production keys (`sk_sigil_live_...`) are rejected on the test environment with `SIGIL_API_KEY_WRONG_ENV`. Test keys (`sk_sigil_test_...`) are rejected on production with the same code."
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Missing, malformed, or invalid API key",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "RateLimited": {
+        "description": "Rate limit exceeded; retry per the documented window",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "InternalError": {
+        "description": "Internal server error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "error_code",
+          "message"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ERROR",
+              "DENIED"
+            ]
+          },
+          "error_code": {
+            "type": "string",
+            "example": "SIGIL_RATE_LIMIT_EXCEEDED"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "AuthorizeRequest": {
+        "type": "object",
+        "required": [
+          "intent"
+        ],
+        "properties": {
+          "intent": {
+            "type": "object",
+            "description": "The intent the agent proposes to execute. The exact shape depends on intent.action; see sigil-attestations spec.",
+            "properties": {
+              "action": {
+                "type": "string",
+                "example": "wallet.transfer"
+              },
+              "chainId": {
+                "type": "integer",
+                "example": 8453
+              },
+              "from": {
+                "type": "string"
+              },
+              "to": {
+                "type": "string"
+              },
+              "valueEth": {
+                "type": "string",
+                "example": "0.05"
+              },
+              "command": {
+                "type": "string",
+                "description": "For bash tool calls"
+              }
+            }
+          },
+          "framework_id": {
+            "type": "string",
+            "example": "sof-conformance-class-2"
+          }
+        }
+      },
+      "AuthorizeResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "APPROVED",
+              "DENIED",
+              "HOLD"
+            ]
+          },
+          "intent_attestation": {
+            "type": "string",
+            "nullable": true,
+            "description": "Signed JWT carrying the policy decision; null on DENIED."
+          },
+          "policy_hash": {
+            "type": "string",
+            "nullable": true
+          },
+          "hold_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "Present when status is HOLD"
+          },
+          "error_code": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "observe_mode_active": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Returned on test-run when service is in OBSERVE mode"
           }
         }
       }
