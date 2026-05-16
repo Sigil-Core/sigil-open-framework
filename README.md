@@ -236,3 +236,7 @@ The SOF Conformance Test Suite is in development. To express interest in early a
 For comprehensive developer guides, API references, and architecture deep-dives, visit the official documentation.
 
 → [**docs.sigilcore.com**](https://docs.sigilcore.com)
+
+## API Reference
+
+The full HTTP API surface is auto-generated from the OpenAPI spec and lives in [`api-reference.md`](./api-reference.md).
