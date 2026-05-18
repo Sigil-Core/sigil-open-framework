@@ -50,6 +50,7 @@
               "agent-hooks/claude-code",
               "agent-hooks/eliza",
               "agent-hooks/langchain",
+              "agent-hooks/rust",
               "agent-hooks/agentpay"
             ]
           },
