@@ -19,6 +19,7 @@ import { checkIntent, buildRejectionContext } from '@sigilcore/agent-hooks';
 const config = {
   apiKey: process.env.SIGIL_API_KEY!,
   agentId: 'my-agentpay-agent',
+  failMode: 'closed',
 };
 
 // AgentPay initiates a USD1 transfer — Sigil evaluates policy first
@@ -36,6 +37,13 @@ if (result.decision !== 'APPROVED') {
 }
 // AgentPay proceeds with signing
 ```
+
+<Warning>
+  For `wallet.*` actions, always set `failMode: 'closed'`. A fail-open
+  authorization layer in front of on-chain value transfer is worse than no
+  policy layer because operators may relax downstream controls while believing
+  Sigil is still enforcing policy.
+</Warning>
 
 ## Supported Chains
 

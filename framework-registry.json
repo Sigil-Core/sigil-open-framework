@@ -5,7 +5,7 @@
   "description": "Identifies agent frameworks that submit intents to a conforming SOF signer. Distinct from the registry of conforming signers (the authorization side).",
   "related_registries": {
     "conforming_signers": {
-      "description": "Registry of SOF-conforming signer implementations \u2014 the systems that issue Intent Attestations.",
+      "description": "Registry of SOF-conforming signer implementations: the systems that issue Intent Attestations.",
       "url": "https://github.com/Sigil-Core/sigil-open-framework/blob/main/conformance.md#registry-of-conforming-implementations"
     }
   },
@@ -16,88 +16,68 @@
   },
   "frameworks": [
     {
-      "id": "agentkit",
-      "name": "Coinbase AgentKit",
-      "category": "evm",
-      "adapter": "checkAnthropicToolUse",
-      "docs": "agent-hooks/claude-code"
-    },
-    {
-      "id": "eliza",
-      "name": "ElizaOS",
-      "category": "autonomous",
-      "adapter": "checkElizaAction",
-      "docs": "agent-hooks/eliza"
-    },
-    {
-      "id": "agentpay",
-      "name": "USD1 AgentPay (WLFI)",
-      "category": "evm",
-      "adapter": "checkIntent",
-      "docs": "agent-hooks/agentpay"
-    },
-    {
-      "id": "openclaw",
-      "name": "OpenClaw",
-      "category": "autonomous",
-      "adapter": "checkIntent",
-      "docs": null
-    },
-    {
-      "id": "nanoclaw",
-      "name": "Nanoclaw",
-      "category": "autonomous",
-      "adapter": "checkIntent",
-      "docs": null
-    },
-    {
-      "id": "ironclaw",
-      "name": "Ironclaw",
-      "category": "autonomous",
-      "adapter": "checkIntent",
-      "docs": null
-    },
-    {
-      "id": "nanobot",
-      "name": "Nanobot",
-      "category": "autonomous",
-      "adapter": "checkIntent",
-      "docs": null
-    },
-    {
-      "id": "hermes",
-      "name": "Hermes Agent",
-      "category": "autonomous",
-      "adapter": "checkIntent",
-      "docs": null
-    },
-    {
-      "id": "langchain",
-      "name": "LangChain",
+      "id": "agent-hooks",
+      "name": "Generic TypeScript host",
       "category": "tool",
-      "adapter": "wrapLangChainTool",
-      "docs": "agent-hooks/langchain"
+      "language": "typescript",
+      "adapter": "checkIntent",
+      "docs": "agent-hooks/overview"
     },
     {
       "id": "anthropic-sdk",
       "name": "Claude Code / Anthropic SDK",
       "category": "tool",
+      "language": "typescript",
       "adapter": "checkAnthropicToolUse",
       "docs": "agent-hooks/claude-code"
     },
     {
-      "id": "openai-sdk",
-      "name": "OpenAI Agents SDK",
-      "category": "tool",
-      "adapter": "checkIntent",
-      "docs": null
+      "id": "eliza",
+      "name": "ELIZA",
+      "category": "autonomous",
+      "language": "typescript",
+      "adapter": "checkElizaAction",
+      "docs": "agent-hooks/eliza"
     },
     {
-      "id": "demo",
-      "name": "Demo / Testing",
-      "category": "testing",
-      "adapter": null,
-      "docs": null
+      "id": "langchain",
+      "name": "LangChain",
+      "category": "tool",
+      "language": "typescript",
+      "adapter": "wrapLangChainTool",
+      "docs": "agent-hooks/langchain"
+    },
+    {
+      "id": "openclaw",
+      "name": "OpenClaw",
+      "category": "autonomous",
+      "language": "typescript",
+      "adapter": "createOpenclawSigilHandler",
+      "docs": "agent-hooks/overview"
+    },
+    {
+      "id": "nemoclaw",
+      "name": "NVIDIA NemoClaw",
+      "category": "autonomous",
+      "language": "typescript",
+      "adapter": "createOpenclawSigilHandler",
+      "docs": "agent-hooks/overview"
+    },
+    {
+      "id": "ironclaw",
+      "name": "IronClaw",
+      "category": "autonomous",
+      "language": "rust",
+      "adapter": "sigil-agent-hooks-ironclaw",
+      "docs": "agent-hooks/rust"
+    },
+    {
+      "id": "agentpay",
+      "name": "USD1 AgentPay (WLFI)",
+      "category": "evm",
+      "language": "typescript",
+      "adapter": "checkIntent",
+      "docs": "agent-hooks/agentpay"
     }
   ]
 }

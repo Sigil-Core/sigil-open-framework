@@ -133,7 +133,7 @@ Without agent-hooks, SOF governs EVM transactions. With agent-hooks, SOF governs
     href="/agent-hooks/overview"
   >
     Install `@sigilcore/agent-hooks` and connect Claude Code, ELIZA, LangChain,
-    or any framework to your Sigil policy in minutes.
+    OpenClaw, IronClaw, or any framework to your Sigil policy in minutes.
   </Card>
   <Card
     title="AgentPay (WLFI) Compatibility"
