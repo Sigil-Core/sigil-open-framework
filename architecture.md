@@ -14,7 +14,7 @@ Sigil is a composable protocol stack. Three layers — enforcement, legal govern
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                        Agent Framework                      │
-│           (e.g., Claude Code, ELIZA, LangChain, AgentKit)   │
+│          (e.g., Claude Code, ELIZA, LangChain, IronClaw)    │
 └────────────────────────┬────────────────────────────────────┘
                          │  @sigilcore/agent-hooks
                          ▼
@@ -165,10 +165,10 @@ No Sigil infrastructure required for verification — any JWT library that suppo
 
 Agent hooks are the client-side interception layer. Without hooks, OEE governs only EVM transactions routed through the gateway. With hooks, OEE governs **any agent action on any framework** — bash commands, file writes, HTTP requests, wallet signing, email sends.
 
-`@sigilcore/agent-hooks` intercepts tool calls before they execute and routes them through Sigil Sign for evaluation. The tool call does not proceed unless an attestation is returned.
+`@sigilcore/agent-hooks` and `agent-hooks-rs` intercept tool calls before they execute and route them through Sigil Sign for evaluation. Approved intents proceed; denied intents are blocked; held intents wait for operator review. For Sigil unreachability, TypeScript hooks support explicit `failMode: 'open' | 'closed'`, while the Rust crates default closed.
 
 <Card title="Agent Hooks" icon="plug" href="/agent-hooks/overview">
-  Installation and integration reference for Claude Code, ELIZA, LangChain, and AgentKit.
+  Installation and integration reference for TypeScript and Rust agent runtimes.
 </Card>
 
 ---
