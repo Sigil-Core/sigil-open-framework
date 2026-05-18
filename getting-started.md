@@ -109,7 +109,7 @@ Before your agent can route a write transaction, it must obtain an **Intent Atte
 curl -X POST https://sign.sigilcore.com/v1/authorize \
  -H "Content-Type: application/json" \
  -d '{
-   "framework": "agentkit",
+   "framework": "agent-hooks",
    "txCommit": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "agentId": "agent_alpha_01",
    "chainId": 8453,
@@ -123,7 +123,7 @@ curl -X POST https://sign.sigilcore.com/v1/authorize \
 
 **Crucial Formatting Rules:**
 
-- `framework`: A string identifying your agent framework (e.g. `"agentkit"`, `"eliza"`, `"langchain"`). Any non-empty string is accepted. See the [Framework Registry](framework-registry) for known values.
+- `framework`: A string identifying your agent framework (e.g. `"agent-hooks"`, `"eliza"`, `"langchain"`, `"ironclaw"`). Any non-empty string is accepted. See the [Framework Registry](framework-registry) for known values.
 - `txCommit`: Must be a lowercase 64-character hex SHA-256 string. **Do not include a `0x` prefix.**
 - `chainId`: Must be in your warranty.md `allowed_chains` list. Supported values: 1, 10, 56, 137, 999, 8453, 42161.
 - `intent.action`: Must be in your warranty.md `allowed_actions` list (or the per-chain override for the requested chain).
