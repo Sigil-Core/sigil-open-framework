@@ -156,8 +156,8 @@ it's done", or any summary of completed work. Do not wait to be asked.
 | `sigil-pulse`          | Private    | Threat intelligence engine                                          |
 | `sigil-strike`         | Private    | Strike service                                                      |
 | `sigil-watch`          | Private    | Sigil Watch dashboard (Lovable)                                     |
-| `sigilcore`            | Private    | sigilcore.com website (Lovable) -- local dir: sigil-sigilcorewebsite|
-| `sigil-governance`     | Private    | sigil-governance landing (Lovable)                                  |
+| `sigilcore`            | Private    | sigilcore.com website (Lovable, Cloudflare Pages) -- local dir: sigil-sigilcorewebsite|
+| `sigil-governance-landing` | Private | sigilgovernance.com landing site (Lovable; DNS-only/grey-cloud in Cloudflare) |
 | `sigil-attestations`   | Public     | Canonical spec + verification helpers                               |
 | `sigil-open-framework` | Public     | Open agent governance framework (Mintlify)                          |
 | `faf`                  | Public     | Fiduciary Agent Framework                                           |
@@ -231,6 +231,48 @@ it's done", or any summary of completed work. Do not wait to be asked.
 - Eraser is used for technical documentation and visual diagrams
   (architecture, sequence, flow). API key in GSM:
   `projects/229174415542/secrets/SIGIL_ERASER_API_KEY`
+
+---
+
+## MANDATORY: Web Properties -- Verify Hosting Before Any Redirect / DNS / SSL Change
+
+**Before touching a redirect, DNS record, SSL mode, or Cloudflare rule on any
+public web property, first establish how that property is actually hosted and
+served. Never infer the host from an IP address.**
+
+The three public properties are hosted differently, and the difference decides
+where a redirect must go:
+
+- `sigilcore.com` -- Cloudflare Pages, repo `sigilcore` (proxied).
+- `sigil.watch` -- Cloudflare Pages, repo `sigilwatch` (proxied).
+- `sigilgovernance.com` -- **Lovable hosting, DNS-only (grey-cloud)** in the Sigil
+  Cloudflare account (A records apex + www -> `185.158.133.1`). Repo
+  `sigil-governance-landing`.
+
+Load-bearing rule: **Cloudflare redirect rules only run on PROXIED (orange-cloud)
+records.** On a grey-cloud domain they are completely inert no matter how correct,
+enabled, or well-ordered they are. For `sigilgovernance.com`, redirects are
+client-side in the SPA (`sigil-governance-landing`) or configured in Lovable --
+not in Cloudflare.
+
+Verification sequence (do this first, every time):
+1. `GET /zones/{zone}/dns_records` -- check `proxied` on each A/CNAME record.
+2. `GET /accounts/{account}/pages/projects` -- is it a Pages site, and which repo.
+3. Read live response headers: `server`, `x-deployment-id` (Lovable tell), TLS cert
+   issuer/SAN. A single-domain Google Trust Services cert behind a `__cf_bm` cookie
+   with `x-deployment-id` indicates a managed publish platform (Lovable), not Pages.
+
+Verify a SPA redirect with a JS-rendering browser, not `curl` -- a client-side
+redirect returns a 200 shell to `curl` and looks broken.
+
+Full topology, account/zone IDs, and known redirects:
+`Sigil/architecture/web-properties-deployment.md`.
+
+**Origin:** June 2, 2026 -- a `/meet -> cal.read.ai` redirect request took an hour
+because the host was guessed (Framer) from an IP, and Cloudflare rules were edited
+repeatedly while the domain was grey-cloud and served by Lovable, so the rules
+never ran. Known good outcome: `sigilgovernance.com/meet` redirects client-side to
+`https://cal.read.ai/vernon-ayon`.
 
 ---
 
