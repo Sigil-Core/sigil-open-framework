@@ -54,3 +54,6 @@ bin/age-keygen
 
 # GitHub token for scheduled task access to private repos
 .gh-token
+
+# Internal AI agent context — do not publish in public repos
+agents-global.md
