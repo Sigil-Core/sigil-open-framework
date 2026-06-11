@@ -7,14 +7,14 @@ description: "Define your agent's execution policy using Sigil Warrant. Every ag
 
 A `warranty.md` file is a signed, operator-defined policy that tells Sigil Sign what your agent is and isn't allowed to do. It is the contract between you and your agent's execution layer.
 
-Sigil Sign evaluates every agent intent against this file before allowing any action to proceed. If the action violates policy, it is denied before it executes — not audited after.
+Sigil Sign evaluates every agent intent against this file before allowing any action to proceed. If the action violates policy, it is denied before it executes, not audited after.
 
 ## Generate Your Policy
 
 Use **Sigil Warrant** at [sigilcore.com/tools/warrant](https://sigilcore.com/tools/warrant) to generate, sign, and download your `warranty.md`. Two paths are available:
 
-- **Warrant Builder** — guided step-by-step flow. No policy syntax required. Recommended for first-time operators.
-- **Manual Warrant** — write your policy directly in the `warranty.md` format. Full control over every field. For developers familiar with the warranty.md schema.
+- **Warrant Builder:** guided step-by-step flow. No policy syntax required. Recommended for first-time operators.
+- **Manual Warrant:** write your policy directly in the `warranty.md` format. Full control over every field. For developers familiar with the warranty.md schema.
 
 Both paths produce an identical signed `warranty.md` that Sigil Sign accepts at boot.
 
@@ -45,7 +45,7 @@ email.allowed_recipients: *@yourcompany.com, partner@example.com
 email.blocked_recipients: noreply@yourcompany.com
 
 ## custom
-# Operator-defined rules — evaluated FIRST before all other checks
+# Operator-defined rules, evaluated FIRST before all other checks
 allow_only.intent.metadata.job_type: research, data_labeling
 deny_if.intent.metadata.email_to contains "@competitor.com"
 deny_string: "DROP TABLE"
@@ -62,7 +62,7 @@ sigil-sig: <base64url>
 ## Policy Sections
 
 ### `## evm`
-Controls EVM transaction execution — spend limits, allowed chains, allowed actions, and consensus hold thresholds.
+Controls EVM transaction execution, including spend limits, allowed chains, allowed actions, and consensus hold thresholds.
 
 | Field | Description |
 |---|---|
@@ -76,7 +76,7 @@ Controls EVM transaction execution — spend limits, allowed chains, allowed act
 | `token.<SYM>.decimals` | **Required.** Token decimals (USDC/USDT are 6, most ERC-20s are 18). There is no default: a wrong implicit default would mis-scale the limit by orders of magnitude |
 | `token.<SYM>.addresses` | Optional pinned contract addresses; repeat the line to add addresses across chains (entries merge) |
 
-**Token semantics:** an intent carrying `token` is governed only by the matching `token.<SYM>.*` rule — `max_transaction_eth` and `consensus_threshold_eth` are ETH-denominated and never apply to token amounts. A token intent with no matching rule (including a policy with no token rules at all) is `DENIED` fail-closed with `SIGIL_POLICY_VIOLATION_TOKEN_NOT_ALLOWED`. Symbols match case-insensitively; address-form intents match only pinned `addresses`. **When a rule pins `addresses`, the intent's `targetAddress` must be one of them** — an ERC-20 transfer's transaction target is the token contract, and this binding prevents a native ETH transfer labelled with a token symbol from skipping the ETH limit. Pinning addresses is strongly recommended; rules without them accept the declared symbol at face value. Amount comparisons are exact: all-digit amounts are base units compared via BigInt at the rule's `decimals`, decimal amounts are scaled exactly via string math (no float rounding), and the limit itself is kept as the decimal string you wrote. A token intent whose `amount` is missing or unparseable is `DENIED` fail-closed with `SIGIL_POLICY_VIOLATION_TOKEN_AMOUNT_INVALID`.
+**Token semantics:** an intent carrying `token` is governed only by the matching `token.<SYM>.*` rule. `max_transaction_eth` and `consensus_threshold_eth` are ETH-denominated and never apply to token amounts. A token intent with no matching rule, including a policy with no token rules at all, is `DENIED` fail-closed with `SIGIL_POLICY_VIOLATION_TOKEN_NOT_ALLOWED`. Symbols match case-insensitively; address-form intents match only pinned `addresses`. **When a rule pins `addresses`, the intent's `targetAddress` must be one of them.** An ERC-20 transfer's transaction target is the token contract, and this binding prevents a native ETH transfer labelled with a token symbol from skipping the ETH limit. Pinning addresses is strongly recommended; rules without them accept the declared symbol at face value. Amount comparisons are exact: all-digit amounts are base units compared via BigInt at the rule's `decimals`, decimal amounts are scaled exactly via string math with no float rounding, and the limit itself is kept as the decimal string you wrote. A token intent whose `amount` is missing or unparseable is `DENIED` fail-closed with `SIGIL_POLICY_VIOLATION_TOKEN_AMOUNT_INVALID`.
 
 ### `## tool_calls`
 Controls non-EVM agent tool execution.
@@ -88,16 +88,16 @@ Controls non-EVM agent tool execution.
 | `web_fetch.blocked_domains` | Hostnames blocked for web requests |
 | `file_write.blocked_paths` | Path prefixes blocked for file writes |
 | `email.require_approval` | Hold all email.send for human approval |
-| `email.allowed_recipients` | Recipients permitted for email.send — exact addresses or `*@domain` wildcards |
-| `email.blocked_recipients` | Recipients always denied for email.send — same entry forms |
+| `email.allowed_recipients` | Recipients permitted for email.send, using exact addresses or `*@domain` wildcards |
+| `email.blocked_recipients` | Recipients always denied for email.send, using the same entry forms |
 
-**Recipient semantics:** `email.send` intents carry recipients in `intent.to` (string or array). Checks run in order: denylist → allowlist → approval hold, so a blocked recipient is `DENIED` (`SIGIL_POLICY_VIOLATION_BLOCKED_RECIPIENT`) before any hold is created, and an off-allowlist recipient returns `SIGIL_POLICY_VIOLATION_RECIPIENT_NOT_ALLOWED`. Every recipient in an array must pass. A missing `to` while either list is declared is `DENIED` fail-closed. `*@domain` matches that exact domain only — subdomains do not match. Matching is case-insensitive.
+**Recipient semantics:** `email.send` intents carry recipients in `intent.to` (string or array). Checks run in order: denylist, allowlist, approval hold. A blocked recipient is `DENIED` (`SIGIL_POLICY_VIOLATION_BLOCKED_RECIPIENT`) before any hold is created, and an off-allowlist recipient returns `SIGIL_POLICY_VIOLATION_RECIPIENT_NOT_ALLOWED`. Every recipient in an array must pass. A missing `to` while either list is declared is `DENIED` fail-closed. Each recipient list must contain at least one entry; empty recipient lists reject the policy. `*@domain` matches that exact domain only; subdomains do not match. Matching is case-insensitive.
 
 ### `## custom`
 Operator-defined rules evaluated before all other checks. Three rule types:
 
 ```
-# Allow ONLY these values for a field — anything else (or a missing field) is denied
+# Allow ONLY these values for a field. Anything else, or a missing field, is denied.
 allow_only.<field_path>: <value>, <value>, ...
 
 # Block a specific field value
@@ -109,7 +109,7 @@ deny_string: <literal>
 
 Operators: `contains`, `starts_with`, `ends_with`, `equals`, `not_equals`, `matches` (regex)
 
-**Allowlist semantics:** `allow_only` is an affirmative allowlist with exact, case-sensitive matching (no operators). The rule applies to **every** intent the policy evaluates: if the field is missing, non-string, or its value is not listed, the intent is `DENIED` fail-closed with `SIGIL_POLICY_VIOLATION_NOT_ON_ALLOWLIST`. Repeat the line for the same field path to extend the value set (entries merge). **Deny rules win:** deny_if/deny_string are evaluated first, so a value matching both a deny rule and the allowlist is denied with the deny rule's code.
+**Allowlist semantics:** `allow_only` is an affirmative allowlist with exact, case-sensitive matching (no operators). The rule applies to **every** intent the policy evaluates: if the field is missing, non-string, or its value is not listed, the intent is `DENIED` fail-closed with `SIGIL_POLICY_VIOLATION_NOT_ON_ALLOWLIST`. Each line must include at least one value; empty `allow_only` lists reject the policy. Repeat the line for the same field path to extend the value set (entries merge). **Deny rules win:** deny_if/deny_string are evaluated first, so a value matching both a deny rule and the allowlist is denied with the deny rule's code.
 
 ### `## soft_limits`
 Informational limits flagged for audit but never hard-enforced. Included so the `policyHash` reflects the operator's stated intent.
@@ -132,6 +132,6 @@ The file is loaded once at startup and cached. Changes require a process restart
 - The policy file is signed with your Ed25519 operator key
 - The SHA-256 hash of the policy content is embedded in every Intent Attestation JWT (`policyHash` claim)
 - If the file is modified after signing, Sigil Sign detects it at next startup and refuses to start
-- Never commit your live `warranty.md` to version control — it contains your signing credentials
+- Never commit your live `warranty.md` to version control; it exposes your agent's security policy and operational limits
 
 `config/warranty.md` is gitignored by default in the sigil-sign repo.

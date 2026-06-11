@@ -10,16 +10,16 @@ description: "Diagnosing policy violations, validation errors, startup failures,
     **Yes. The Sigil API is the recommended path for most teams.**
 
     Register at [sigilcore.com/tools/keys](https://sigilcore.com/tools/keys)
-    to receive a Developer tier API key — 1,000 governed actions per month, free.
+    to receive a Developer tier API key: 1,000 governed actions per month, free.
     The hosted API handles signing infrastructure, key management, and attestation
     issuance. You still define your own policy via
     [Sigil Warrant](https://sigilcore.com/tools/warrant) and retain full control
     over what your agents can and cannot do.
 
     **Pricing:**
-    - **Developer:** Free — 1,000 governed actions/month
-    - **Growth:** $25/month — 10,000 governed actions, $0.002 per action above
-    - **Enterprise:** Custom — dedicated infrastructure, SLAs, audit support via
+    - **Developer:** Free, 1,000 governed actions/month
+    - **Growth:** $25/month, 10,000 governed actions, $0.002 per action above
+    - **Enterprise:** Custom, dedicated infrastructure, SLAs, audit support via
       [Sigil Governance](https://sigilgovernance.com)
 
     Self-hosting `sigil-sign` is available for teams that require it (MIT-licensed),
@@ -29,8 +29,8 @@ description: "Diagnosing policy violations, validation errors, startup failures,
   <Accordion title="My service failed to start. What does 'warranty.md is missing a ## signature block' mean?">
     Starting with the GAP-001 sprint, Sigil Sign requires every warranty.md to
     be cryptographically signed before it will evaluate policy. An unsigned file
-    — including any file you created manually or copied from an older version —
-    is rejected at startup.
+    is rejected at startup, including any file you created manually or copied
+    from an older version.
 
     **To fix this:**
     1. Go to [sigilcore.com/tools/warrant](https://sigilcore.com/tools/warrant)
@@ -68,7 +68,7 @@ description: "Diagnosing policy violations, validation errors, startup failures,
     means one of three things:
 
     1. **The policy file was modified after signing.** Even a single character
-       change — including whitespace — invalidates the signature. Re-sign with
+       change, including whitespace, invalidates the signature. Re-sign with
        Sigil Warrant and redeploy.
     2. **The wrong public key is set.** If you have rotated your keypair, the
        `SIGIL_OPERATOR_PUBLIC_KEY` in your environment must match the private key
@@ -88,7 +88,7 @@ description: "Diagnosing policy violations, validation errors, startup failures,
     [sigilcore.com/tools/warrant](https://sigilcore.com/tools/warrant).
 
     Sigil Warrant does three things:
-    - Generates an Ed25519 keypair entirely in your browser — no key material
+    - Generates an Ed25519 keypair entirely in your browser. No key material
       leaves your machine
     - Lets you define your policy using a structured form with plain-English
       guidance for each field
@@ -104,8 +104,8 @@ description: "Diagnosing policy violations, validation errors, startup failures,
   </Accordion>
 
   <Accordion title="I updated my policy. Do I need to re-sign it?">
-    **Yes.** Every change to your warranty.md — including the version number,
-    spend limits, allowed chains, or action list — invalidates the existing
+    **Yes.** Every change to your warranty.md, including the version number,
+    spend limits, allowed chains, or action list, invalidates the existing
     signature. You must re-sign with Sigil Warrant before redeploying.
 
     **Best practice:** Increment the `version` field (e.g. `1.0.0` → `1.1.0`)
@@ -118,7 +118,7 @@ description: "Diagnosing policy violations, validation errors, startup failures,
   </Accordion>
 
   <Accordion title="What is the policyHash in the Intent Attestation JWT?">
-    Every approved attestation embeds a `policyHash` claim — the SHA-256 hex
+    Every approved attestation embeds a `policyHash` claim, the SHA-256 hex
     digest of your warranty.md content above the `## signature` block.
 
     This hash is your cryptographic proof that a specific policy version was in
@@ -151,12 +151,12 @@ description: "Diagnosing policy violations, validation errors, startup failures,
     If you update the policy, re-sign it with Sigil Warrant before redeploying.
 
     **Code reference for the newer policy primitives:**
-    - `SIGIL_POLICY_VIOLATION_NOT_ON_ALLOWLIST` — an `allow_only` field was missing or its value is not on the operator allowlist.
-    - `SIGIL_POLICY_VIOLATION_TOKEN_NOT_ALLOWED` — the intent carried a `token` with no matching `token.<SYM>.*` rule (token intents fail closed).
-    - `SIGIL_POLICY_VIOLATION_TOKEN_AMOUNT_EXCEEDED` — the token amount exceeds that token's `max_transaction`.
-    - `SIGIL_POLICY_VIOLATION_TOKEN_AMOUNT_INVALID` — a token intent's `amount` was missing or unparseable; token amounts fail closed.
-    - `SIGIL_POLICY_VIOLATION_BLOCKED_RECIPIENT` — an `email.send` recipient is on `email.blocked_recipients`.
-    - `SIGIL_POLICY_VIOLATION_RECIPIENT_NOT_ALLOWED` — a recipient is missing or not on `email.allowed_recipients`.
+    - `SIGIL_POLICY_VIOLATION_NOT_ON_ALLOWLIST`: an `allow_only` field was missing or its value is not on the operator allowlist.
+    - `SIGIL_POLICY_VIOLATION_TOKEN_NOT_ALLOWED`: the intent carried a `token` with no matching `token.<SYM>.*` rule (token intents fail closed).
+    - `SIGIL_POLICY_VIOLATION_TOKEN_AMOUNT_EXCEEDED`: the token amount exceeds that token's `max_transaction`.
+    - `SIGIL_POLICY_VIOLATION_TOKEN_AMOUNT_INVALID`: a token intent's `amount` was missing or unparseable; token amounts fail closed.
+    - `SIGIL_POLICY_VIOLATION_BLOCKED_RECIPIENT`: an `email.send` recipient is on `email.blocked_recipients`.
+    - `SIGIL_POLICY_VIOLATION_RECIPIENT_NOT_ALLOWED`: a recipient is missing or not on `email.allowed_recipients`.
   </Accordion>
 
   <Accordion title="I'm getting SIGIL_VALIDATION errors. What's wrong?">
@@ -244,7 +244,7 @@ description: "Diagnosing policy violations, validation errors, startup failures,
 <AccordionGroup>
   <Accordion title="What is Sigil Command?">
     Sigil Command is the read-only operator console for Sigil Sign. It displays
-    a real-time violation log — every `DENIED`, `PENDING`, and `APPROVED` policy
+    a real-time violation log for every `DENIED`, `PENDING`, and `APPROVED` policy
     enforcement event for your API key. It is available at
     [command.sigilcore.com](https://command.sigilcore.com).
 
@@ -258,7 +258,7 @@ description: "Diagnosing policy violations, validation errors, startup failures,
     1. Go to [command.sigilcore.com](https://command.sigilcore.com)
     2. Enter the email address associated with your Sigil Sign API key
     3. Check your inbox for a magic link from `keys@sigilcore.com` (expires in 10 minutes)
-    4. Click the link — your browser creates a session (24-hour validity)
+    4. Click the link. Your browser creates a session (24-hour validity)
 
     If the email does not arrive, check your spam folder. The sender is
     `keys@sigilcore.com`.
@@ -266,7 +266,7 @@ description: "Diagnosing policy violations, validation errors, startup failures,
 
   <Accordion title="Can I see other users' violations in Command?">
     **No.** Tenant isolation is enforced server-side. The API pins the
-    `api_key_id` from your session JWT on every request — the client cannot
+    `api_key_id` from your session JWT on every request; the client cannot
     override it. You can only see enforcement events for your own API key.
   </Accordion>
 
@@ -296,8 +296,8 @@ description: "Diagnosing policy violations, validation errors, startup failures,
 <AccordionGroup>
   <Accordion title="What is Sigil Vault?">
     Sigil Vault is the **just-in-time (JIT) credential broker** for the Sigil
-    ecosystem. It ensures that autonomous agents can use external credentials —
-    API keys, cloud secrets, MPC co-signatures — without ever possessing them.
+    ecosystem. It ensures that autonomous agents can use external credentials,
+    such as API keys, cloud secrets, and MPC co-signatures, without ever possessing them.
 
     Vault is not a secrets manager. It does not store credentials. It intercepts
     agent requests via a localhost MITM proxy, validates a cryptographic Intent
@@ -334,7 +334,7 @@ description: "Diagnosing policy violations, validation errors, startup failures,
     Vault has **zero fail-open paths**. A missing, invalid, expired, or replayed
     attestation results in a hard 403 rejection. There is no fallback, no
     degraded mode, and no bypass. An unknown or revoked agent token is also
-    rejected. Backend timeouts return 504 — never a blind passthrough.
+    rejected. Backend timeouts return 504, never a blind passthrough.
   </Accordion>
 
   <Accordion title="Is Sigil Vault available now?">
@@ -361,7 +361,7 @@ description: "Diagnosing policy violations, validation errors, startup failures,
     key infrastructure (e.g., Fireblocks, AWS KMS) physically signs the
     transaction.
 
-    Your warranty.md signing keypair — generated by Sigil Warrant — is also
+    Your warranty.md signing keypair, generated by Sigil Warrant, is also
     never transmitted to Sigil. The signing happens entirely in your browser.
     Sigil only receives your public key via `SIGIL_OPERATOR_PUBLIC_KEY`, which is
     used to verify your policy signature at startup.
@@ -381,6 +381,6 @@ description: "Diagnosing policy violations, validation errors, startup failures,
     7. Restart the service
 
     There is no way to recover a lost private key. The old keypair can be
-    discarded — your policy content is not secret, only the signature matters.
+    discarded. Your policy content is not secret, only the signature matters.
   </Accordion>
 </AccordionGroup>
