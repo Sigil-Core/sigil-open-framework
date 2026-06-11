@@ -127,6 +127,8 @@ curl -X POST https://sign.sigilcore.com/v1/authorize \
 - `txCommit`: Must be a lowercase 64-character hex SHA-256 string. **Do not include a `0x` prefix.**
 - `chainId`: Must be in your warranty.md `allowed_chains` list. Supported values: 1, 10, 56, 137, 999, 8453, 42161.
 - `intent.action`: Must be in your warranty.md `allowed_actions` list (or the per-chain override for the requested chain).
+- `intent.token` (optional): ERC-20 token symbol (`"USDC"`) or `0x` contract address. When present, the policy's `token.<SYM>.*` rules govern the amount; without a matching rule the intent is `DENIED`. Omit for native ETH.
+- `intent.to` (optional): recipient email address or array of addresses for `email.send` intents. Required when the policy declares `email.allowed_recipients` or `email.blocked_recipients`.
 
 If your intent passes your warranty.md policy, you will receive an Ed25519-signed JWT in the `intent_attestation` field. The JWT embeds a `policyHash` — a SHA-256 of the exact policy content that was evaluated, excluding the signature block. This is your cryptographic proof that the correct policy version was in effect.
 
@@ -193,6 +195,9 @@ chain_actions:
   "8453": wallet.transfer
 consensus_threshold_eth: 3.0
 consensus_require_hold: true
+token.USDC.max_transaction: 10000
+token.USDC.decimals: 6   # required — USDC/USDT are 6, most ERC-20s are 18
+token.USDC.addresses: 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
 
 ## tool_calls
 allowed: bash, web_fetch, file_write, wallet_sign, email.send
@@ -200,8 +205,11 @@ bash.blocked_commands: rm -rf, curl, wget
 web_fetch.blocked_domains: evil.com, malicious.io
 file_write.blocked_paths: /etc, /root, ~/.ssh
 email.require_approval: true
+email.allowed_recipients: *@yourcompany.com, partner@example.com
+email.blocked_recipients: noreply@yourcompany.com
 
 ## custom
+allow_only.intent.metadata.job_type: research, data_labeling
 deny_if.metadata.phone starts_with +1900
 deny_string: DROP TABLE
 
@@ -215,10 +223,12 @@ sigil-sig: <base64url-ed25519-signature>
 
 | Section | Behavior |
 |---|---|
-| `## evm` | EVM transaction limits and consensus gates. Violations return `DENIED`. Consensus-gated intents return `PENDING`. |
-| `## tool_calls` | Agent tool call allowlist and blocklists. Blocked calls return `DENIED`. |
-| `## custom` | Operator-defined deny rules. Matches return `DENIED`. |
+| `## evm` | EVM transaction limits and consensus gates. Violations return `DENIED`. Consensus-gated intents return `PENDING`. Per-token rules (`token.<SYM>.*`) cap ERC-20 spends; an intent carrying a `token` with no matching rule is `DENIED` fail-closed, and ETH-denominated limits never apply to token amounts. |
+| `## tool_calls` | Agent tool call allowlist and blocklists. Blocked calls return `DENIED`. For `email.send`, recipient checks run denylist first, then allowlist, then the `require_approval` hold (`PENDING`). Missing recipients with recipient rules present are `DENIED` fail-closed. |
+| `## custom` | Operator-defined deny rules and affirmative allowlists. Deny matches return `DENIED`. `allow_only.<field>` requires the field to equal one of the listed values — a missing field or unlisted value is `DENIED` fail-closed, and deny rules take precedence when both match. |
 | `## soft_limits` | Aggregate daily caps. Evaluation-only — never a hard denial. |
+
+> **Compatibility:** `token.<SYM>.*`, `email.allowed_recipients` / `email.blocked_recipients`, and `allow_only` ship with sigil-sign builds from June 2026 onward. Older runtimes ignore these lines silently — upgrade the runtime before publishing policies that rely on them. Policies that do not use the new fields keep their existing `policyHash` unchanged.
 
 ### Updating Your Policy
 
