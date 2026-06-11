@@ -31,6 +31,9 @@ allowed_chains: 1, 8453, 42161
 allowed_actions: wallet.transfer, contract.call
 consensus_threshold_eth: 3.0
 consensus_require_hold: true
+token.USDC.max_transaction: 10000
+token.USDC.decimals: 6
+token.USDC.addresses: 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
 
 ## tool_calls
 allowed: bash, web_fetch, file_write, wallet_sign, email.send
@@ -38,9 +41,12 @@ bash.blocked_commands: rm -rf, curl, wget
 web_fetch.blocked_domains: evil.com, malicious.io
 file_write.blocked_paths: /etc, /root, ~/.ssh
 email.require_approval: true
+email.allowed_recipients: *@yourcompany.com, partner@example.com
+email.blocked_recipients: noreply@yourcompany.com
 
 ## custom
 # Operator-defined rules — evaluated FIRST before all other checks
+allow_only.intent.metadata.job_type: research, data_labeling
 deny_if.intent.metadata.email_to contains "@competitor.com"
 deny_string: "DROP TABLE"
 deny_string: "OPENAI_API_KEY"
@@ -66,6 +72,11 @@ Controls EVM transaction execution — spend limits, allowed chains, allowed act
 | `chain_actions` | Optional per-chain action overrides (takes precedence over `allowed_actions`) |
 | `consensus_threshold_eth` | Transactions above this require human approval |
 | `consensus_require_hold` | Set `true` to enable the hold |
+| `token.<SYM>.max_transaction` | Maximum per-transaction amount for that ERC-20 token, in human units (e.g. `10000` = 10,000 USDC) |
+| `token.<SYM>.decimals` | Token decimals for base-unit amounts (USDC/USDT are 6; defaults to 18) |
+| `token.<SYM>.addresses` | Optional pinned contract addresses; repeat the line to add addresses across chains (entries merge) |
+
+**Token semantics:** an intent carrying `token` is governed only by the matching `token.<SYM>.*` rule — `max_transaction_eth` and `consensus_threshold_eth` are ETH-denominated and never apply to token amounts. A token intent with no matching rule (including a policy with no token rules at all) is `DENIED` fail-closed with `SIGIL_POLICY_VIOLATION_TOKEN_NOT_ALLOWED`. Symbols match case-insensitively; address-form intents match only pinned `addresses`.
 
 ### `## tool_calls`
 Controls non-EVM agent tool execution.
@@ -77,11 +88,18 @@ Controls non-EVM agent tool execution.
 | `web_fetch.blocked_domains` | Hostnames blocked for web requests |
 | `file_write.blocked_paths` | Path prefixes blocked for file writes |
 | `email.require_approval` | Hold all email.send for human approval |
+| `email.allowed_recipients` | Recipients permitted for email.send — exact addresses or `*@domain` wildcards |
+| `email.blocked_recipients` | Recipients always denied for email.send — same entry forms |
+
+**Recipient semantics:** `email.send` intents carry recipients in `intent.to` (string or array). Checks run in order: denylist → allowlist → approval hold, so a blocked recipient is `DENIED` (`SIGIL_POLICY_VIOLATION_BLOCKED_RECIPIENT`) before any hold is created, and an off-allowlist recipient returns `SIGIL_POLICY_VIOLATION_RECIPIENT_NOT_ALLOWED`. Every recipient in an array must pass. A missing `to` while either list is declared is `DENIED` fail-closed. `*@domain` matches that exact domain only — subdomains do not match. Matching is case-insensitive.
 
 ### `## custom`
-Operator-defined rules evaluated before all other checks. Two rule types:
+Operator-defined rules evaluated before all other checks. Three rule types:
 
 ```
+# Allow ONLY these values for a field — anything else (or a missing field) is denied
+allow_only.<field_path>: <value>, <value>, ...
+
 # Block a specific field value
 deny_if.<field_path> <operator> <value>
 
@@ -90,6 +108,8 @@ deny_string: <literal>
 ```
 
 Operators: `contains`, `starts_with`, `ends_with`, `equals`, `not_equals`, `matches` (regex)
+
+**Allowlist semantics:** `allow_only` is an affirmative allowlist with exact, case-sensitive matching (no operators). The rule applies to **every** intent the policy evaluates: if the field is missing, non-string, or its value is not listed, the intent is `DENIED` fail-closed with `SIGIL_POLICY_VIOLATION_NOT_ON_ALLOWLIST`. Repeat the line for the same field path to extend the value set (entries merge). **Deny rules win:** deny_if/deny_string are evaluated first, so a value matching both a deny rule and the allowlist is denied with the deny rule's code.
 
 ### `## soft_limits`
 Informational limits flagged for audit but never hard-enforced. Included so the `policyHash` reflects the operator's stated intent.
