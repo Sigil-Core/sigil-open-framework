@@ -5,7 +5,7 @@ description: "From zero to your first authorized execution in 2 minutes."
 
 # Getting Started
 
-Sigil Sign is the reference implementation of the [SOF enforcement specification](/conformance) — a deterministic execution firewall for agent-driven EVM actions. It sits between your AI agent and the blockchain, ensuring that high-stakes actions cannot execute without explicit authorization.
+Sigil Sign is the reference implementation of the [SOF enforcement specification](/conformance), a deterministic execution firewall for agent-driven EVM actions. It sits between your AI agent and the blockchain, ensuring that high-stakes actions cannot execute without explicit authorization.
 
 **Base URL:** `https://sign.sigilcore.com`
 
@@ -16,8 +16,8 @@ Sigil Sign is the reference implementation of the [SOF enforcement specification
 Three roles, three starting points:
 
 - **Integrating an agent with SOF?** This page is for you. Use the Sigil API or self-host the reference implementation. The API Quick Start below is the fastest route.
-- **Hacking on SOF locally?** Use the [Developer Toolkit](/developer-toolkit/quick-start) — mock Express.js engine and Python LangChain authorizer, no API key required.
-- **Building your own SOF-conforming signer?** (Audit firms, custodians, enterprise security teams.) Read the [Conformance Contract](/conformance) — it defines what your implementation must honor to interoperate with the SOF ecosystem.
+- **Hacking on SOF locally?** Use the [Developer Toolkit](/developer-toolkit/quick-start), with a mock Express.js engine and Python LangChain authorizer, no API key required.
+- **Building your own SOF-conforming signer?** (Audit firms, custodians, enterprise security teams.) Read the [Conformance Contract](/conformance). It defines what your implementation must honor to interoperate with the SOF ecosystem.
 
 The remainder of this guide assumes you are integrating an agent and using the reference implementation, hosted or self-hosted.
 
@@ -49,7 +49,7 @@ That is the complete flow. The sections below cover each step in detail.
 
 ## Before You Deploy: Two Prerequisites
 
-Whether you use the hosted Sigil API or self-host sigil-sign, two things must be in place. Without both, the service refuses to authorize anything. This is intentional — the service will not run without a verified operator policy.
+Whether you use the hosted Sigil API or self-host sigil-sign, two things must be in place. Without both, the service refuses to authorize anything. This is intentional: the service will not run without a verified operator policy.
 
 ### 1. A signed warranty.md file
 
@@ -57,8 +57,8 @@ Your warranty.md defines what your agent is allowed to do. The file must be sign
 
 **Use [Sigil Warrant](https://sigilcore.com/tools/warrant)** to generate, sign, and download your `warranty.md`. Two paths are available:
 
-- **Warrant Builder** — guided step-by-step flow covering all four policy blocks. No policy syntax required. Recommended for first-time operators.
-- **Manual Warrant** — write your policy directly in the `warranty.md` format. Full control over every field.
+- **Warrant Builder:** guided step-by-step flow covering all four policy blocks. No policy syntax required. Recommended for first-time operators.
+- **Manual Warrant:** write your policy directly in the `warranty.md` format. Full control over every field.
 
 Both paths generate your Ed25519 keypair in the browser (no key material ever leaves your machine), sign the policy, and provide your `LEX_OPERATOR_PUBLIC_KEY` value ready to paste.
 
@@ -116,7 +116,8 @@ curl -X POST https://sign.sigilcore.com/v1/authorize \
    "intent": {
      "action": "wallet.transfer",
      "targetAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-     "amount": "1000000000000"
+     "token": "USDC",
+     "amount": "1000.00"
    }
  }'
 ```
@@ -127,10 +128,10 @@ curl -X POST https://sign.sigilcore.com/v1/authorize \
 - `txCommit`: Must be a lowercase 64-character hex SHA-256 string. **Do not include a `0x` prefix.**
 - `chainId`: Must be in your warranty.md `allowed_chains` list. Supported values: 1, 10, 56, 137, 999, 8453, 42161.
 - `intent.action`: Must be in your warranty.md `allowed_actions` list (or the per-chain override for the requested chain).
-- `intent.token` (optional): ERC-20 token symbol (`"USDC"`) or `0x` contract address. When present, the policy's `token.<SYM>.*` rules govern the amount; without a matching rule the intent is `DENIED`. Omit for native ETH.
+- `intent.token` (optional): ERC-20 token symbol (`"USDC"`) or `0x` contract address. When present, the policy's `token.<SYM>.*` rules govern the amount; without a matching rule the intent is `DENIED`. If the matched rule pins addresses, `targetAddress` must match one of them. Omit for native ETH.
 - `intent.to` (optional): recipient email address or array of addresses for `email.send` intents. Required when the policy declares `email.allowed_recipients` or `email.blocked_recipients`.
 
-If your intent passes your warranty.md policy, you will receive an Ed25519-signed JWT in the `intent_attestation` field. The JWT embeds a `policyHash` — a SHA-256 of the exact policy content that was evaluated, excluding the signature block. This is your cryptographic proof that the correct policy version was in effect.
+If your intent passes your warranty.md policy, you will receive an Ed25519-signed JWT in the `intent_attestation` field. The JWT embeds a `policyHash`, a SHA-256 of the exact policy content that was evaluated, excluding the signature block. This is your cryptographic proof that the correct policy version was in effect.
 
 ---
 
@@ -175,13 +176,13 @@ Verification rules are strictly defined in our canonical specification: [sigil-a
 
 Your warranty.md uses typed section blocks. Sigil Lex evaluates them at runtime to govern agent behavior.
 
-**Use [Sigil Warrant](https://sigilcore.com/tools/warrant)** to generate a signed policy interactively. The tool produces a signed `warranty.md` with an embedded Ed25519 operator signature — the cryptographic proof that the policy evaluated at runtime is the one you authorized.
+**Use [Sigil Warrant](https://sigilcore.com/tools/warrant)** to generate a signed policy interactively. The tool produces a signed `warranty.md` with an embedded Ed25519 operator signature, the cryptographic proof that the policy evaluated at runtime is the one you authorized.
 
 Pre-built templates for common deployment contexts are available in the [FAF policy-templates directory](https://github.com/Sigil-Core/faf/tree/main/policy-templates).
 
 ### Policy Format Reference
 
-Sigil Lex parses a strict structured Markdown format. At least one of `## evm`, `## tool_calls`, or `## custom` is required. Unknown fields are rejected at parse time. The `## signature` block at the end is generated by Sigil Warrant — do not edit it manually.
+Sigil Lex parses a strict structured Markdown format. At least one of `## evm`, `## tool_calls`, or `## custom` is required. Unknown fields are rejected at parse time. The `## signature` block at the end is generated by Sigil Warrant; do not edit it manually.
 
 ```markdown
 version: 1.0.0
@@ -196,7 +197,7 @@ chain_actions:
 consensus_threshold_eth: 3.0
 consensus_require_hold: true
 token.USDC.max_transaction: 10000
-token.USDC.decimals: 6   # required — USDC/USDT are 6, most ERC-20s are 18
+token.USDC.decimals: 6   # required; USDC/USDT are 6, most ERC-20s are 18
 token.USDC.addresses: 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
 
 ## tool_calls
@@ -225,14 +226,14 @@ sigil-sig: <base64url-ed25519-signature>
 |---|---|
 | `## evm` | EVM transaction limits and consensus gates. Violations return `DENIED`. Consensus-gated intents return `PENDING`. Per-token rules (`token.<SYM>.*`) cap ERC-20 spends; an intent carrying a `token` with no matching rule is `DENIED` fail-closed, and ETH-denominated limits never apply to token amounts. |
 | `## tool_calls` | Agent tool call allowlist and blocklists. Blocked calls return `DENIED`. For `email.send`, recipient checks run denylist first, then allowlist, then the `require_approval` hold (`PENDING`). Missing recipients with recipient rules present are `DENIED` fail-closed. |
-| `## custom` | Operator-defined deny rules and affirmative allowlists. Deny matches return `DENIED`. `allow_only.<field>` requires the field to equal one of the listed values — a missing field or unlisted value is `DENIED` fail-closed, and deny rules take precedence when both match. |
-| `## soft_limits` | Aggregate daily caps. Evaluation-only — never a hard denial. |
+| `## custom` | Operator-defined deny rules and affirmative allowlists. Deny matches return `DENIED`. `allow_only.<field>` requires the field to equal one of the listed values. A missing field or unlisted value is `DENIED` fail-closed, and deny rules take precedence when both match. |
+| `## soft_limits` | Aggregate daily caps. Evaluation-only; never a hard denial. |
 
-> **Compatibility:** `token.<SYM>.*`, `email.allowed_recipients` / `email.blocked_recipients`, and `allow_only` ship with sigil-sign builds from June 2026 onward. Older runtimes ignore these lines silently — upgrade the runtime before publishing policies that rely on them. Policies that do not use the new fields keep their existing `policyHash` unchanged.
+> **Compatibility:** `token.<SYM>.*`, `email.allowed_recipients` / `email.blocked_recipients`, and `allow_only` ship with sigil-sign builds from June 2026 onward. Older runtimes ignore these lines silently. Upgrade the runtime before publishing policies that rely on them. Policies that do not use the new fields keep their existing `policyHash` unchanged.
 
 ### Updating Your Policy
 
-If you update your warranty.md, you must re-sign it with Sigil Warrant before redeploying. An updated but unsigned policy will be rejected at startup. The version field in your policy should be incremented to reflect the change — this makes the new `policyHash` in subsequent attestations distinguishable from the previous version.
+If you update your warranty.md, you must re-sign it with Sigil Warrant before redeploying. An updated but unsigned policy will be rejected at startup. The version field in your policy should be incremented to reflect the change, making the new `policyHash` in subsequent attestations distinguishable from the previous version.
 
 ---
 
@@ -255,7 +256,7 @@ Set `LEX_OPERATOR_PUBLIC_KEY` in `.env.local` and place your signed `warranty.md
 
 ## Building a Conforming Signer
 
-If you are an audit firm, custody provider, or enterprise security team building your own SOF-conforming signer rather than running the reference implementation, the integration path is different. Start with the [Conformance Contract](/conformance) — it defines exactly what your signer must implement (six MUST clauses) and what it may extend.
+If you are an audit firm, custody provider, or enterprise security team building your own SOF-conforming signer rather than running the reference implementation, the integration path is different. Start with the [Conformance Contract](/conformance). It defines exactly what your signer must implement (six MUST clauses) and what it may extend.
 
 The [sigil-attestations specification](https://github.com/Sigil-Core/sigil-attestations) defines the wire format. The Conformance Contract defines the obligations against that format. Together they are the complete contract for any third-party signer.
 

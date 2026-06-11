@@ -156,7 +156,8 @@ The signer **MAY** implement Class 2 rule evaluation, including:
 - `deny_if` field-match expressions
 - `deny_string` substring matching
 - `allow_only` affirmative allowlists (exact-match value sets per intent field; missing or unlisted values **MUST** be denied fail-closed, and deny rules **MUST** take precedence when both match)
-- Per-token threshold rules (`token.<SYM>.*` in `## evm`): a token-carrying intent with no matching rule **MUST** be denied fail-closed, and ETH-denominated limits **MUST NOT** be applied to token amounts
+- Per-token threshold rules (`token.<SYM>.*` in `## evm`): `decimals` **MUST** be required for every token rule, a token-carrying intent with no matching rule **MUST** be denied fail-closed, missing or unparseable token amounts **MUST** be denied fail-closed, and ETH-denominated limits **MUST NOT** be applied to token amounts
+- Pinned token contract binding: when a matching token rule includes `addresses`, the intent `targetAddress` **MUST** match one of those addresses
 - `email.send` recipient allowlist/denylist evaluation in the order denylist, allowlist, approval hold
 
 ### XR-02 -- Class 3 Consensus Rules
