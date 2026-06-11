@@ -149,6 +149,14 @@ description: "Diagnosing policy violations, validation errors, startup failures,
     *Do not retry the exact same transaction.* If the evaluation is
     deterministic, it will fail again. Fix the intent or the policy first.
     If you update the policy, re-sign it with Sigil Warrant before redeploying.
+
+    **Code reference for the newer policy primitives:**
+    - `SIGIL_POLICY_VIOLATION_NOT_ON_ALLOWLIST` — an `allow_only` field was missing or its value is not on the operator allowlist.
+    - `SIGIL_POLICY_VIOLATION_TOKEN_NOT_ALLOWED` — the intent carried a `token` with no matching `token.<SYM>.*` rule (token intents fail closed).
+    - `SIGIL_POLICY_VIOLATION_TOKEN_AMOUNT_EXCEEDED` — the token amount exceeds that token's `max_transaction`.
+    - `SIGIL_POLICY_VIOLATION_TOKEN_AMOUNT_INVALID` — a token intent's `amount` was missing or unparseable; token amounts fail closed.
+    - `SIGIL_POLICY_VIOLATION_BLOCKED_RECIPIENT` — an `email.send` recipient is on `email.blocked_recipients`.
+    - `SIGIL_POLICY_VIOLATION_RECIPIENT_NOT_ALLOWED` — a recipient is missing or not on `email.allowed_recipients`.
   </Accordion>
 
   <Accordion title="I'm getting SIGIL_VALIDATION errors. What's wrong?">
