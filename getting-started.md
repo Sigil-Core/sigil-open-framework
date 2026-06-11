@@ -196,7 +196,7 @@ chain_actions:
 consensus_threshold_eth: 3.0
 consensus_require_hold: true
 token.USDC.max_transaction: 10000
-token.USDC.decimals: 6
+token.USDC.decimals: 6   # required — USDC/USDT are 6, most ERC-20s are 18
 token.USDC.addresses: 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
 
 ## tool_calls
