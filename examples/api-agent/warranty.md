@@ -1,10 +1,13 @@
 ---
 title: "API Integration Agent"
-description: "Warranty policy for an autonomous API agent: blocks requests to non-allowlisted domains, rate limits outbound calls. Built for LangChain/ELIZA pipelines."
+description: "Warranty policy for an autonomous API agent: blocks SSRF, bounds email recipients, and requires allowlisted job types. Built for LangChain/ELIZA pipelines."
 ---
 
-# Warranty Policy — API Integration Agent
+# Warranty Policy - API Integration Agent
 
+Copy the policy body below into Sigil Warrant, sign it, and deploy it with the API key used by this agent.
+
+```markdown
 version: 1.0.0
 
 ## tool_calls
@@ -12,8 +15,14 @@ allowed: bash, web_fetch, email.send
 bash.blocked_commands: rm -rf, curl -X DELETE, wget --delete-after
 web_fetch.blocked_domains: localhost, 127.0.0.1, 0.0.0.0, 169.254.169.254, metadata.google.internal
 email.require_approval: true
+email.allowed_recipients: *@sigilcore.com, partner@example.com
+email.blocked_recipients: noreply@sigilcore.com
 
 ## custom
+# AWP-style allowlist: every governed intent must carry an approved job type.
+allow_only.intent.metadata.job_type: research, data_labeling, escrow_release
+deny_if.intent.metadata.job_type contains test
+
 # Block any request to internal/private networks
 deny_if.intent.url contains "localhost"
 deny_if.intent.url contains "127.0.0.1"
@@ -41,3 +50,4 @@ daily_tool_calls: 500
 
 ## signature
 sigil-sig: REPLACE_WITH_OUTPUT_FROM_SIGNING_TOOL
+```

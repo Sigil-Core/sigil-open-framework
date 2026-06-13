@@ -1,9 +1,11 @@
 /**
- * Sigil Demo — three agent actions against the live /v1/authorize endpoint.
+ * Sigil Demo - five agent actions against the live /v1/authorize endpoint.
  *
- * Scene 1: APPROVED  — contract.call on Base, 0.5 ETH (under threshold)
- * Scene 2: DENIED    — bash rm -rf (blocked command)
- * Scene 3: PENDING   — wallet.transfer 1.5 ETH (above consensus threshold)
+ * Scene 1: APPROVED  - Base USDC contract.call under token cap
+ * Scene 2: DENIED    - Base USDC contract.call over token cap
+ * Scene 3: PENDING   - allowed email recipient held for approval
+ * Scene 4: DENIED    - blocked email recipient
+ * Scene 5: DENIED    - non-allowlisted AWP job type
  *
  * Requires: SIGIL_API_KEY env var and a deployed warranty.md with the policy
  * defined in this directory's warranty.md (or equivalent).
@@ -20,6 +22,7 @@ import { createHash } from "node:crypto";
 const SIGIL_BASE_URL =
   process.env.SIGIL_BASE_URL || "https://sign.sigilcore.com";
 const SIGIL_API_KEY = process.env.SIGIL_API_KEY;
+const BASE_USDC = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 
 if (!SIGIL_API_KEY) {
   console.error(
@@ -46,7 +49,7 @@ function header(label: string): void {
 }
 
 function desc(text: string): void {
-  console.log(`\x1b[2m\u2192 ${text}\x1b[0m`);
+  console.log(`\x1b[2m> ${text}\x1b[0m`);
 }
 
 async function authorize(body: Record<string, unknown>): Promise<unknown> {
@@ -67,9 +70,15 @@ async function authorize(body: Record<string, unknown>): Promise<unknown> {
 
 async function scene1(): Promise<void> {
   header("Scene 1: APPROVED");
-  desc("contract.call on chain 8453, amount: 0.5 ETH");
+  desc("contract.call on Base USDC, amount: 2500.50 USDC");
 
-  const intent = { action: "contract.call", amount: "500000000000000000" };
+  const intent = {
+    action: "contract.call",
+    token: "USDC",
+    amount: "2500.50",
+    targetAddress: BASE_USDC,
+    metadata: { job_type: "research" },
+  };
   const result = await authorize({
     framework: "demo",
     agentId: "demo-agent",
@@ -83,9 +92,15 @@ async function scene1(): Promise<void> {
 
 async function scene2(): Promise<void> {
   header("Scene 2: DENIED");
-  desc("bash: rm -rf /var/data");
+  desc("contract.call on Base USDC, amount: 12500 USDC");
 
-  const intent = { action: "bash", command: "rm -rf /var/data" };
+  const intent = {
+    action: "contract.call",
+    token: "USDC",
+    amount: "12500",
+    targetAddress: BASE_USDC,
+    metadata: { job_type: "research" },
+  };
   const result = await authorize({
     framework: "demo",
     agentId: "demo-agent",
@@ -99,16 +114,59 @@ async function scene2(): Promise<void> {
 
 async function scene3(): Promise<void> {
   header("Scene 3: PENDING");
-  desc("wallet.transfer on chain 1, amount: 1.5 ETH");
+  desc("email.send to an allowed recipient, held for approval");
 
   const intent = {
-    action: "wallet.transfer",
-    amount: "1500000000000000000",
+    action: "email.send",
+    to: "team@sigilcore.com",
+    metadata: { job_type: "research" },
   };
   const result = await authorize({
     framework: "demo",
     agentId: "demo-agent",
-    chainId: 1,
+    chainId: 8453,
+    txCommit: txCommit(intent),
+    intent,
+  });
+
+  console.log(JSON.stringify(result, null, 2));
+}
+
+async function scene4(): Promise<void> {
+  header("Scene 4: DENIED");
+  desc("email.send to a blocked recipient");
+
+  const intent = {
+    action: "email.send",
+    to: "noreply@sigilcore.com",
+    metadata: { job_type: "research" },
+  };
+  const result = await authorize({
+    framework: "demo",
+    agentId: "demo-agent",
+    chainId: 8453,
+    txCommit: txCommit(intent),
+    intent,
+  });
+
+  console.log(JSON.stringify(result, null, 2));
+}
+
+async function scene5(): Promise<void> {
+  header("Scene 5: DENIED");
+  desc("AWP-style work claim with a non-allowlisted job_type");
+
+  const intent = {
+    action: "contract.call",
+    token: "USDC",
+    amount: "10",
+    targetAddress: BASE_USDC,
+    metadata: { job_type: "yield_farming" },
+  };
+  const result = await authorize({
+    framework: "demo",
+    agentId: "demo-agent",
+    chainId: 8453,
     txCommit: txCommit(intent),
     intent,
   });
@@ -122,12 +180,14 @@ async function scene3(): Promise<void> {
 
 async function main(): Promise<void> {
   console.log(
-    "\x1b[1mSigil Demo\x1b[0m \u2014 three agent actions against the live policy engine\n",
+    "\x1b[1mSigil Demo\x1b[0m - five agent actions against the live policy engine\n",
   );
 
   await scene1();
   await scene2();
   await scene3();
+  await scene4();
+  await scene5();
 
   console.log(
     "\n\x1b[2mDone. See https://docs.sigilcore.com for full documentation.\x1b[0m\n",
