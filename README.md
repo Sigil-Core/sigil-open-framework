@@ -194,6 +194,18 @@ If the agent proposes a transaction that violates any rule in its `warranty.md` 
 
 ---
 
+## Prior Art and Terminology
+
+Sigil Open Framework (SOF) enforces authorization at the pre-execution boundary: a deterministic allow, deny, or hold decision is evaluated at a non-bypassable control point before an agent action is permitted to proceed. This control pattern is well established and predates SOF.
+
+The pattern originates in the Policy Enforcement Point (PEP) and Policy Decision Point (PDP) model of access control, standardized by OASIS in [XACML 1.0 (2003)](https://en.wikipedia.org/wiki/XACML) and codified by NIST in [Special Publication 800-162, Guide to Attribute-Based Access Control (2014)](https://csrc.nist.gov/pubs/sp/800/162/final). In that model the PEP demands an authorization decision and grants or denies access at the moment of the request, and the PDP renders the decision. "Authorization before execution" at a non-bypassable enforcement point is the defining property of a PEP.
+
+The same control concept is in broad, independent use across the AI agent governance field, including work from [Microsoft](https://techcommunity.microsoft.com/blog/microsoft-security-blog/authorization-and-governance-for-ai-agents-runtime-authorization-beyond-identity/4509161) and Oracle on runtime authorization for agents, and a growing body of published research on pre-action and pre-execution authorization for autonomous systems. Regulatory frameworks such as the EU AI Act and the NIST AI Risk Management Framework increasingly expect governance to be enforced at the point of execution rather than reconstructed after the fact.
+
+SOF does not claim to have originated this primitive. SOF's contribution is a specific implementation of it for AI agents: a cryptographically signed Sigil Warrant, Ed25519 intent attestations, deterministic deny, allow, and hold decisions enforced at the agent's PreToolUse boundary, and a tamper-evident evidence trail suitable for audit. SOF uses the field's established, descriptive terminology by design, so operators can map it to the access-control and compliance concepts they already know.
+
+---
+
 ## Human-in-the-Loop Oversight
 
 SOF ensures that while execution is autonomous, oversight is absolute. Through integrations with **Sigil Command** (the web and mobile control plane), human operators retain:
