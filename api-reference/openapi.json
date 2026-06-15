@@ -141,13 +141,174 @@
         }
       }
     },
+    "/.well-known/sigil-pqc-keys.json": {
+      "get": {
+        "tags": [
+          "Conformance"
+        ],
+        "summary": "ML-DSA public keys for PQC attestation verification",
+        "description": "Public ML-DSA-65 key set used by PQC-aware clients to verify the `pqc.sig` claim embedded in approved Intent Attestation JWTs. The Ed25519 JWKS remains the compatibility verification path.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "PQC key set document",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "keys": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "kty",
+                          "alg",
+                          "kid",
+                          "use",
+                          "publicKey",
+                          "publicKeyHash",
+                          "ctx",
+                          "canonicalization"
+                        ],
+                        "properties": {
+                          "kty": {
+                            "type": "string",
+                            "example": "ML-DSA"
+                          },
+                          "alg": {
+                            "type": "string",
+                            "example": "ML-DSA-65"
+                          },
+                          "kid": {
+                            "type": "string"
+                          },
+                          "use": {
+                            "type": "string",
+                            "example": "sig"
+                          },
+                          "publicKey": {
+                            "type": "string",
+                            "description": "Base64url-encoded ML-DSA public key"
+                          },
+                          "publicKeyHash": {
+                            "type": "string",
+                            "description": "SHA-256 hex digest of the raw public key bytes"
+                          },
+                          "ctx": {
+                            "type": "string",
+                            "example": "sigil-pqc-attestation-v1"
+                          },
+                          "canonicalization": {
+                            "type": "string",
+                            "example": "json-sorted-v1"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/pqc-keys": {
+      "get": {
+        "tags": [
+          "Conformance"
+        ],
+        "summary": "Hosted ML-DSA public keys for PQC attestation verification",
+        "description": "Hosted public ML-DSA-65 key set used by PQC-aware clients to verify the `pqc.sig` claim embedded in approved Intent Attestation JWTs. This route is exposed through the existing `/v1/*` edge proxy while the canonical `.well-known` route remains available inside the application and in origin nginx configuration.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "PQC key set document",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "keys": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "kty",
+                          "alg",
+                          "kid",
+                          "use",
+                          "publicKey",
+                          "publicKeyHash",
+                          "ctx",
+                          "canonicalization"
+                        ],
+                        "properties": {
+                          "kty": {
+                            "type": "string",
+                            "example": "ML-DSA"
+                          },
+                          "alg": {
+                            "type": "string",
+                            "example": "ML-DSA-65"
+                          },
+                          "kid": {
+                            "type": "string"
+                          },
+                          "use": {
+                            "type": "string",
+                            "example": "sig"
+                          },
+                          "publicKey": {
+                            "type": "string",
+                            "description": "Base64url-encoded ML-DSA public key"
+                          },
+                          "publicKeyHash": {
+                            "type": "string",
+                            "description": "SHA-256 hex digest of the raw public key bytes"
+                          },
+                          "ctx": {
+                            "type": "string",
+                            "example": "sigil-pqc-attestation-v1"
+                          },
+                          "canonicalization": {
+                            "type": "string",
+                            "example": "json-sorted-v1"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/.well-known/sof-conformance.json": {
       "get": {
         "tags": [
           "Conformance"
         ],
         "summary": "SOF conformance descriptor",
-        "description": "Returns the conformance classes and capabilities supported by this signer.",
+        "description": "Returns the conformance classes, attestation algorithms, and public verification endpoints supported by this signer.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Conformance descriptor"
+          }
+        }
+      }
+    },
+    "/v1/sof-conformance": {
+      "get": {
+        "tags": [
+          "Conformance"
+        ],
+        "summary": "Hosted SOF conformance descriptor",
+        "description": "Returns the conformance classes, attestation algorithms, and public verification endpoints supported by this signer. The hosted descriptor points `pqc_keys_uri` at `/v1/pqc-keys`.",
         "security": [],
         "responses": {
           "200": {
@@ -615,40 +776,133 @@
       "AuthorizeRequest": {
         "type": "object",
         "required": [
+          "agentId",
+          "framework",
+          "chainId",
+          "txCommit",
           "intent"
         ],
+        "additionalProperties": false,
         "properties": {
+          "agentId": {
+            "type": "string",
+            "example": "agent-001"
+          },
+          "framework": {
+            "type": "string",
+            "example": "agentkit"
+          },
+          "chainId": {
+            "type": "integer",
+            "example": 8453
+          },
+          "txCommit": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "description": "Lowercase SHA-256 hex commitment for the proposed action"
+          },
           "intent": {
             "type": "object",
+            "required": [
+              "action"
+            ],
+            "additionalProperties": false,
             "description": "The intent the agent proposes to execute. The exact shape depends on intent.action; see sigil-attestations spec.",
             "properties": {
               "action": {
                 "type": "string",
                 "example": "wallet.transfer"
               },
-              "chainId": {
-                "type": "integer",
-                "example": 8453
+              "targetAddress": {
+                "type": "string",
+                "example": "0xdeadbeef"
               },
-              "from": {
-                "type": "string"
-              },
-              "to": {
-                "type": "string"
-              },
-              "valueEth": {
+              "amount": {
                 "type": "string",
                 "example": "0.05"
+              },
+              "calldata": {
+                "type": "string"
               },
               "command": {
                 "type": "string",
                 "description": "For bash tool calls"
+              },
+              "url": {
+                "type": "string",
+                "description": "For web_fetch tool calls"
+              },
+              "path": {
+                "type": "string",
+                "description": "For file_write tool calls"
+              },
+              "token": {
+                "type": "string",
+                "description": "ERC-20 symbol or 0x contract address"
+              },
+              "to": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "minItems": 1
+                  }
+                ]
+              },
+              "metadata": {
+                "type": "object",
+                "additionalProperties": true
               }
             }
           },
-          "framework_id": {
+          "context": {
+            "type": "string"
+          },
+          "delegation": {
+            "$ref": "#/components/schemas/DelegationGrant"
+          }
+        }
+      },
+      "DelegationGrant": {
+        "type": "object",
+        "required": [
+          "userId",
+          "grantId",
+          "scope"
+        ],
+        "additionalProperties": false,
+        "description": "Optional user delegation grant. When present, the signer embeds this object into the approved Intent Attestation JWT.",
+        "properties": {
+          "userId": {
             "type": "string",
-            "example": "sof-conformance-class-2"
+            "maxLength": 256,
+            "example": "user_123"
+          },
+          "grantId": {
+            "type": "string",
+            "maxLength": 256,
+            "example": "grant_abc"
+          },
+          "scope": {
+            "type": "string",
+            "maxLength": 4096,
+            "description": "OAuth-compatible, space-delimited delegated scope string",
+            "example": "google.workspace.email.send google.workspace.calendar.read"
+          },
+          "issuer": {
+            "type": "string",
+            "maxLength": 256,
+            "example": "https://auth.example.com"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Optional grant expiry. If supplied, it must be in the future."
           }
         }
       },
@@ -666,7 +920,7 @@
           "intent_attestation": {
             "type": "string",
             "nullable": true,
-            "description": "Signed JWT carrying the policy decision; null on DENIED."
+            "description": "Signed Ed25519 JWT carrying the policy decision and embedded ML-DSA-65 pqc signature claim; null on DENIED."
           },
           "policy_hash": {
             "type": "string",
