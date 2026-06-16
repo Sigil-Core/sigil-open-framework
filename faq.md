@@ -224,9 +224,10 @@ description: "Diagnosing policy violations, validation errors, startup failures,
     const JWKS = createRemoteJWKSet(
       new URL("https://sign.sigilcore.com/.well-known/jwks.json")
     );
+    const trustedIssuers = ["sigil-core"];
 
     const { payload } = await jwtVerify(intent_attestation, JWKS, {
-      issuer: "sigil-core",
+      issuer: trustedIssuers,
       algorithms: ["EdDSA"],
     });
 
@@ -234,6 +235,9 @@ description: "Diagnosing policy violations, validation errors, startup failures,
     // ALSO CHECK: payload.policyHash matches your deployed policy fingerprint
     console.log(payload);
     ```
+
+    For federated deployments, add explicitly approved issuer IDs to
+    `trustedIssuers` and pair each issuer with its published JWKS endpoint.
   </Accordion>
 </AccordionGroup>
 

@@ -153,7 +153,9 @@ The `policyHash` is the cryptographic link between the attestation and the exact
 
 Intent Attestations can be verified independently against the issuing signer's published JWK set at `GET /.well-known/jwks.json`. The reference implementation publishes its keys at `https://sign.sigilcore.com/.well-known/jwks.json`; third-party conforming signers publish their own at their own domains.
 
-No Sigil infrastructure required for verification — any JWT library that supports EdDSA can verify a conforming attestation locally.
+Verifiers must pair JWK validation with a trusted issuer set. Hosted Sigil uses `sigil-core` as the default issuer; federated deployments add approved issuer IDs explicitly and reject signatures from untrusted `iss` values.
+
+No Sigil infrastructure required for verification. Any JWT library that supports EdDSA can verify a conforming attestation locally when supplied with the issuer's JWK set and trusted issuer configuration.
 
 <Card title="Sigil Attestations" icon="file-signature" href="/sigil-attestations">
   Full attestation specification — JWT structure, verification rules, and policyHash binding.

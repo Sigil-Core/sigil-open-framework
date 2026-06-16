@@ -49,9 +49,9 @@ SOF is a **composable protocol stack** — a specification at the center, with t
     href="/conformance"
   >
     The conformance target every SOF implementation must honor. Defines Intent
-    Attestation structure, JWKS publication, chain binding, and the verification
-    protocol used by gated execution layers. Not a product — the specification
-    itself.
+    Attestation structure, JWKS publication, trusted issuer validation, chain
+    binding, and the verification protocol used by gated execution layers. Not
+    a product; the specification itself.
   </Card>
   <Card
     title="Layer 1: Reference Engine (OEE)"
