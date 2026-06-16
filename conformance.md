@@ -49,7 +49,7 @@ Core Conformance requires implementation of the six behaviors detailed in CR-01 
 - CR-01: Intent submission interface
 - CR-02: Policy evaluation against Class 1 structural rules
 - CR-03: Ed25519-signed Intent Attestation issuance per the spec
-- CR-04: JWKS publication
+- CR-04: JWKS publication and issuer trust
 - CR-05: Structured non-approval responses
 - CR-06: Versioning
 
@@ -97,19 +97,22 @@ For every intent that passes policy evaluation, the signer **MUST** issue an Int
 
 - Be a JWT signed with Ed25519 (`alg: EdDSA`, `crv: Ed25519`)
 - Include the required claim set: `iss`, `sub`, `aud`, `exp`, `iat`, `jti`, `chainId`, and one of `txCommit` or `userOpHash`
+- Set `iss` to a stable issuer identifier that downstream verifiers can configure as trusted
 - Include a `policyHash` claim: SHA-256 of the canonical JSON serialization of the evaluated `warranty.md` policy
 - Have an expiry (`exp`) of no more than 60 seconds from issuance (`iat`)
 - Be bound to the specific transaction commit or UserOp hash submitted
 
 The signer **MUST NOT** issue Intent Attestations with arbitrary or omitted required claims.
 
-### CR-04 -- JWKS Publication
+### CR-04 -- JWKS Publication and Issuer Trust
 
 The signer **MUST** publish its public verification key set at a stable URL using the JWKS format defined in [RFC 7517](https://www.rfc-editor.org/rfc/rfc7517). The conventional path is `/.well-known/jwks.json`.
 
 The JWKS endpoint **MUST** be reachable without authentication. The signer **MUST** include the `kid` header in every issued attestation matching a key entry in the published JWKS.
 
 The signer **SHOULD** rotate signing keys at least every 90 days. The signer **MUST** retain superseded public keys in the JWKS for at least the maximum attestation lifetime (60 seconds) plus a 24-hour grace window.
+
+Conforming execution layers that consume attestations **MUST** treat issuer trust as verifier configuration. A valid signature from an untrusted `iss` **MUST** be rejected. Hosted Sigil verifiers default to `sigil-core`; federated deployments add approved issuers explicitly.
 
 ### CR-05 -- Structured Non-Approval Responses
 

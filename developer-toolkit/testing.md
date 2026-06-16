@@ -50,22 +50,37 @@ curl -sS -X POST https://sign-test.sigilcore.com/v1/authorize \
   }'
 ```
 
-The response shape matches production: `intent_attestation`, `policyHash`, and decision metadata. The signing key ID embedded in the JWT header points at the test JWKS, not the prod one.
+The response shape matches production: `intent_attestation`, `policyHash`, and decision metadata. The signing key ID embedded in the JWT header points at the test JWKS, not the prod one. Validate test attestations with the same issuer trust rules you use in production, but keep the test JWKS source scoped to test validation paths.
 
 ### Validating attestations
 
-If your service validates Sigil attestations and you intend to validate both production and test JWTs, fetch the JWKS by `kid` from the JWT header rather than hard-coding a single JWKS URL. Both environments use the same JWT structure; only the signing key differs.
+If your service validates Sigil attestations and you intend to validate both production and test JWTs, configure trusted verification sources instead of hard-coding a single JWKS URL. Each source should include the issuer you trust and the JWKS endpoint you will accept for that environment. Both environments use the same JWT structure; only the signing key differs.
 
 ```ts
-// Pseudocode for a JWKS resolver that handles both environments
+// Pseudocode for a JWKS resolver that handles both environments.
+// Production-only execution paths should omit the sign-test source.
+const trustedSources = [
+  {
+    issuer: 'sigil-core',
+    jwksUrl: 'https://sign.sigilcore.com/.well-known/jwks.json',
+  },
+  {
+    issuer: 'sigil-core',
+    jwksUrl: 'https://sign-test.sigilcore.com/.well-known/jwks.json',
+  },
+];
+
 async function resolveJwk(kid: string) {
-  const prod  = await fetch('https://sign.sigilcore.com/.well-known/jwks.json').then(r => r.json());
-  const test  = await fetch('https://sign-test.sigilcore.com/.well-known/jwks.json').then(r => r.json());
-  return [...prod.keys, ...test.keys].find(k => k.kid === kid);
+  for (const source of trustedSources) {
+    const jwks = await fetch(source.jwksUrl).then(r => r.json());
+    const key = jwks.keys.find((candidate: { kid?: string }) => candidate.kid === kid);
+    if (key) return { key, issuer: source.issuer };
+  }
+  throw new Error('No trusted JWKS source contains this key ID');
 }
 ```
 
-If you only validate production attestations, you can pin the production JWKS URL.
+After signature verification, reject the attestation unless its `iss` claim matches the issuer from a trusted source. If you only validate production attestations, pin the production JWKS URL and the hosted Sigil issuer.
 
 ### What sign-test is not
 
@@ -166,7 +181,7 @@ Pair this with a second step that asserts a known-bad intent receives `DENIED`. 
 
 ## Gotchas
 
-- **Validators that hard-code the production JWKS URL will reject test attestations.** Resolve JWKS by `kid` if you intend to validate both environments.
+- **Validators that hard-code the production JWKS URL will reject test attestations.** Resolve JWKS from configured trusted sources and enforce `iss` after signature verification if you intend to validate both environments.
 - **Production rejects `sk_sigil_test_*` keys** with `SIGIL_API_KEY_WRONG_ENV`. Use a live-format key against production. Test-environment endpoints accept both.
 - **Webhooks registered against a key fire from whichever environment hits that key.** If you do not want test traffic dispatching to your production webhook endpoint, register webhooks separately per environment.
 - **Test-run does not issue an attestation, so downstream RPC/bundler routes will reject it** if you forward the (null) attestation to them. Test-run is for policy validation, not full transaction simulation.

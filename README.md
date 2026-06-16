@@ -64,10 +64,11 @@ The specification defines:
 
 - The structure and claim set of short-lived, Ed25519-signed JWTs (**Intent Attestations**)
 - JWKS publication requirements for conforming signers
+- Trusted issuer validation rules for federated signers
 - Chain binding and commit binding semantics
 - The verification protocol used by gated execution layers (RPC gateways, bundlers, capability brokers)
 
-Any signer — the reference implementation, an audit firm's productized signer, an enterprise's internal signer — that issues attestations conforming to this specification is a valid SOF signer. The `warranty.md` policy schema is the second half of the conformance surface: the attestation spec defines the cryptographic envelope; `warranty.md` defines the policy semantics evaluated before each attestation is issued.
+Any signer, including the reference implementation, an audit firm's productized signer, or an enterprise's internal signer, that issues attestations conforming to this specification is a valid SOF signer. Verifiers still decide which conforming signers they trust; conformance does not make every issuer globally trusted. The `warranty.md` policy schema is the second half of the conformance surface: the attestation spec defines the cryptographic envelope; `warranty.md` defines the policy semantics evaluated before each attestation is issued.
 
 The contract is the specification. Not any single engine. Not any single product.
 

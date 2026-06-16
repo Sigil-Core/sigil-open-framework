@@ -48,18 +48,18 @@ Every conforming Intent Attestation MUST include the following claims. The full 
 
 ## Verification
 
-Verification of any conforming attestation is a self-contained operation. Any party with the issuer's published JWKS can verify any attestation that issuer produced — no Sigil infrastructure required.
+Verification of any conforming attestation is a self-contained operation. Any party with the issuer's published JWKS and a verifier configuration that trusts that issuer can verify any attestation the issuer produced. No Sigil infrastructure required.
 
 The flow:
 
 1. Decode the JWT header to extract `kid` (key identifier).
-2. Fetch the issuer's JWKS (typically `<issuer-domain>/.well-known/jwks.json`).
+2. Select a candidate JWKS from the verifier's configured trusted issuer sources.
 3. Locate the matching public key by `kid`.
 4. Verify the Ed25519 signature.
-5. Validate claims: `exp`, `iat`, `aud`, and the binding fields (`chainId` + `txCommit` or `userOpHash`).
+5. Validate claims: `iss` in the trusted issuer set, `exp`, `iat`, `aud`, and the binding fields (`chainId` + `txCommit` or `userOpHash`).
 6. Optionally cross-check the `policyHash` against the published `warranty.md` to confirm policy version.
 
-The reference implementation publishes its keys at `https://sign.sigilcore.com/.well-known/jwks.json`. Third-party conforming signers publish their own at their own domains. The verification protocol is identical.
+The hosted reference issuer is `sigil-core` and publishes keys at `https://sign.sigilcore.com/.well-known/jwks.json`. Third-party conforming signers publish their own keys at their own domains. Federated verifiers add approved issuer IDs to their trusted issuer set and reject any otherwise valid signature whose `iss` is not configured.
 
 Any JWT library that supports EdDSA can verify a conforming attestation locally.
 
