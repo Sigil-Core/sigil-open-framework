@@ -54,7 +54,7 @@ OEE itself is domain-agnostic. It does not know what industry you are deploying 
 
 - Receive intent declarations from agent frameworks
 - Load and verify the operator's `warranty.md` policy at runtime
-- Evaluate intent against all four policy block types
+- Evaluate intent against all five policy block types
 - Issue signed Intent Attestations for compliant intents
 - Manage consensus hold state (PENDING decisions, 24-hour TTL)
 - Expose the Sigil RPC and Bundler gateway endpoints
@@ -104,14 +104,15 @@ The agent submits a structured JSON payload describing what it is about to do �
 
 **2. Policy Evaluation (Sigil Sign)**
 
-Sigil Sign reads the operator's `warranty.md` at runtime and evaluates the intent against four typed policy blocks:
+Sigil Sign reads the operator's `warranty.md` at runtime and evaluates the intent against five typed policy blocks:
 
 | Block | Type | Behavior on violation |
 |---|---|---|
 | `## evm` | Hard limits on transaction value, chain, and action type | `DENIED` |
 | `## tool_calls` | Blocked tools, blocked domains, blocked commands | `DENIED` |
 | `## custom` | Operator-defined deny expressions | `DENIED` |
-| `## soft_limits` | Daily aggregate caps (ETH value, tool call count) | `PENDING` |
+| `## soft_limits` | Daily aggregate caps (ETH value, tool call count) | Informational |
+| `## execution_limits` | Hard runaway-loop ceilings for tool calls | `DENIED` |
 
 **3. Authorization Decision**
 
@@ -119,7 +120,7 @@ Sigil Sign returns one of three decisions:
 
 - `APPROVED` — intent is within policy. A signed Intent Attestation is issued immediately.
 - `DENIED` — intent violates a hard policy rule. No attestation. Execution is blocked.
-- `PENDING` — intent exceeds a soft limit and requires human review. A consensus hold is created with a 24-hour TTL. No attestation until the hold is resolved.
+- `PENDING` — intent matches a configured approval or consensus gate. A consensus hold is created with a 24-hour TTL. No attestation until the hold is resolved.
 
 **4. Gated Execution**
 
@@ -177,7 +178,7 @@ Agent hooks are the client-side interception layer. Without hooks, OEE governs o
 
 ## Consensus Holds
 
-A consensus hold is a PENDING decision stored with a 24-hour TTL. It is triggered when an intent exceeds a soft limit — not a hard policy violation, but an action requiring human review before proceeding.
+A consensus hold is a PENDING decision stored with a 24-hour TTL. It is triggered by configured approval gates such as EVM consensus thresholds or `email.require_approval`, not by informational `## soft_limits`.
 
 The hold is not optional monitoring. The agent cannot execute the held action until a human resolves the hold. Resolution options are APPROVE (issue attestation) or REJECT (deny permanently). If the hold expires without resolution, it auto-rejects.
 

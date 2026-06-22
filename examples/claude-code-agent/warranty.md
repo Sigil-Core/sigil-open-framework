@@ -51,6 +51,9 @@ deny_if.intent.path contains ".env"
 ## soft_limits
 daily_tool_calls: 1000
 
+## execution_limits
+max_tool_calls_per_task: 50
+
 ## signature
 sigil-sig: REPLACE_WITH_OUTPUT_FROM_SIGNING_TOOL
 ```

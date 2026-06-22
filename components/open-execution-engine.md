@@ -30,6 +30,7 @@ No transaction may execute on-chain without passing this pipeline.
 | `## tool_calls` | Agent tool governance — allowed tools, blocked commands, blocked domains, blocked paths, email approval gate | `DENIED` immediately |
 | `## custom` | Operator-defined deny rules — field match (`deny_if`) and string match (`deny_string`) | `DENIED` immediately |
 | `## soft_limits` | Aggregate daily caps — ETH and tool call volume | `APPROVED` with informational flag — never a hard denial |
+| `## execution_limits` | Hard runaway-loop ceilings for tool calls | `DENIED` immediately |
 
 Class 1 (structural) rules in `## evm` are required for [Core Conformance](/conformance#core-conformance). Class 2 semantic and Class 3 consensus capabilities map to [Extended Conformance](/conformance#extended-conformance) — OEE implements both.
 
