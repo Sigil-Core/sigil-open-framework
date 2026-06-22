@@ -11,21 +11,21 @@ servers and expose no place to run a policy check before a tool fires. Codex fir
 hooks for Bash but not for MCP calls. For this entire class of client, the
 enforcement point is the MCP transport itself.
 
-The Sigil MCP Proxy sits between the client and its MCP servers. Every
-`tools/call` request passes through the proxy, which submits the intent to Sigil
-Sign `/v1/authorize` and forwards, holds, or rejects the call based on the policy
-decision. The client is configured to point at the proxy instead of at the raw
-servers, so no client code changes are required.
+`@sigilcore/mcp-proxy` sits between the client and its MCP servers. Every
+`tools/call` request is evaluated against your operator's `warranty.md` policy via
+Sigil Sign `/v1/authorize` before it reaches the real server, and is wrapped in a
+Sigil Intent Attestation. You change one line in your MCP client config to point a
+server at the proxy. No client code changes are required.
 
 ```
 MCP client (Claude Desktop / Kimi / Codex MCP)
         ↓  tools/call
-Sigil MCP Proxy
+Sigil MCP Proxy (@sigilcore/mcp-proxy)
         ↓  POST /v1/authorize → Sigil Sign
         ↓
 APPROVED → request forwarded to the real MCP server
-DENIED   → JSON-RPC error returned to the client
-PENDING  → call held for human approval
+DENIED   → JSON-RPC error (-32001) returned to the client
+PENDING  → call held for human approval, then resolved or timed out
 ```
 
 <Note>
@@ -37,73 +37,134 @@ PENDING  → call held for human approval
   tool precisely where no native hook exists.
 </Note>
 
-<Note>
-  **Status.** The reference proxy is being open-sourced as `@sigilcore/mcp-proxy`.
-  The enforcement contract described below (intercept `tools/call`, authorize against
-  `/v1/authorize`, map the decision to a JSON-RPC result or error) is stable, and you
-  can implement it against any MCP proxy today. Installation specifics will land here
-  when the package publishes.
-</Note>
+## Quick Start
 
-## Why a Proxy
+```bash
+npm install -g @sigilcore/mcp-proxy
+export SIGIL_API_KEY=sk_sigil_YOUR_KEY
+npx @sigilcore/mcp-proxy -- npx @some/mcp-server
+```
 
-A native pre-tool hook is always preferable when the client has one, because it
-sees every action the agent takes. MCP clients without hooks leave only one
-interception point that does not require forking the client: the MCP wire between
-the client and its tool servers. A proxy on that wire is transparent to the
-client, framework-agnostic, and governs every MCP server the client is configured
-to use, in one place.
+Get an API key at [sigilcore.com/tools/keys](https://sigilcore.com/tools/keys) and
+generate a signed policy at [sigilcore.com/tools/warrant](https://sigilcore.com/tools/warrant).
 
-## How It Works
+## MCP Client Config
 
-1. The proxy speaks MCP to the client and to each upstream server. It advertises
-   the upstream tool catalog unchanged, so the agent sees the same tools.
-2. On every `tools/call`, the proxy builds a Sigil intent from the tool name and
-   arguments, mapping the MCP tool name to a Sigil action type (for example a
-   filesystem write tool maps to `file_write`).
-3. It submits the intent to `/v1/authorize` with `framework` set to the client
-   (`claude-desktop`, `kimi`, or `mcp-proxy` generically).
-4. On `APPROVED` it forwards the call to the upstream server and returns the
-   result. On `DENIED` it returns a JSON-RPC error carrying the policy reason. On
-   `PENDING` it holds the call for human approval.
+Wrap an existing server by changing one line in your MCP client config. The proxy
+launches and supervises the upstream server and authorizes every call to it. This
+form works in any client that reads a standard `mcpServers` block, including
+**Claude Desktop**, **Kimi** (kimi-cli / Kimi Code), and **Codex** MCP config.
 
-## Configuring Claude Desktop
+```jsonc
+{
+  "mcpServers": {
+    "postgres": {
+      "command": "npx",
+      "args": ["@sigilcore/mcp-proxy", "--", "npx", "@some/pg-mcp"]
+    }
+  }
+}
+```
 
-Claude Desktop loads MCP servers from its configuration file (or a Desktop
-Extension). Point each governed server at the Sigil MCP Proxy instead of invoking
-it directly, passing the real server command and your Sigil credentials to the
-proxy. The proxy launches and supervises the upstream server and authorizes every
-call to it.
+For Codex, keep the [Codex Bash hook](../agent-hooks/codex) for shell governance
+alongside the proxy so both surfaces Codex exposes are covered.
 
-The proxy command line takes the upstream server invocation it should wrap, your
-`SIGIL_API_KEY`, and the `framework` identifier to record in the audit log. Exact
-flags ship with the package.
+## Configuration
 
-## Configuring Kimi
+Generate a starter config with `npx @sigilcore/mcp-proxy --init`. Precedence is
+CLI flags > environment variables > config file > defaults.
 
-Kimi (kimi-cli / Kimi Code) is an MCP client with a tool-call approval flow.
-Register the Sigil MCP Proxy as the MCP server entry in the Kimi MCP
-configuration, wrapping the upstream server the same way as above. Sigil policy
-decisions then gate Kimi's MCP tool calls before Kimi's own approval prompt.
+| CLI Flag | Env Var | Config Key | Default |
+|---|---|---|---|
+| `--key` | `SIGIL_API_KEY` | _(env only)_ | (required) |
+| `--sign-url` | `SIGIL_SIGN_URL` | `signUrl` | `https://sign.sigilcore.com` |
+| `--log-level` | `SIGIL_LOG_LEVEL` | `logLevel` | `info` |
+| `--server-id` | — | `serverId` | derived from command/URL |
+| `--server-name` | — | `serverName` | same as serverId |
+| `--pending-timeout` | `SIGIL_PENDING_TIMEOUT` | `pendingTimeout` | `30000` |
+| `--unsafe-bypass` | _(CLI only)_ | _(CLI only)_ | `false` |
+| `--remote` | — | — | — |
+| `--port` | — | — | auto |
 
-## Governing Codex MCP Calls
+### Server Identity
 
-Codex hooks intercept Bash but not MCP. Configure Codex's MCP servers to run
-through the Sigil MCP Proxy so MCP `tools/call` requests are authorized at the
-transport layer, and keep the [Codex Bash hook](../agent-hooks/codex) for shell
-governance. Together they cover both surfaces Codex exposes.
+- **`serverId`** is the binding identity and is security-critical. It is used in the
+  `txCommit` preimage and in policy evaluation. It is auto-derived from the package
+  name (stdio) or the full URL (HTTP) when not set explicitly.
+- **`serverName`** is a display label for logs only and defaults to `serverId`.
 
-## Fail Mode
+## Fail-Closed by Default
 
-Like the agent-hooks adapters, the proxy supports fail-open and fail-closed
-behavior when Sigil Sign is unreachable. Run fail-closed in any environment that
-touches production, external systems, or on-chain actions, so an outage blocks
-rather than silently permits a governed call.
+The proxy is fail-closed: when Sigil Sign is unreachable, tool calls are blocked.
+To allow ungoverned calls during a Sign outage, pass `--unsafe-bypass`. This option
+is intentionally CLI-only (no env var, no config key) so it is always visible in
+your MCP client config.
+
+```bash
+npx @sigilcore/mcp-proxy --unsafe-bypass -- npx @some/mcp-server
+```
+
+Every bypassed call emits an `ungoverned_tool_call` error-level log. Authentication
+failures (401) are never bypassed.
+
+## HTTP/SSE Transport
+
+Proxy a remote MCP server with `--remote`:
+
+```bash
+npx @sigilcore/mcp-proxy --remote https://api.example.com/mcp
+```
+
+Remote servers often require auth. Configure upstream headers in your config file
+using environment variable references. Every header value must reference at least
+one `$IDENTIFIER` env var; raw secrets are rejected at load time.
+
+```json
+{
+  "upstream": {
+    "headers": {
+      "Authorization": "Bearer $UPSTREAM_TOKEN",
+      "X-Custom-Header": "$CUSTOM_HEADER_VALUE"
+    }
+  }
+}
+```
+
+A convenience shortcut for the Authorization header:
+
+```bash
+export SIGIL_UPSTREAM_AUTH="Bearer sk-abc123..."
+npx @sigilcore/mcp-proxy --remote https://api.example.com/mcp
+```
+
+## Extractors
+
+Map tool arguments to Sigil policy fields in `sigil.config.json` so the right
+`warranty.md` rules apply. For example, route a fetch tool's `url` argument to the
+`web_fetch` policy field and a write tool's `path` argument to `file_write`:
+
+```json
+{
+  "extractors": {
+    "fetch": { "url": "url" },
+    "write_file": { "path": "path" }
+  }
+}
+```
+
+## Error Codes
+
+- `-32001` — Sigil policy denial (DENIED, fail-closed block, or hold timeout)
+- `-32002` — Sigil authentication failure (invalid API key)
 
 ## Conformance
 
 The proxy is a client of the SOF enforcement specification, not a signer. It
 submits intents and acts on decisions; the authorization itself is issued by Sigil
-Sign or any [conforming signer](../conformance). The intent wire format is the
-same `/v1/authorize` contract used by every agent-hooks adapter, documented in
+Sign or any [conforming signer](../conformance). The intent wire format is the same
+`/v1/authorize` contract used by every agent-hooks adapter, documented in
 [Getting Started](../getting-started) and [sigil-attestations](../sigil-attestations).
+
+## Source
+
+- npm: [@sigilcore/mcp-proxy](https://www.npmjs.com/package/@sigilcore/mcp-proxy) — MIT License
