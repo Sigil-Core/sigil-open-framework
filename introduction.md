@@ -132,8 +132,17 @@ Without agent-hooks, SOF governs EVM transactions. With agent-hooks, SOF governs
     icon="plug"
     href="/agent-hooks/overview"
   >
-    Install `@sigilcore/agent-hooks` and connect Claude Code, ELIZA, LangChain,
-    OpenClaw, IronClaw, or any framework to your Sigil policy in minutes.
+    Install `@sigilcore/agent-hooks` and connect Claude Code, OpenAI Codex,
+    OpenRouter, Hermes Agent, ELIZA, LangChain, or any framework to your Sigil
+    policy in minutes.
+  </Card>
+  <Card
+    title="Claude Desktop & Kimi (MCP Proxy)"
+    icon="shield-halved"
+    href="/mcp-proxy/overview"
+  >
+    Govern MCP tool calls from clients with no native pre-tool hook. The Sigil MCP
+    Proxy authorizes every `tools/call` at the transport layer.
   </Card>
   <Card
     title="AgentPay (WLFI) Compatibility"

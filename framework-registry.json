@@ -32,6 +32,38 @@
       "docs": "agent-hooks/claude-code"
     },
     {
+      "id": "codex",
+      "name": "OpenAI Codex",
+      "category": "tool",
+      "language": "typescript",
+      "adapter": "checkIntent",
+      "docs": "agent-hooks/codex"
+    },
+    {
+      "id": "openrouter",
+      "name": "OpenRouter",
+      "category": "tool",
+      "language": "typescript",
+      "adapter": "checkIntent",
+      "docs": "agent-hooks/openrouter"
+    },
+    {
+      "id": "hermes",
+      "name": "Hermes Agent",
+      "category": "tool",
+      "language": "typescript",
+      "adapter": "checkIntent",
+      "docs": "agent-hooks/hermes"
+    },
+    {
+      "id": "mcp-proxy",
+      "name": "Sigil MCP Proxy (Claude Desktop, Kimi)",
+      "category": "tool",
+      "language": "typescript",
+      "adapter": "mcp-proxy",
+      "docs": "mcp-proxy/overview"
+    },
+    {
       "id": "eliza",
       "name": "ELIZA",
       "category": "autonomous",

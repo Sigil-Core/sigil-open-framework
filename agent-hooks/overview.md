@@ -41,6 +41,9 @@ PENDING  → action held for human approval
 |---|---|---|---|
 | Generic TypeScript host | `agent-hooks` | `@sigilcore/agent-hooks` | `checkIntent` |
 | Claude Code / Anthropic SDK | `anthropic-sdk` | `@sigilcore/agent-hooks` | `checkAnthropicToolUse` |
+| [OpenAI Codex](./codex) | `codex` | `@sigilcore/agent-hooks` | Codex `PreToolUse` hook (Bash) |
+| [OpenRouter](./openrouter) | `openrouter` | `@sigilcore/agent-hooks` | `checkIntent` on returned tool calls |
+| [Hermes Agent](./hermes) | `hermes` | `@sigilcore/agent-hooks` | Hermes `pre_tool_call` shell hook |
 | ELIZA | `eliza` | `@sigilcore/agent-hooks` | `checkElizaAction` |
 | LangChain | `langchain` | `@sigilcore/agent-hooks` | `wrapLangChainTool` |
 | OpenClaw | `openclaw` | `@sigilcore/agent-hooks` | `createOpenclawSigilHandler` |
@@ -48,6 +51,9 @@ PENDING  → action held for human approval
 | IronClaw | `ironclaw` | `sigil-agent-hooks-ironclaw` | native Rust `Hook` |
 | USD1 AgentPay (WLFI) | `agentpay` | `@sigilcore/agent-hooks` | host-level `checkIntent` wrapper |
 | Any framework | custom | TypeScript or Rust | generic client call |
+
+For MCP clients with no pre-tool hook (Claude Desktop, Kimi), govern MCP tool
+calls at the transport layer with the [Sigil MCP Proxy](../mcp-proxy/overview).
 
 See the [Framework Registry](../framework-registry) for the full list and custom framework usage.
 
