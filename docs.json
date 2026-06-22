@@ -48,10 +48,19 @@
             "pages": [
               "agent-hooks/overview",
               "agent-hooks/claude-code",
+              "agent-hooks/codex",
+              "agent-hooks/openrouter",
+              "agent-hooks/hermes",
               "agent-hooks/eliza",
               "agent-hooks/langchain",
               "agent-hooks/rust",
               "agent-hooks/agentpay"
+            ]
+          },
+          {
+            "group": "MCP Proxy",
+            "pages": [
+              "mcp-proxy/overview"
             ]
           },
           {

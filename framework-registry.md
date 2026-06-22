@@ -37,6 +37,10 @@ These identifiers are exported by `@sigilcore/agent-hooks` as `FRAMEWORKS`.
 |---|---|---|---|
 | `agent-hooks` | Generic TypeScript host | `checkIntent` | [Agent Hooks](agent-hooks/overview) |
 | `anthropic-sdk` | Claude Code / Anthropic SDK | `checkAnthropicToolUse` | [Claude Code](agent-hooks/claude-code) |
+| `codex` | OpenAI Codex | Codex `PreToolUse` hook (Bash) | [Codex](agent-hooks/codex) |
+| `openrouter` | OpenRouter | `checkIntent` on returned tool calls | [OpenRouter](agent-hooks/openrouter) |
+| `hermes` | Hermes Agent | Hermes `pre_tool_call` shell hook | [Hermes Agent](agent-hooks/hermes) |
+| `mcp-proxy` | Sigil MCP Proxy (Claude Desktop, Kimi) | MCP transport interceptor | [MCP Proxy](mcp-proxy/overview) |
 | `eliza` | ELIZA | `checkElizaAction` | [ELIZA](agent-hooks/eliza) |
 | `langchain` | LangChain | `wrapLangChainTool` | [LangChain](agent-hooks/langchain) |
 | `openclaw` | OpenClaw | `createOpenclawSigilHandler` | [Agent Hooks](agent-hooks/overview) |
