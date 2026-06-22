@@ -141,7 +141,7 @@ Sample `DENIED` response:
 }
 ```
 
-The `error_code` and `matched_rule` fields tell you exactly which clause of your `warranty.md` rejected the intent. Use this to verify that a policy edit lands the way you expect before pushing it to production agents.
+For policy denials, the `error_code` and `matched_rule` fields identify the rejected rule when one applies. Infrastructure failures such as `SIGIL_LIMIT_STORE_UNAVAILABLE` may not map to a policy clause. For `## execution_limits`, use a stable `intent.task_id` in test-run payloads to verify per-task ceilings before pushing a policy edit to production agents.
 
 ### Test-run on sign-test
 

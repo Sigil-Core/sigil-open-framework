@@ -48,6 +48,9 @@ deny_if.intent.command contains "SELECT * FROM"
 ## soft_limits
 daily_tool_calls: 500
 
+## execution_limits
+max_tool_calls_per_task: 200
+
 ## signature
 sigil-sig: REPLACE_WITH_OUTPUT_FROM_SIGNING_TOOL
 ```

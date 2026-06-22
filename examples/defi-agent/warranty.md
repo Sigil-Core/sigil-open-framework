@@ -51,6 +51,9 @@ deny_string: "PRIVATE_KEY"
 ## soft_limits
 daily_evm_limit_eth: 50.0
 
+## execution_limits
+max_tool_calls_per_task: 50
+
 ## signature
 sigil-sig: REPLACE_WITH_OUTPUT_FROM_SIGNING_TOOL
 ```

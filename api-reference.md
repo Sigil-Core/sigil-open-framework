@@ -74,7 +74,7 @@ Returns the conformance classes, attestation algorithms, and public verification
 
 Submit an intent for policy authorization
 
-Evaluates an Intent against the deployed warranty.md policy bound to the presenting API key. On approval the response includes a signed Intent Attestation JWT. On denial the response carries a machine-readable error code (e.g. `SIGIL_POLICY_VIOLATION_AMOUNT_EXCEEDED`). Rate-limited to 50 requests per minute per source.
+Evaluates an Intent against the deployed warranty.md policy bound to the presenting API key. On approval the response includes a signed Intent Attestation JWT. On denial the response carries a machine-readable error code, such as `SIGIL_POLICY_VIOLATION_AMOUNT_EXCEEDED` or `SIGIL_LOOP_LIMIT_EXCEEDED`. Include `intent.task_id` when you use per-task execution ceilings. Rate-limited to 50 requests per minute per source.
 
 **Request body:**
 application/json - #/components/schemas/AuthorizeRequest

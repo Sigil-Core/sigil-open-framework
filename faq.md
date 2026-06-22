@@ -157,6 +157,8 @@ description: "Diagnosing policy violations, validation errors, startup failures,
     - `SIGIL_POLICY_VIOLATION_TOKEN_AMOUNT_INVALID`: a token intent's `amount` was missing or unparseable; token amounts fail closed.
     - `SIGIL_POLICY_VIOLATION_BLOCKED_RECIPIENT`: an `email.send` recipient is on `email.blocked_recipients`.
     - `SIGIL_POLICY_VIOLATION_RECIPIENT_NOT_ALLOWED`: a recipient is missing or not on `email.allowed_recipients`.
+    - `SIGIL_LOOP_LIMIT_EXCEEDED`: a `## execution_limits` tool-call ceiling was exceeded.
+    - `SIGIL_LIMIT_STORE_UNAVAILABLE`: Sigil could not read or increment the execution-limit counter, so it failed closed.
   </Accordion>
 
   <Accordion title="I'm getting SIGIL_VALIDATION errors. What's wrong?">

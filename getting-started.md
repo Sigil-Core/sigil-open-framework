@@ -57,7 +57,7 @@ Your warranty.md defines what your agent is allowed to do. The file must be sign
 
 **Use [Sigil Warrant](https://sigilcore.com/tools/warrant)** to generate, sign, and download your `warranty.md`. Two paths are available:
 
-- **Warrant Builder:** guided step-by-step flow covering all four policy blocks. No policy syntax required. Recommended for first-time operators.
+- **Warrant Builder:** guided step-by-step flow covering all five policy blocks. No policy syntax required. Recommended for first-time operators.
 - **Manual Warrant:** write your policy directly in the `warranty.md` format. Full control over every field.
 
 Both paths generate your Ed25519 keypair in the browser (no key material ever leaves your machine), sign the policy, and provide your `LEX_OPERATOR_PUBLIC_KEY` value ready to paste.
@@ -218,6 +218,10 @@ deny_string: DROP TABLE
 daily_evm_limit_eth: 20.0
 daily_tool_calls: 500
 
+## execution_limits
+max_tool_calls_per_task: 50
+max_tool_calls_per_hour: 1000
+
 ## signature
 sigil-sig: <base64url-ed25519-signature>
 ```
@@ -228,8 +232,9 @@ sigil-sig: <base64url-ed25519-signature>
 | `## tool_calls` | Agent tool call allowlist and blocklists. Blocked calls return `DENIED`. For `email.send`, recipient checks run denylist first, then allowlist, then the `require_approval` hold (`PENDING`). Missing recipients with recipient rules present are `DENIED` fail-closed. |
 | `## custom` | Operator-defined deny rules and affirmative allowlists. Deny matches return `DENIED`. `allow_only.<field>` requires the field to equal one of the listed values. A missing field or unlisted value is `DENIED` fail-closed, and deny rules take precedence when both match. |
 | `## soft_limits` | Aggregate daily caps. Evaluation-only; never a hard denial. |
+| `## execution_limits` | Hard runaway-loop ceilings for tool calls. Exceeding a per-task or per-hour ceiling returns `DENIED` with `SIGIL_LOOP_LIMIT_EXCEEDED`. Available on the Developer tier. |
 
-> **Compatibility:** `token.<SYM>.*`, `email.allowed_recipients` / `email.blocked_recipients`, and `allow_only` ship with sigil-sign builds from June 2026 onward. Older runtimes ignore these lines silently. Upgrade the runtime before publishing policies that rely on them. Policies that do not use the new fields keep their existing `policyHash` unchanged.
+> **Compatibility:** `token.<SYM>.*`, `email.allowed_recipients` / `email.blocked_recipients`, `allow_only`, and `execution_limits` ship with sigil-sign builds from June 2026 onward. Older strict runtimes can reject these fields at parse time; upgrade before publishing policies that rely on them. Policies that do not use the new fields keep their existing `policyHash` unchanged.
 
 ### Updating Your Policy
 

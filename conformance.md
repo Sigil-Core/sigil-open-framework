@@ -162,6 +162,7 @@ The signer **MAY** implement Class 2 rule evaluation, including:
 - Per-token threshold rules (`token.<SYM>.*` in `## evm`): `decimals` **MUST** be required for every token rule, a token-carrying intent with no matching rule **MUST** be denied fail-closed, missing or unparseable token amounts **MUST** be denied fail-closed, and ETH-denominated limits **MUST NOT** be applied to token amounts
 - Pinned token contract binding: when a matching token rule includes `addresses`, the intent `targetAddress` **MUST** match one of those addresses
 - `email.send` recipient allowlist/denylist evaluation in the order denylist, allowlist, approval hold
+- `execution_limits` hard ceilings for tool calls, including fail-closed `SIGIL_LIMIT_STORE_UNAVAILABLE` behavior when counter state cannot be updated
 
 ### XR-02 -- Class 3 Consensus Rules
 

@@ -77,6 +77,10 @@ npm install -g @sigilcore/agent-hooks
 import { checkIntent, buildRejectionContext } from '@sigilcore/agent-hooks';
 
 const payload = JSON.parse(await new Response(process.stdin).text());
+const taskId = process.env.SIGIL_TASK_ID
+  ?? payload.session_id
+  ?? payload.conversation_id
+  ?? payload.run_id;
 
 const result = await checkIntent(
   {
@@ -88,12 +92,13 @@ const result = await checkIntent(
     apiKey: process.env.SIGIL_API_KEY,
     agentId: 'codex-cli',
     framework: 'codex',
+    taskId,
     failMode: 'closed',
   },
 );
 
 if (result.decision === 'DENIED' || result.decision === 'PENDING') {
-  const ctx = buildRejectionContext(result);
+  const ctx = buildRejectionContext(result, 'bash');
   process.stdout.write(JSON.stringify({
     hookSpecificOutput: {
       hookEventName: 'PreToolUse',
@@ -111,6 +116,10 @@ Make the package resolvable to the script (a global install plus
 `NODE_PATH=$(npm root -g)` in your shell profile is the simplest path), set
 `SIGIL_API_KEY` in your environment, and Codex will check every Bash command
 against your policy before it runs.
+
+The task id fallback order is `SIGIL_TASK_ID`, then `session_id`, then
+`conversation_id`, then `run_id`. `## execution_limits` uses this value to apply
+per-task tool-call ceilings.
 
 ## How It Works
 

@@ -65,6 +65,10 @@ const TOOL_TO_ACTION = {
 
 const toolName = payload.tool_name;
 const input = payload.tool_input ?? {};
+const taskId = process.env.SIGIL_TASK_ID
+  ?? payload.session_id
+  ?? payload.conversation_id
+  ?? payload.run_id;
 
 const result = await checkIntent(
   {
@@ -78,12 +82,13 @@ const result = await checkIntent(
     apiKey: process.env.SIGIL_API_KEY,
     agentId: 'hermes-agent',
     framework: 'hermes',
+    taskId,
     failMode: 'closed',
   },
 );
 
 if (result.decision === 'DENIED' || result.decision === 'PENDING') {
-  const ctx = buildRejectionContext(result);
+  const ctx = buildRejectionContext(result, TOOL_TO_ACTION[toolName] ?? toolName);
   process.stdout.write(JSON.stringify({ decision: 'block', reason: ctx.sigil_message }));
   process.exit(0);
 }
@@ -96,6 +101,10 @@ Set `SIGIL_API_KEY` in your environment. On first use Hermes prompts once to
 approve the `(event, command)` pair and persists the decision. For non-interactive
 gateway or cron runs, pre-approve with `HERMES_ACCEPT_HOOKS=1` or
 `hooks_auto_accept: true` in `config.yaml`.
+
+The task id fallback order is `SIGIL_TASK_ID`, then `session_id`, then
+`conversation_id`, then `run_id`. `## execution_limits` uses that value to stop
+runaway tool loops within one task.
 
 ## How It Works
 

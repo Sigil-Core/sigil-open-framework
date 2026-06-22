@@ -25,5 +25,8 @@ allow_only.intent.metadata.job_type: research, data_labeling, escrow_release
 deny_if.intent.metadata.job_type contains test
 deny_string: "OPENAI_API_KEY"
 
+## execution_limits
+max_tool_calls_per_task: 50
+
 ## signature
 sigil-sig: REPLACE_WITH_OUTPUT_FROM_SIGNING_TOOL
