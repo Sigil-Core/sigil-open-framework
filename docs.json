@@ -77,7 +77,13 @@
             "pages": [
               "examples/defi-agent/warranty",
               "examples/claude-code-agent/warranty",
-              "examples/api-agent/warranty"
+              "examples/api-agent/warranty",
+              "examples/mcp-server-agent/warranty",
+              "examples/customer-support-agent/warranty",
+              "examples/data-etl-agent/warranty",
+              "examples/read-only-auditor/warranty",
+              "examples/stablecoin-treasury-agent/warranty",
+              "examples/rwa-rebalancing-agent/warranty"
             ]
           },
           {
