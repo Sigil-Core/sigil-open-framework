@@ -133,6 +133,71 @@ description: "Diagnosing policy violations, validation errors, startup failures,
 
 ---
 
+## Data Privacy & Access
+
+<AccordionGroup>
+  <Accordion title="Can Sigil Sign read or collect my customer data?">
+    **No.** Sigil Sign does not have access to your underlying customer data,
+    files, database records, emails, prompts, or model context.
+
+    Sigil Sign sits in the approval path, not your data plane. It only evaluates
+    the authorization envelope your agent sends to `/v1/authorize`: agent ID,
+    framework, chain ID, the requested action, target or tool fields needed for
+    policy checks, optional metadata or context you choose to include, and the
+    signed policy deployed for that API key.
+
+    Do not put raw customer data in optional metadata or context unless your
+    policy explicitly needs that value for enforcement.
+  </Accordion>
+
+  <Accordion title="Does Sigil Sign need credentials for my databases, files, email, or model provider?">
+    **No.** Hosted Sigil Sign does not need database credentials, file-system
+    access, email inbox access, cloud credentials, wallet keys, or model-provider
+    credentials.
+
+    Your agent or gateway asks Sigil Sign whether a proposed action is allowed.
+    If the action complies with your signed policy, Sigil Sign returns a
+    short-lived attestation. Your own runtime and key infrastructure still
+    execute the action.
+  </Accordion>
+
+  <Accordion title="What does Sigil Sign store for audit and billing?">
+    Hosted Sigil Sign stores the minimum operational records needed to meter,
+    audit, and display enforcement decisions:
+
+    - API key account metadata, including email, tier, hashed API key, and the
+      deployed signed policy for that key
+    - Usage events with API key ID, endpoint, timestamp, chain ID when
+      applicable, decision, and the policy rule that triggered a denial or hold
+    - Pending holds with a hash of the intent, method, agent ID, policy rule,
+      policy hash, policy version, and expiry time
+    - Operational logs for service health and debugging
+
+    Sigil Sign does not store the full authorization request body for normal
+    approve or deny decisions. Denial messages, webhook payloads, and logs can
+    include the value that triggered a rule, such as a blocked path, URL,
+    command string, recipient, or metadata field. Keep sensitive content out of
+    enforcement fields unless the policy needs it.
+  </Accordion>
+
+  <Accordion title="Does Sigil use my prompts or customer data to train models?">
+    **No.** Sigil Sign has no LLM in the enforcement path and does not train
+    models on prompts, customer data, or authorization requests.
+
+    The GRC Compiler is separate from Sigil Sign. If you upload compliance
+    documents to generate a policy, those documents are processed only to return
+    the policy output and are governed by the public Privacy Policy.
+  </Accordion>
+
+  <Accordion title="Who can see my enforcement records in Sigil Command?">
+    Only the API key holder can see their own enforcement records. Sigil Command
+    enforces tenant isolation on the server: every request is pinned to the API
+    key ID from the authenticated session, and the client cannot override it.
+  </Accordion>
+</AccordionGroup>
+
+---
+
 ## Errors & Policy Violations
 
 <AccordionGroup>
