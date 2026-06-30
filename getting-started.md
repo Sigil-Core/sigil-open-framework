@@ -29,7 +29,7 @@ The fastest path to your first governed action. The Sigil API handles signing in
 
 **1. Get your API key.** Register your email at [sigilcore.com/tools/keys](https://sigilcore.com/tools/keys) to receive a Developer tier key. 1,000 governed actions per month, free.
 
-**2. Sign your warranty.md.** Use [Sigil Warrant](https://sigilcore.com/tools/warrant) to define your policy and generate a signed `warranty.md`. The tool produces your Ed25519 keypair in the browser, signs the policy, and gives you your `LEX_OPERATOR_PUBLIC_KEY` value.
+**2. Sign your warranty.md.** Use [Sigil Warrant](https://sigilcore.com/tools/warrant) to define your policy and generate a signed `warranty.md`. The tool produces your Ed25519 keypair in the browser, signs the policy, and gives you your `SIGIL_OPERATOR_PUBLIC_KEY` value.
 
 **3. Authorize your first action.** Submit an intent to `POST /v1/authorize` with your API key. If the intent passes your policy, you receive an Ed25519-signed JWT. Attach it to your transaction via `Authorization: Bearer <jwt>` and route through the Sigil RPC gateway.
 
@@ -60,22 +60,22 @@ Your warranty.md defines what your agent is allowed to do. The file must be sign
 - **Warrant Builder:** guided step-by-step flow covering all five policy blocks. No policy syntax required. Recommended for first-time operators.
 - **Manual Warrant:** write your policy directly in the `warranty.md` format. Full control over every field.
 
-Both paths generate your Ed25519 keypair in the browser (no key material ever leaves your machine), sign the policy, and provide your `LEX_OPERATOR_PUBLIC_KEY` value ready to paste.
+Both paths generate your Ed25519 keypair in the browser (no key material ever leaves your machine), sign the policy, and provide your `SIGIL_OPERATOR_PUBLIC_KEY` value ready to paste.
 
-Deploy the signed warranty.md to your server and set `LEX_WARRANTY_PATH` to its location. If you omit this path, the service looks for `config/warranty.md` relative to `process.cwd()`.
+Deploy the signed warranty.md to your server and set `WARRANTY_PATH` to its location. If you omit this path, the service looks for `config/warranty.md` relative to `process.cwd()`.
 
-### 2. LEX_OPERATOR_PUBLIC_KEY environment variable
+### 2. SIGIL_OPERATOR_PUBLIC_KEY environment variable
 
 Set this to the base64url-encoded public key value Sigil Warrant gives you in Step 1. Sigil Lex verifies your policy signature against this key at startup.
 
 ```bash
-LEX_OPERATOR_PUBLIC_KEY=<base64url-encoded-public-key>
+SIGIL_OPERATOR_PUBLIC_KEY=<base64url-encoded-public-key>
 ```
 
 This variable must be present in `.env.local` (development) or your production environment. If it is missing, the service throws with:
 
 ```
-[Lex] LEX_OPERATOR_PUBLIC_KEY is not set.
+[Sigil] SIGIL_OPERATOR_PUBLIC_KEY is not set.
 ```
 
 **Together, these two items form the cryptographic chain:**
@@ -252,10 +252,10 @@ The minimum deployment surface:
 sigil-sign/
   ├── config/
   │   └── warranty.md   # signed operator policy
-  └── .env.local         # LEX_OPERATOR_PUBLIC_KEY
+  └── .env.local         # SIGIL_OPERATOR_PUBLIC_KEY
 ```
 
-Set `LEX_OPERATOR_PUBLIC_KEY` in `.env.local` and place your signed `warranty.md` at the path `LEX_WARRANTY_PATH` points to (defaults to `config/warranty.md`). The prerequisites and execution flow documented above apply identically to self-hosted deployments.
+Set `SIGIL_OPERATOR_PUBLIC_KEY` in `.env.local` and place your signed `warranty.md` at the path `WARRANTY_PATH` points to (defaults to `config/warranty.md`). The prerequisites and execution flow documented above apply identically to self-hosted deployments.
 
 ---
 
