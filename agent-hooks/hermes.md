@@ -16,6 +16,13 @@ Of the popular agent runtimes, Hermes offers the most complete pre-execution
 surface: a single hook governs `terminal`, `write_file`, `patch`, `web_search`,
 `read_file`, and any plugin or MCP tool the agent can reach.
 
+This page documents the current Hermes integration pattern: a shell hook script
+that uses the generic `checkIntent` export. `@sigilcore/agent-hooks` does not
+yet ship a dedicated Hermes export such as `createHermesSigilHook`. Hermes has
+enough runtime nuance that a dedicated adapter is planned, especially for
+payload normalization, block response shaping, task id resolution, hook
+auto-approval guidance, and model-budget checks.
+
 ## Prerequisites
 
 You need a Sigil API key and a signed `warranty.md` policy file deployed to Sigil Sign.
@@ -105,6 +112,17 @@ gateway or cron runs, pre-approve with `HERMES_ACCEPT_HOOKS=1` or
 The task id fallback order is `SIGIL_TASK_ID`, then `session_id`, then
 `conversation_id`, then `run_id`. `## execution_limits` uses that value to stop
 runaway tool loops within one task.
+
+## Model Budget Brakes
+
+The shell hook above gates tool execution only. It does not see provider token
+usage by itself. To enforce `max_model_spend_usd_per_task` or
+`max_model_tokens_per_task`, the Hermes host or plugin must record provider
+usage after model calls and call `checkModelBudget` with the same task id.
+
+That is why Hermes should move from this generic shell-script pattern to a
+dedicated package export. A dedicated adapter can normalize Hermes model usage,
+tool payloads, and block responses in one place.
 
 ## How It Works
 

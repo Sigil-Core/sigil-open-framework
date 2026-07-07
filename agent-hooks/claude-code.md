@@ -9,6 +9,14 @@ description: "Use @sigilcore/agent-hooks with Claude Code and the Anthropic SDK 
 npm install @sigilcore/agent-hooks
 ```
 
+## Adapter Status
+
+Claude Code and the Anthropic SDK already have a dedicated package export:
+`checkAnthropicToolUse`. A future Claude-focused pass should still tighten the
+split between generic Anthropic SDK tool blocks and Claude Code hook packaging,
+because Claude Code has its own local hook setup, environment, and operational
+guidance.
+
 ## Usage
 
 ```typescript
