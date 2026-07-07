@@ -12,6 +12,10 @@ description: "Use agent-hooks-rs for Rust-native Sigil pre-tool authorization an
 
 The Rust crates share contract fixtures with the TypeScript `@sigilcore/agent-hooks` package, so both implementations emit the same `/v1/authorize` request bodies for the same intents.
 
+Scope today: `agent-hooks-rs` covers generic Rust authorization and the native
+IronClaw tool-call hook. It does not cover Hermes, Codex, OpenRouter, AgentPay,
+or other JavaScript host integrations. Those use the TypeScript package today.
+
 ## Installation
 
 ```toml
@@ -94,6 +98,19 @@ The adapter maps common tool aliases to Sigil action names:
 | `wallet_sign` | `wallet_sign` |
 
 Unknown tools pass through as lowercase strings. To customize mapping, implement `ToolIntentMapper` and pass it to `IronclawSigilHook::builder(client).mapper(...)`.
+
+## Model Budget Status
+
+Execution Limits v2 added model spend and token caps through
+`metadata.model_usage` on `model.inference` checks. The TypeScript package now
+ships helper exports for this flow: `recordModelUsage`, `getModelUsageReport`,
+`clearModelUsage`, and `checkModelBudget`.
+
+`agent-hooks-rs` does not yet ship equivalent Rust-native helpers. A Rust host
+can still construct a `SigilIntent` with `action: "model.inference"` and put the
+cumulative usage report in `metadata.model_usage`, but the crate does not yet
+provide a task-local usage ledger, normalization helpers, or an IronClaw-specific
+model-budget hook. Treat that as the current v2 gap for Rust and IronClaw.
 
 ## Configuration
 

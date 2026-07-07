@@ -11,6 +11,12 @@ When an AgentPay agent executes a USD1 transfer on Ethereum (chainId 1) or BNB S
 
 **The layers are additive:** AgentPay handles payment mechanics and key management. Sigil determines whether the agent is authorized to initiate the payment at all. AgentPay tells agents how to spend. Sigil tells agents what they're allowed to do.
 
+This page documents the current host-level `checkIntent` pattern. The package
+does not yet ship a dedicated AgentPay export. AgentPay would benefit from one
+because chain normalization, USD1 transfer metadata, raw transaction commit
+generation, fail-closed defaults, and rejection shaping should not be re-created
+by every host.
+
 ## Usage
 
 ```typescript

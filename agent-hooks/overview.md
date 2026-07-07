@@ -7,7 +7,7 @@ description: "PreToolUse interceptor for autonomous AI agents. Gates tool calls 
 
 `@sigilcore/agent-hooks` is the client-side enforcement layer for Sigil. It intercepts an agent's intended tool call **before** it executes, submits it to the Sigil Sign `/v1/authorize` endpoint, and blocks or holds the action based on the policy decision.
 
-Without agent-hooks, Sigil Sign governs EVM transactions only. With agent-hooks, Sigil governs any agent action on any framework — bash commands, HTTP requests, file writes, wallet signing, and email sends.
+Without agent-hooks, Sigil Sign governs EVM transactions only. With agent-hooks, Sigil governs agent actions at the host boundary: bash commands, HTTP requests, file writes, wallet signing, email sends, and framework-specific tool calls.
 
 The TypeScript package is the JavaScript integration surface. Rust hosts use the companion [`agent-hooks-rs`](./rust) crates, which share the same `/v1/authorize` wire fixtures and add a native IronClaw hook adapter.
 
@@ -37,19 +37,32 @@ PENDING  → action held for human approval
 
 ## Supported Frameworks
 
-| Framework | ID | Package | Adapter |
+Some integrations ship as dedicated package exports. Others are documented
+patterns built on `checkIntent` because the runtime boundary lives in a script,
+host loop, payment wrapper, or transport layer. The dedicated adapters should
+grow over time for popular harnesses where a generic call hides important
+runtime nuance.
+
+### Dedicated Package Adapters
+
+| Framework | ID | Package | Export |
 |---|---|---|---|
 | Generic TypeScript host | `agent-hooks` | `@sigilcore/agent-hooks` | `checkIntent` |
 | Claude Code / Anthropic SDK | `anthropic-sdk` | `@sigilcore/agent-hooks` | `checkAnthropicToolUse` |
-| [OpenAI Codex](./codex) | `codex` | `@sigilcore/agent-hooks` | Codex `PreToolUse` hook (Bash) |
-| [OpenRouter](./openrouter) | `openrouter` | `@sigilcore/agent-hooks` | `checkIntent` on returned tool calls |
-| [Hermes Agent](./hermes) | `hermes` | `@sigilcore/agent-hooks` | Hermes `pre_tool_call` shell hook |
 | ELIZA | `eliza` | `@sigilcore/agent-hooks` | `checkElizaAction` |
 | LangChain | `langchain` | `@sigilcore/agent-hooks` | `wrapLangChainTool` |
 | OpenClaw | `openclaw` | `@sigilcore/agent-hooks` | `createOpenclawSigilHandler` |
 | NVIDIA NemoClaw | `nemoclaw` | `@sigilcore/agent-hooks` | `createOpenclawSigilHandler` |
 | IronClaw | `ironclaw` | `sigil-agent-hooks-ironclaw` | native Rust `Hook` |
-| USD1 AgentPay (WLFI) | `agentpay` | `@sigilcore/agent-hooks` | host-level `checkIntent` wrapper |
+
+### Documented Integration Patterns
+
+| Framework | ID | Package | Current pattern |
+|---|---|---|---|
+| [OpenAI Codex](./codex) | `codex` | `@sigilcore/agent-hooks` | shell `PreToolUse` script built on `checkIntent` |
+| [OpenRouter](./openrouter) | `openrouter` | `@sigilcore/agent-hooks` | host tool-loop wrapper built on `checkIntent` |
+| [Hermes Agent](./hermes) | `hermes` | `@sigilcore/agent-hooks` | shell `pre_tool_call` script built on `checkIntent` |
+| USD1 AgentPay (WLFI) | `agentpay` | `@sigilcore/agent-hooks` | host-level wallet action wrapper built on `checkIntent` |
 | Any framework | custom | TypeScript or Rust | generic client call |
 
 For MCP clients with no pre-tool hook (Claude Desktop, Kimi), govern MCP tool
@@ -62,6 +75,11 @@ See the [Framework Registry](../framework-registry) for the full list and custom
 v2-compatible hosts can use `recordModelUsage`, `getModelUsageReport`, `clearModelUsage`, and `checkModelBudget` to enforce `max_model_spend_usd_per_task` and `max_model_tokens_per_task` from `## execution_limits`.
 
 The host or adapter records provider usage after each model call, then sends the cumulative task total to Sigil Sign as `intent.metadata.model_usage` on a `model.inference` check. Sigil evaluates the signed cap deterministically. It does not call the model provider, proxy inference traffic, or calculate pricing from a provider table.
+
+The v2 model-budget helper surface currently ships in the TypeScript package.
+Rust and IronClaw users can still send `metadata.model_usage` manually through
+the generic Rust client, but `agent-hooks-rs` does not yet expose Rust-native
+ledger helpers equivalent to `recordModelUsage` and `checkModelBudget`.
 
 ## Governed Actions
 

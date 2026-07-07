@@ -16,6 +16,12 @@ Because this hooks the execution step rather than any OpenRouter-specific featur
 the same pattern works for every model OpenRouter routes to. Set
 `framework: 'openrouter'` so the intents are tagged correctly in your audit log.
 
+This page documents the current host-loop pattern built on `checkIntent`.
+`@sigilcore/agent-hooks` does not yet ship a dedicated OpenRouter export.
+OpenRouter would benefit from one because tool-call parsing, tool result
+serialization, provider usage extraction, and model-budget checks all sit in the
+same loop.
+
 ## Prerequisites
 
 - A Sigil API key: [sigilcore.com/tools/keys](https://sigilcore.com/tools/keys)
@@ -125,6 +131,9 @@ remains the single enforcement point.
 
 - This pattern is provider-agnostic. The same `checkIntent` call governs OpenAI,
   Anthropic, Google, and open-weight models served through OpenRouter.
+- For Execution Limits v2 model budgets, record provider usage after each model
+  response and call `checkModelBudget` before the next model step or tool
+  execution. A dedicated OpenRouter adapter should wrap that flow.
 - If you also expose MCP servers to the agent, govern those calls with the
   [Sigil MCP Proxy](../mcp-proxy/overview) so MCP tools are authorized at the
   protocol layer as well.

@@ -149,6 +149,16 @@ which allows the command through on an outage and tags the result with
 `failOpen: true`. Use closed mode for any environment that touches production,
 external systems, or on-chain actions.
 
+## Adapter Status
+
+The current Codex path is a documented shell-script integration built on the
+generic `checkIntent` export. It is not yet a dedicated package export.
+
+Codex would benefit from a dedicated adapter because its hook output shape,
+feature flag setup, Bash-only coverage, task id fallbacks, and MCP/File/Web
+coverage gaps are Codex-specific. A future export should preserve those details
+instead of leaving every user to copy and maintain the script.
+
 ## Governing MCP and File Tools
 
 Codex `PreToolUse` does not yet fire for MCP, `Write`, or `WebSearch`. Two paths
