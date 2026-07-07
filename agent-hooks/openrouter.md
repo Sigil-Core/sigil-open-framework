@@ -16,11 +16,11 @@ Because this hooks the execution step rather than any OpenRouter-specific featur
 the same pattern works for every model OpenRouter routes to. Set
 `framework: 'openrouter'` so the intents are tagged correctly in your audit log.
 
-This page documents the current host-loop pattern built on `checkIntent`.
-`@sigilcore/agent-hooks` does not yet ship a dedicated OpenRouter export.
-OpenRouter would benefit from one because tool-call parsing, tool result
-serialization, provider usage extraction, and model-budget checks all sit in the
-same loop.
+`@sigilcore/agent-hooks` ships a dedicated OpenRouter export:
+`createOpenRouterToolGate`. It parses tool calls, normalizes function names and
+arguments into Sigil intents, and returns rejection context as a tool result.
+Use `recordOpenRouterModelUsageAndCheckBudget` after model responses when your
+signed Warrant includes model spend or token caps.
 
 ## Prerequisites
 
@@ -34,12 +34,12 @@ npm install @sigilcore/agent-hooks
 
 ## Usage
 
-Run `checkIntent` on each returned tool call before executing it. Map the
-function name to a Sigil action type and pass the parsed arguments through as the
-intent fields plus `metadata` for custom policy rules.
+Run the OpenRouter tool gate on each returned tool call before executing it. Map
+your function names to Sigil action types and pass the parsed arguments through
+as intent fields plus `metadata` for custom policy rules.
 
 ```javascript
-import { checkIntent, buildRejectionContext } from '@sigilcore/agent-hooks';
+import { createOpenRouterToolGate } from '@sigilcore/agent-hooks';
 
 const sigilConfig = {
   apiKey: process.env.SIGIL_API_KEY,
@@ -56,30 +56,7 @@ const TOOL_TO_ACTION = {
   transfer: 'wallet.transfer',
 };
 
-async function executeWithSigil(toolCall, runTool) {
-  const name = toolCall.function.name;
-  const args = JSON.parse(toolCall.function.arguments || '{}');
-
-  const result = await checkIntent(
-    {
-      action: TOOL_TO_ACTION[name] ?? name,
-      command: args.command,
-      path: args.path,
-      url: args.url,
-      to: args.to,
-      amount: args.amount,
-      metadata: args,
-    },
-    sigilConfig,
-  );
-
-  if (result.decision !== 'APPROVED') {
-    // Feed the rejection back to the model as the tool result.
-    return JSON.stringify(buildRejectionContext(result));
-  }
-
-  return await runTool(name, args);
-}
+const gateToolCall = createOpenRouterToolGate(sigilConfig, TOOL_TO_ACTION);
 ```
 
 Wire it into the OpenRouter tool-calling loop:
@@ -98,11 +75,17 @@ const message = response.choices[0].message;
 
 if (message.tool_calls) {
   for (const toolCall of message.tool_calls) {
-    const toolResult = await executeWithSigil(toolCall, runTool);
+    const gated = await gateToolCall(toolCall);
+    if (!gated.approved) {
+      messages.push(gated.toolResult);
+      continue;
+    }
+
+    const content = await runTool(gated.name, gated.args);
     messages.push({
       role: 'tool',
       tool_call_id: toolCall.id,
-      content: toolResult,
+      content,
     });
   }
 }
@@ -115,31 +98,31 @@ OpenRouter returns finish_reason: "tool_calls"
         ↓
 For each tool call, before executing:
         ↓
-checkIntent → POST /v1/authorize → Sigil Sign
+createOpenRouterToolGate → POST /v1/authorize → Sigil Sign
         ↓
 APPROVED → host executes the tool
 DENIED   → rejection JSON returned to the model as the tool result
 PENDING  → held; surface for human approval
 ```
 
-On a non-approval, `buildRejectionContext` produces a typed JSON object the model
-understands (`sigil_decision`, `sigil_message`, `sigil_next_steps`), so the agent
-adjusts instead of blindly retrying. The model never executes anything: your host
-remains the single enforcement point.
+On a non-approval, `createOpenRouterToolGate` returns a typed JSON object the
+model understands (`sigil_decision`, `sigil_message`, `sigil_next_steps`) as the
+tool result, so the agent adjusts instead of blindly retrying. The model never
+executes anything: your host remains the single enforcement point.
 
 ## Notes
 
-- This pattern is provider-agnostic. The same `checkIntent` call governs OpenAI,
-  Anthropic, Google, and open-weight models served through OpenRouter.
-- For Execution Limits v2 model budgets, record provider usage after each model
-  response and call `checkModelBudget` before the next model step or tool
-  execution. A dedicated OpenRouter adapter should wrap that flow.
+- This pattern is provider-agnostic. The same OpenRouter tool gate governs
+  OpenAI, Anthropic, Google, and open-weight models served through OpenRouter.
+- For Execution Limits v2 model budgets, call
+  `recordOpenRouterModelUsageAndCheckBudget(response, sigilConfig)` after each
+  model response and before the next model step or tool execution.
 - If you also expose MCP servers to the agent, govern those calls with the
   [Sigil MCP Proxy](../mcp-proxy/overview) so MCP tools are authorized at the
   protocol layer as well.
 - For multi-turn loops, the [OpenRouter Agent SDK](https://openrouter.ai/docs/agent-sdk/call-model/api-reference)
-  manages tool execution for you. Wrap its tool handlers with `executeWithSigil`
-  to keep the same enforcement boundary.
+  manages tool execution for you. Run each returned tool call through
+  `createOpenRouterToolGate` before the host executes the handler.
 
 ## Configuration
 
@@ -149,7 +132,7 @@ remains the single enforcement point.
 | `apiUrl` | `string` | No | `https://sign.sigilcore.com` | Sigil Sign endpoint |
 | `agentId` | `string` | No | `'agent'` | Agent identifier |
 | `framework` | `string` | No | `'agent-hooks'` | Use `'openrouter'` for telemetry and audit routing |
-| `failMode` | `'open' \| 'closed'` | No | `'open'` | Block (`closed`) or allow (`open`) when Sigil is unreachable |
+| `failMode` | `'open' \| 'closed'` | No | `'closed'` in `createOpenRouterToolGate` | Block (`closed`) or allow (`open`) when Sigil is unreachable |
 
 ## Source
 

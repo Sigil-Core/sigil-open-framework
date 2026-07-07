@@ -16,12 +16,10 @@ Of the popular agent runtimes, Hermes offers the most complete pre-execution
 surface: a single hook governs `terminal`, `write_file`, `patch`, `web_search`,
 `read_file`, and any plugin or MCP tool the agent can reach.
 
-This page documents the current Hermes integration pattern: a shell hook script
-that uses the generic `checkIntent` export. `@sigilcore/agent-hooks` does not
-yet ship a dedicated Hermes export such as `createHermesSigilHook`. Hermes has
-enough runtime nuance that a dedicated adapter is planned, especially for
-payload normalization, block response shaping, task id resolution, hook
-auto-approval guidance, and model-budget checks.
+`@sigilcore/agent-hooks` ships a dedicated Hermes export:
+`createHermesPreToolCallHook`. It normalizes Hermes hook payloads, maps common
+tool names to Sigil actions, resolves task ids, and returns Hermes' block shape
+consistently.
 
 ## Prerequisites
 
@@ -58,49 +56,16 @@ Create `~/.hermes/agent-hooks/sigil-pre-tool-call.mjs`:
 
 ```javascript
 #!/usr/bin/env node
-import { checkIntent, buildRejectionContext } from '@sigilcore/agent-hooks';
+import { createHermesPreToolCallHook } from '@sigilcore/agent-hooks';
 
 const payload = JSON.parse(await new Response(process.stdin).text());
+const hook = createHermesPreToolCallHook({
+  apiKey: process.env.SIGIL_API_KEY,
+  agentId: 'hermes-agent',
+  failMode: 'closed',
+});
 
-const TOOL_TO_ACTION = {
-  terminal: 'bash',
-  write_file: 'file_write',
-  patch: 'file_write',
-  web_search: 'web_fetch',
-  web_extract: 'web_fetch',
-};
-
-const toolName = payload.tool_name;
-const input = payload.tool_input ?? {};
-const taskId = process.env.SIGIL_TASK_ID
-  ?? payload.session_id
-  ?? payload.conversation_id
-  ?? payload.run_id;
-
-const result = await checkIntent(
-  {
-    action: TOOL_TO_ACTION[toolName] ?? toolName,
-    command: input.command,
-    path: input.path,
-    url: input.url,
-    metadata: input,
-  },
-  {
-    apiKey: process.env.SIGIL_API_KEY,
-    agentId: 'hermes-agent',
-    framework: 'hermes',
-    taskId,
-    failMode: 'closed',
-  },
-);
-
-if (result.decision === 'DENIED' || result.decision === 'PENDING') {
-  const ctx = buildRejectionContext(result, TOOL_TO_ACTION[toolName] ?? toolName);
-  process.stdout.write(JSON.stringify({ decision: 'block', reason: ctx.sigil_message }));
-  process.exit(0);
-}
-
-process.stdout.write('{}');
+process.stdout.write(JSON.stringify(await hook(payload)));
 process.exit(0);
 ```
 
@@ -109,20 +74,17 @@ approve the `(event, command)` pair and persists the decision. For non-interacti
 gateway or cron runs, pre-approve with `HERMES_ACCEPT_HOOKS=1` or
 `hooks_auto_accept: true` in `config.yaml`.
 
-The task id fallback order is `SIGIL_TASK_ID`, then `session_id`, then
-`conversation_id`, then `run_id`. `## execution_limits` uses that value to stop
-runaway tool loops within one task.
+The adapter resolves task ids in this order: `SIGIL_TASK_ID`, `config.taskId`,
+`session_id`, `conversation_id`, then `run_id`. `## execution_limits` uses that
+value to stop runaway tool loops within one task.
 
 ## Model Budget Brakes
 
 The shell hook above gates tool execution only. It does not see provider token
 usage by itself. To enforce `max_model_spend_usd_per_task` or
 `max_model_tokens_per_task`, the Hermes host or plugin must record provider
-usage after model calls and call `checkModelBudget` with the same task id.
-
-That is why Hermes should move from this generic shell-script pattern to a
-dedicated package export. A dedicated adapter can normalize Hermes model usage,
-tool payloads, and block responses in one place.
+usage after model calls with `recordModelUsage` and call `checkModelBudget` with
+the same task id.
 
 ## How It Works
 

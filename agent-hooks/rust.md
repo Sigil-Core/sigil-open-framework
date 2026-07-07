@@ -102,15 +102,44 @@ Unknown tools pass through as lowercase strings. To customize mapping, implement
 ## Model Budget Status
 
 Execution Limits v2 added model spend and token caps through
-`metadata.model_usage` on `model.inference` checks. The TypeScript package now
-ships helper exports for this flow: `recordModelUsage`, `getModelUsageReport`,
-`clearModelUsage`, and `checkModelBudget`.
+`metadata.model_usage` on `model.inference` checks. `sigil-agent-hooks-core`
+ships Rust-native helpers for this flow:
 
-`agent-hooks-rs` does not yet ship equivalent Rust-native helpers. A Rust host
-can still construct a `SigilIntent` with `action: "model.inference"` and put the
-cumulative usage report in `metadata.model_usage`, but the crate does not yet
-provide a task-local usage ledger, normalization helpers, or an IronClaw-specific
-model-budget hook. Treat that as the current v2 gap for Rust and IronClaw.
+- `record_model_usage`
+- `get_model_usage_report`
+- `clear_model_usage`
+- `check_model_budget`
+- `normalize_model_usage`
+
+```rust
+use sigil_agent_hooks_core::{
+    SigilModelUsage, check_model_budget, record_model_usage,
+};
+
+record_model_usage(
+    &client,
+    SigilModelUsage {
+        provider: Some("anthropic".to_string()),
+        model: Some("claude-sonnet-4".to_string()),
+        input_tokens: Some(100),
+        output_tokens: Some(25),
+        estimated_spend_usd: Some("0.25".to_string()),
+        ..SigilModelUsage::default()
+    },
+    None,
+)?;
+
+let result = check_model_budget(&client, None).await?;
+```
+
+The helper accumulates per-task usage for 24 hours, serializes the cumulative
+report as `metadata.model_usage`, and sends `action: "model.inference"` with the
+resolved task id. Spend accumulation uses integer microdollar math internally.
+
+IronClaw's native hook currently sees `BeforeToolCall` events only. If your
+IronClaw host owns the model provider call, wrap that provider call with the
+core helpers above. Do not claim automatic IronClaw model-budget enforcement
+unless your host has recorded provider usage and called `check_model_budget`.
 
 ## Configuration
 
@@ -119,6 +148,7 @@ model-budget hook. Treat that as the current v2 gap for Rust and IronClaw.
 | `builder(api_key)` | required | Sigil API key |
 | `.api_url(url)` | `https://sign.sigilcore.com` | Sigil Sign API URL |
 | `.agent_id(id)` | `"agent"` | Agent identifier |
+| `.task_id(id)` | generated when needed | Stable task id for execution limits and model budgets |
 | `.framework(id)` | `AgentHooks` | Framework identifier for the authorize request |
 | `.fail_mode(mode)` | `Closed` | Behavior when Sigil is unreachable |
 | `.request_timeout(dur)` | `5s` | HTTP request timeout |

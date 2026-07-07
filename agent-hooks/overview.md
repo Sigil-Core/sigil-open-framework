@@ -53,17 +53,18 @@ runtime nuance.
 | LangChain | `langchain` | `@sigilcore/agent-hooks` | `wrapLangChainTool` |
 | OpenClaw | `openclaw` | `@sigilcore/agent-hooks` | `createOpenclawSigilHandler` |
 | NVIDIA NemoClaw | `nemoclaw` | `@sigilcore/agent-hooks` | `createOpenclawSigilHandler` |
+| [OpenAI Codex](./codex) | `codex` | `@sigilcore/agent-hooks` | `createCodexPreToolUseHook` |
+| [Hermes Agent](./hermes) | `hermes` | `@sigilcore/agent-hooks` | `createHermesPreToolCallHook` |
+| [OpenRouter](./openrouter) | `openrouter` | `@sigilcore/agent-hooks` | `createOpenRouterToolGate` |
+| USD1 AgentPay (WLFI) | `agentpay` | `@sigilcore/agent-hooks` | `checkAgentPayTransfer` |
 | IronClaw | `ironclaw` | `sigil-agent-hooks-ironclaw` | native Rust `Hook` |
 
 ### Documented Integration Patterns
 
 | Framework | ID | Package | Current pattern |
 |---|---|---|---|
-| [OpenAI Codex](./codex) | `codex` | `@sigilcore/agent-hooks` | shell `PreToolUse` script built on `checkIntent` |
-| [OpenRouter](./openrouter) | `openrouter` | `@sigilcore/agent-hooks` | host tool-loop wrapper built on `checkIntent` |
-| [Hermes Agent](./hermes) | `hermes` | `@sigilcore/agent-hooks` | shell `pre_tool_call` script built on `checkIntent` |
-| USD1 AgentPay (WLFI) | `agentpay` | `@sigilcore/agent-hooks` | host-level wallet action wrapper built on `checkIntent` |
-| Any framework | custom | TypeScript or Rust | generic client call |
+| IronClaw model budgets | `ironclaw` | `sigil-agent-hooks-core` | host wraps model provider calls and invokes Rust model-budget helpers |
+| Any framework | custom | TypeScript or Rust | generic client call with runtime-specific glue |
 
 For MCP clients with no pre-tool hook (Claude Desktop, Kimi), govern MCP tool
 calls at the transport layer with the [Sigil MCP Proxy](../mcp-proxy/overview).
@@ -76,10 +77,14 @@ v2-compatible hosts can use `recordModelUsage`, `getModelUsageReport`, `clearMod
 
 The host or adapter records provider usage after each model call, then sends the cumulative task total to Sigil Sign as `intent.metadata.model_usage` on a `model.inference` check. Sigil evaluates the signed cap deterministically. It does not call the model provider, proxy inference traffic, or calculate pricing from a provider table.
 
-The v2 model-budget helper surface currently ships in the TypeScript package.
-Rust and IronClaw users can still send `metadata.model_usage` manually through
-the generic Rust client, but `agent-hooks-rs` does not yet expose Rust-native
-ledger helpers equivalent to `recordModelUsage` and `checkModelBudget`.
+The v2 model-budget helper surface ships in both packages. TypeScript hosts use
+`recordModelUsage`, `getModelUsageReport`, `clearModelUsage`, and
+`checkModelBudget`. Rust hosts use `record_model_usage`,
+`get_model_usage_report`, `clear_model_usage`, and `check_model_budget`.
+
+IronClaw's native hook currently sees `BeforeToolCall` events, not provider
+usage. Use the Rust core helpers in the host code that wraps model provider
+calls, then let the IronClaw hook continue to gate tool execution.
 
 ## Governed Actions
 
