@@ -57,6 +57,12 @@ calls at the transport layer with the [Sigil MCP Proxy](../mcp-proxy/overview).
 
 See the [Framework Registry](../framework-registry) for the full list and custom framework usage.
 
+## Model Budget Brakes
+
+v2-compatible hosts can use `recordModelUsage`, `getModelUsageReport`, `clearModelUsage`, and `checkModelBudget` to enforce `max_model_spend_usd_per_task` and `max_model_tokens_per_task` from `## execution_limits`.
+
+The host or adapter records provider usage after each model call, then sends the cumulative task total to Sigil Sign as `intent.metadata.model_usage` on a `model.inference` check. Sigil evaluates the signed cap deterministically. It does not call the model provider, proxy inference traffic, or calculate pricing from a provider table.
+
 ## Governed Actions
 
 | Action | Description |
