@@ -12,13 +12,12 @@ intended action to Sigil Sign `/v1/authorize` and blocks when the policy returns
 `DENIED`.
 
 <Note>
-  **Coverage today.** Codex `PreToolUse` currently intercepts the **Bash tool only**.
-  It does not fire for `Write`, `WebSearch`, `apply_patch`, or MCP tool calls, and it
-  does not catch every shell path (a model can write a script to disk and run it).
-  Treat this as a strong guardrail on shell execution, not a complete enforcement
-  boundary. To govern MCP tool calls from Codex, route them through the
-  [Sigil MCP Proxy](../mcp-proxy/overview). Codex hooks are experimental and are
-  currently disabled on Windows. Track the
+  **Coverage today.** Codex `PreToolUse` currently supports Bash, file edits
+  through `apply_patch` with `Edit` and `Write` matcher aliases, and MCP tool
+  calls. It still does not intercept WebSearch or every rich shell-streaming
+  path. Treat this as a strong guardrail, not a complete enforcement boundary.
+  For broader MCP governance, route tools through the
+  [Sigil MCP Proxy](../mcp-proxy/overview). Track the
   [Codex hooks docs](https://developers.openai.com/codex/hooks) as coverage expands.
 </Note>
 
@@ -57,6 +56,46 @@ In `~/.codex/hooks.json` (global) or `<repo>/.codex/hooks.json` (per project):
             "statusMessage": "Sigil policy check"
           }
         ]
+      },
+      {
+        "matcher": "apply_patch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ~/.codex/hooks/sigil-pretooluse.mjs",
+            "statusMessage": "Sigil policy check"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ~/.codex/hooks/sigil-pretooluse.mjs",
+            "statusMessage": "Sigil policy check"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ~/.codex/hooks/sigil-pretooluse.mjs",
+            "statusMessage": "Sigil policy check"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__filesystem__read_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ~/.codex/hooks/sigil-pretooluse.mjs",
+            "statusMessage": "Sigil policy check"
+          }
+        ]
       }
     ]
   }
@@ -74,39 +113,20 @@ npm install -g @sigilcore/agent-hooks
 
 ```javascript
 #!/usr/bin/env node
-import { checkIntent, buildRejectionContext } from '@sigilcore/agent-hooks';
+import { createCodexPreToolUseHook } from '@sigilcore/agent-hooks';
 
-const payload = JSON.parse(await new Response(process.stdin).text());
-const taskId = process.env.SIGIL_TASK_ID
-  ?? payload.session_id
-  ?? payload.conversation_id
-  ?? payload.run_id;
+const chunks = [];
+for await (const chunk of process.stdin) chunks.push(chunk);
+const payload = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+const hook = createCodexPreToolUseHook({
+  apiKey: process.env.SIGIL_API_KEY,
+  agentId: 'codex-cli',
+  failMode: 'closed',
+});
 
-const result = await checkIntent(
-  {
-    action: 'bash',
-    command: payload.tool_input?.command,
-    metadata: payload.tool_input,
-  },
-  {
-    apiKey: process.env.SIGIL_API_KEY,
-    agentId: 'codex-cli',
-    framework: 'codex',
-    taskId,
-    failMode: 'closed',
-  },
-);
-
-if (result.decision === 'DENIED' || result.decision === 'PENDING') {
-  const ctx = buildRejectionContext(result, 'bash');
-  process.stdout.write(JSON.stringify({
-    hookSpecificOutput: {
-      hookEventName: 'PreToolUse',
-      permissionDecision: 'deny',
-      permissionDecisionReason: ctx.sigil_message,
-    },
-  }));
-  process.exit(0);
+const output = await hook(payload);
+if (output) {
+  process.stdout.write(JSON.stringify(output));
 }
 
 process.exit(0);
@@ -114,27 +134,28 @@ process.exit(0);
 
 Make the package resolvable to the script (a global install plus
 `NODE_PATH=$(npm root -g)` in your shell profile is the simplest path), set
-`SIGIL_API_KEY` in your environment, and Codex will check every Bash command
-against your policy before it runs.
+`SIGIL_API_KEY` in your environment, and Codex will check Bash, file edits, and
+the registered MCP tools against your policy before they run. Add one matcher
+entry per MCP tool name you expose.
 
-The task id fallback order is `SIGIL_TASK_ID`, then `session_id`, then
-`conversation_id`, then `run_id`. `## execution_limits` uses this value to apply
-per-task tool-call ceilings.
+The adapter resolves task ids in this order: `config.taskId`, `session_id`,
+`conversation_id`, `run_id`, `turn_id`, then `SIGIL_TASK_ID`. `## execution_limits`
+uses this value to apply per-task tool-call ceilings.
 
 ## How It Works
 
-Codex pipes a JSON payload to the hook on `stdin`. For a Bash call the relevant
-field is `tool_input.command`. The script maps it to the Sigil `bash` action,
-submits it to `/v1/authorize`, and on a `DENIED` or `PENDING` decision writes the
-documented Codex block shape to `stdout`. Codex then refuses the command and
-returns the reason to the model.
+Codex pipes a JSON payload to the hook on `stdin`. The adapter maps Bash to
+`bash`, `apply_patch`/`Edit`/`Write` to `file_write`, and MCP tool names to their
+lowercase canonical names. On a `DENIED` or `PENDING` decision it writes the
+documented Codex `hookSpecificOutput.permissionDecision = "deny"` shape to
+`stdout`. Codex then refuses the tool call and returns the reason to the model.
 
 ```
 Codex about to run Bash
         ↓
 PreToolUse hook (sigil-pretooluse.mjs)
         ↓
-checkIntent → POST /v1/authorize → Sigil Sign
+createCodexPreToolUseHook maps the tool → POST /v1/authorize → Sigil Sign
         ↓
 APPROVED → command runs
 DENIED   → permissionDecision: "deny" returned to Codex
@@ -151,25 +172,20 @@ external systems, or on-chain actions.
 
 ## Adapter Status
 
-The current Codex path is a documented shell-script integration built on the
-generic `checkIntent` export. It is not yet a dedicated package export.
-
-Codex would benefit from a dedicated adapter because its hook output shape,
-feature flag setup, Bash-only coverage, task id fallbacks, and MCP/File/Web
-coverage gaps are Codex-specific. A future export should preserve those details
-instead of leaving every user to copy and maintain the script.
+Codex has a dedicated package export: `createCodexPreToolUseHook`. It preserves
+the current Codex deny shape, framework id, task id fallbacks, fail-closed
+default, and coverage warnings in request metadata.
 
 ## Governing MCP and File Tools
 
-Codex `PreToolUse` does not yet fire for MCP, `Write`, or `WebSearch`. Two paths
-close that gap:
+Codex `PreToolUse` covers matching MCP tool calls and file edits through
+`apply_patch`. Two paths still matter:
 
-- **MCP tool calls:** point Codex at the [Sigil MCP Proxy](../mcp-proxy/overview)
-  instead of the raw MCP servers. Every MCP `tools/call` is then authorized before
-  it reaches the server.
-- **File and web tools:** governed natively once Codex extends hook coverage to
-  those tools. The same script pattern applies, with the matcher widened and the
-  action mapped from the tool name.
+- **MCP tool calls:** use the adapter for matched calls, or point Codex at the
+  [Sigil MCP Proxy](../mcp-proxy/overview) when you need protocol-level
+  enforcement for every MCP `tools/call`.
+- **Web tools:** governed natively once Codex extends hook coverage to WebSearch
+  and related non-shell tools.
 
 ## Configuration
 

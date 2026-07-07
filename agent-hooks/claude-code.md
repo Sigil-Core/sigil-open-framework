@@ -12,10 +12,9 @@ npm install @sigilcore/agent-hooks
 ## Adapter Status
 
 Claude Code and the Anthropic SDK already have a dedicated package export:
-`checkAnthropicToolUse`. A future Claude-focused pass should still tighten the
-split between generic Anthropic SDK tool blocks and Claude Code hook packaging,
-because Claude Code has its own local hook setup, environment, and operational
-guidance.
+`checkAnthropicToolUse`. Use the generic model-budget helpers
+`recordModelUsage` and `checkModelBudget` around Anthropic SDK responses when
+the host owns the model loop and can read response usage.
 
 ## Usage
 

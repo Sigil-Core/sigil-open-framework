@@ -11,35 +11,33 @@ When an AgentPay agent executes a USD1 transfer on Ethereum (chainId 1) or BNB S
 
 **The layers are additive:** AgentPay handles payment mechanics and key management. Sigil determines whether the agent is authorized to initiate the payment at all. AgentPay tells agents how to spend. Sigil tells agents what they're allowed to do.
 
-This page documents the current host-level `checkIntent` pattern. The package
-does not yet ship a dedicated AgentPay export. AgentPay would benefit from one
-because chain normalization, USD1 transfer metadata, raw transaction commit
-generation, fail-closed defaults, and rejection shaping should not be re-created
-by every host.
+`@sigilcore/agent-hooks` ships a dedicated AgentPay export:
+`checkAgentPayTransfer`. It normalizes chain id, recipient, transfer amount,
+transaction commit, and AgentPay metadata into a `wallet.transfer` intent. It
+forces `failMode: 'closed'` for value-transfer checks.
 
 ## Usage
 
 ```typescript
-import { checkIntent, buildRejectionContext } from '@sigilcore/agent-hooks';
+import { checkAgentPayTransfer } from '@sigilcore/agent-hooks';
 
 const config = {
   apiKey: process.env.SIGIL_API_KEY!,
   agentId: 'my-agentpay-agent',
-  failMode: 'closed',
 };
 
 // AgentPay initiates a USD1 transfer — Sigil evaluates policy first
-const result = await checkIntent({
-  action: 'wallet.transfer',
+const result = await checkAgentPayTransfer({
   chainId: 1,                          // Ethereum mainnet
-  to: '0xRecipientAddress',
+  recipient: '0xRecipientAddress',
   amount: '1000000000000000000',       // 1 USD1 in wei
   txCommit: sha256(rawTx),
+  token: 'USD1',
 }, config);
 
-if (result.decision !== 'APPROVED') {
+if (!result.approved) {
   // Block the AgentPay transfer — policy not satisfied
-  return buildRejectionContext(result, 'wallet.transfer');
+  return result.rejection;
 }
 // AgentPay proceeds with signing
 ```
