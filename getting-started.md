@@ -221,6 +221,8 @@ daily_tool_calls: 500
 ## execution_limits
 max_tool_calls_per_task: 50
 max_tool_calls_per_hour: 1000
+max_model_spend_usd_per_task: "5.00"
+max_model_tokens_per_task: 50000
 
 ## signature
 sigil-sig: <base64url-ed25519-signature>
@@ -232,9 +234,11 @@ sigil-sig: <base64url-ed25519-signature>
 | `## tool_calls` | Agent tool call allowlist and blocklists. Blocked calls return `DENIED`. For `email.send`, recipient checks run denylist first, then allowlist, then the `require_approval` hold (`PENDING`). Missing recipients with recipient rules present are `DENIED` fail-closed. |
 | `## custom` | Operator-defined deny rules and affirmative allowlists. Deny matches return `DENIED`. `allow_only.<field>` requires the field to equal one of the listed values. A missing field or unlisted value is `DENIED` fail-closed, and deny rules take precedence when both match. |
 | `## soft_limits` | Aggregate daily caps. Evaluation-only; never a hard denial. |
-| `## execution_limits` | Hard runaway-loop ceilings for tool calls. Exceeding a per-task or per-hour ceiling returns `DENIED` with `SIGIL_LOOP_LIMIT_EXCEEDED`. Available on the Developer tier. |
+| `## execution_limits` | Hard runaway-loop ceilings for tool calls and model budget brakes. Tool-call overages return `DENIED` with `SIGIL_LOOP_LIMIT_EXCEEDED`. Model budget overages return `SIGIL_MODEL_SPEND_LIMIT_EXCEEDED` or `SIGIL_MODEL_TOKEN_LIMIT_EXCEEDED`. Available on the Developer tier. |
 
-> **Compatibility:** `token.<SYM>.*`, `email.allowed_recipients` / `email.blocked_recipients`, `allow_only`, and `execution_limits` ship with sigil-sign builds from June 2026 onward. Older strict runtimes can reject these fields at parse time; upgrade before publishing policies that rely on them. Policies that do not use the new fields keep their existing `policyHash` unchanged.
+Model budget brakes require a compatible adapter to report cumulative provider usage for the current `intent.task_id` in `intent.metadata.model_usage`. Sigil does not proxy LLM inference, bill model calls, or maintain a provider price table. Dollar caps depend on adapter-reported `estimated_spend_usd`; token caps depend on provider-reported token usage.
+
+> **Compatibility:** `token.<SYM>.*`, `email.allowed_recipients` / `email.blocked_recipients`, `allow_only`, and tool-call `execution_limits` ship with sigil-sign builds from June 2026 onward. Model budget fields require v2-compatible sigil-sign and adapter builds. Older strict runtimes can reject these fields at parse time; upgrade before publishing policies that rely on them. Policies that do not use the new fields keep their existing `policyHash` unchanged.
 
 ### Updating Your Policy
 

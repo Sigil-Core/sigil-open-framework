@@ -112,7 +112,7 @@ Sigil Sign reads the operator's `warranty.md` at runtime and evaluates the inten
 | `## tool_calls` | Blocked tools, blocked domains, blocked commands | `DENIED` |
 | `## custom` | Operator-defined deny expressions | `DENIED` |
 | `## soft_limits` | Daily aggregate caps (ETH value, tool call count) | Informational |
-| `## execution_limits` | Hard runaway-loop ceilings for tool calls | `DENIED` |
+| `## execution_limits` | Hard runaway-loop ceilings for tool calls and adapter-reported model budget brakes | `DENIED` |
 
 **3. Authorization Decision**
 

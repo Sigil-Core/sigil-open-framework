@@ -144,7 +144,9 @@ Sample `DENIED` response:
 
 For policy denials, the `error_code` and `matched_rule` fields identify the rejected rule when one applies. Infrastructure failures such as `SIGIL_LIMIT_STORE_UNAVAILABLE` may not map to a policy clause.
 
-`/v1/authorize/test-run` does not increment the mutable counters used by `## execution_limits`, so it cannot prove a per-task or per-hour ceiling will deny on the N+1 call. To verify runaway-loop ceilings, deploy the policy to a test key and call `POST https://sign-test.sigilcore.com/v1/authorize` repeatedly with the same `intent.task_id` until the expected `SIGIL_LOOP_LIMIT_EXCEEDED` response appears.
+`/v1/authorize/test-run` does not increment the mutable counters used by tool-call `## execution_limits`, so it cannot prove a per-task or per-hour ceiling will deny on the N+1 call. To verify runaway-loop ceilings, deploy the policy to a test key and call `POST https://sign-test.sigilcore.com/v1/authorize` repeatedly with the same `intent.task_id` until the expected `SIGIL_LOOP_LIMIT_EXCEEDED` response appears.
+
+For model budget brakes, test-run can evaluate the cumulative usage snapshot you send in `intent.metadata.model_usage`. It does not prove your adapter is accumulating usage correctly. Verify adapter integration by running real authorize calls against `sign-test.sigilcore.com` with the same `intent.task_id` and provider-reported totals. If a policy declares `max_model_spend_usd_per_task` or `max_model_tokens_per_task` and the adapter omits usage, Sigil fails closed with `SIGIL_MODEL_USAGE_UNAVAILABLE`.
 
 ### Test-run on sign-test
 
