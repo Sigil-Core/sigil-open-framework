@@ -103,6 +103,7 @@ A simulation endpoint that evaluates an intent against your deployed policy and 
 - Fire webhooks to your registered endpoints.
 - Emit a Stripe meter event.
 - Increment the monthly rate-limit counter.
+- Increment mutable execution-limit counters for `## execution_limits`.
 
 Test-run usage is recorded with a `TEST_RUN` decision so it shows up in dashboards as simulation traffic, distinct from real authorization traffic.
 
@@ -141,7 +142,9 @@ Sample `DENIED` response:
 }
 ```
 
-For policy denials, the `error_code` and `matched_rule` fields identify the rejected rule when one applies. Infrastructure failures such as `SIGIL_LIMIT_STORE_UNAVAILABLE` may not map to a policy clause. For `## execution_limits`, use a stable `intent.task_id` in test-run payloads to verify per-task ceilings before pushing a policy edit to production agents.
+For policy denials, the `error_code` and `matched_rule` fields identify the rejected rule when one applies. Infrastructure failures such as `SIGIL_LIMIT_STORE_UNAVAILABLE` may not map to a policy clause.
+
+`/v1/authorize/test-run` does not increment the mutable counters used by `## execution_limits`, so it cannot prove a per-task or per-hour ceiling will deny on the N+1 call. To verify runaway-loop ceilings, deploy the policy to a test key and call `POST https://sign-test.sigilcore.com/v1/authorize` repeatedly with the same `intent.task_id` until the expected `SIGIL_LOOP_LIMIT_EXCEEDED` response appears.
 
 ### Test-run on sign-test
 
@@ -151,7 +154,7 @@ For policy denials, the `error_code` and `matched_rule` fields identify the reje
 
 1. **Sign a fresh `warranty.md`** with [Sigil Warrant](https://sigilcore.com/tools/warrant) when you are ready to test a policy change.
 2. **Deploy it to your test API key** via `POST https://sign-test.sigilcore.com/v1/warranty/deploy`. The hosted record is per-key, so test-environment changes do not touch production policies.
-3. **Run your agent QA suite** against `sign-test.sigilcore.com`. Real attestations are issued, real webhooks fire, but billing and quota stay clean.
+3. **Run your agent QA suite** against `sign-test.sigilcore.com`. Real attestations are issued, real webhooks fire, and mutable `## execution_limits` counters advance in the isolated test environment, but billing and quota stay clean.
 4. **Cross-check edge cases** with `POST /v1/authorize/test-run` against either environment when you want a side-effect-free decision for a specific intent.
 5. **Promote the policy** by signing it again with the production operator key and deploying via `POST https://sign.sigilcore.com/v1/warranty/deploy`.
 

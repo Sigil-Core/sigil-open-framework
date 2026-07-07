@@ -91,7 +91,7 @@ application/json - #/components/schemas/AuthorizeRequest
 
 Simulate authorization with no side effects
 
-Evaluates the same Intent shape as /v1/authorize against the deployed policy, without issuing an attestation, creating a hold, or firing webhooks. Always returns the strict enforcement-mode decision; if SIGIL_MODE=OBSERVE is active, the response includes `observe_mode_active: true` so callers can distinguish strict from observed outcomes. Test-run rows are excluded from monthly quotas.
+Evaluates the same Intent shape as /v1/authorize against the deployed policy, without issuing an attestation, creating a hold, firing webhooks, or incrementing mutable `## execution_limits` counters. Always returns the strict enforcement-mode decision; if SIGIL_MODE=OBSERVE is active, the response includes `observe_mode_active: true` so callers can distinguish strict from observed outcomes. Test-run rows are excluded from monthly quotas.
 
 **Request body:**
 application/json - #/components/schemas/AuthorizeRequest
