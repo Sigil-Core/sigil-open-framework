@@ -29,7 +29,7 @@ No transaction may execute on-chain without passing this pipeline.
 | `## evm` | Hard limits — max transaction size, action allowlist, chain allowlist, per-chain action overrides, consensus hold threshold | `DENIED` immediately or `PENDING` hold |
 | `## tool_calls` | Agent tool governance — allowed tools, blocked commands, blocked domains, blocked paths, email approval gate | `DENIED` immediately |
 | `## custom` | Operator-defined deny rules — field match (`deny_if`) and string match (`deny_string`) | `DENIED` immediately |
-| `## soft_limits` | Aggregate daily caps — ETH and tool call volume | `APPROVED` with informational flag — never a hard denial |
+| `## soft_limits` | Version-gated aggregate count and USD-sum caps | Informational under 1.x; `DENIED` on breach under 2.0 |
 | `## execution_limits` | Hard runaway-loop ceilings for tool calls | `DENIED` immediately |
 
 Class 1 (structural) rules in `## evm` are required for [Core Conformance](/conformance#core-conformance). Class 2 semantic and Class 3 consensus capabilities map to [Extended Conformance](/conformance#extended-conformance) — OEE implements both.
