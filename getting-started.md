@@ -209,11 +209,6 @@ email.require_approval: true
 email.allowed_recipients: *@yourcompany.com, partner@example.com
 email.blocked_recipients: noreply@yourcompany.com
 
-# Typed HTTP profile (2.0.0; method must be explicit in the submitted intent)
-http.allowed_methods: GET, POST
-http.blocked_methods: DELETE
-http.allowed_hosts: api.example.com, *.uploads.example.com
-
 ## custom
 allow_only.intent.metadata.job_type: research, data_labeling
 deny_if.metadata.phone starts_with +1900
@@ -233,12 +228,33 @@ max_model_tokens_per_task: 50000
 sigil-sig: <base64url-ed25519-signature>
 ```
 
+Policy format 2.0 is opt-in. A typed HTTP policy must declare `version: 2.0.0`; adding HTTP keys to a 1.x policy is a parse error.
+
+```markdown
+version: 2.0.0
+
+## tool_calls
+allowed: http
+http.allowed_methods: GET, POST
+http.blocked_methods: DELETE
+http.allowed_hosts: api.example.com, *.uploads.example.com
+
+## custom
+allow_only[action=http].intent.path starts_with: /v1/posts, /v1/uploads/
+
+## execution_limits
+max_tool_calls_per_task: 50
+
+## signature
+sigil-sig: <base64url-ed25519-signature>
+```
+
 | Section | Behavior |
 |---|---|
 | `## evm` | EVM transaction limits and consensus gates. Violations return `DENIED`. Consensus-gated intents return `PENDING`. Per-token rules (`token.<SYM>.*`) cap ERC-20 spends; an intent carrying a `token` with no matching rule is `DENIED` fail-closed, and ETH-denominated limits never apply to token amounts. |
 | `## tool_calls` | Agent tool call allowlist and blocklists. Blocked calls return `DENIED`. For `email.send`, recipient checks run denylist first, then allowlist, then the `require_approval` hold (`PENDING`). Missing recipients with recipient rules present are `DENIED` fail-closed. |
 | `## custom` | Operator-defined deny rules and affirmative allowlists. In 2.0, `allow_only` supports `equals`, `starts_with`, `ends_with`, `contains`, and bounded `matches`; missing or unlisted values are `DENIED` fail-closed, and deny rules take precedence. |
-| `## soft_limits` | Informational under 1.x; named aggregate caps deny on exceed under 2.0. |
+| `## soft_limits` | Informational under 1.x. Current 2.0 engines reject this block until Phase 2 aggregate enforcement ships. |
 | Typed `http` | 2.0 HTTP intents carry an explicit method and URL; Sign derives host/path/query server-side. Legacy `web_fetch` remains supported but has no known method and cannot satisfy a non-empty HTTP method allowlist. |
 | `## execution_limits` | Hard runaway-loop ceilings for tool calls and model budget brakes. Tool-call overages return `DENIED` with `SIGIL_LOOP_LIMIT_EXCEEDED`. Model budget overages return `SIGIL_MODEL_SPEND_LIMIT_EXCEEDED` or `SIGIL_MODEL_TOKEN_LIMIT_EXCEEDED`. Available on the Developer tier. |
 
@@ -248,7 +264,7 @@ Model budget brakes require a compatible adapter to report cumulative provider u
 
 ### Updating Your Policy
 
-If you update your warranty.md, you must re-sign it with Sigil Warrant before redeploying. An updated but unsigned policy will be rejected at startup. The version field in your policy should be incremented to reflect the change, making the new `policyHash` in subsequent attestations distinguishable from the previous version.
+If you update your warranty.md, you must re-sign it with Sigil Warrant before redeploying. An updated but unsigned policy will be rejected at startup. Keep `version: 2.0.0` unchanged for typed HTTP policies because `version` selects the policy format, not an operator-managed revision. The schema has no separate revision field; `policyHash` changes with the signed policy content and distinguishes one deployed revision from another in subsequent attestations.
 
 ---
 

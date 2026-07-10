@@ -120,7 +120,7 @@ Operators: `contains`, `starts_with`, `ends_with`, `equals`, `not_equals`, `matc
 **Allowlist semantics:** `allow_only` is an affirmative allowlist. In 1.x it keeps exact, case-sensitive matching; in 2.0 it accepts `equals` (the default), `starts_with`/`prefix`, `ends_with`, `contains`, and `matches` operators. A missing or non-matching field is `DENIED` fail-closed with `SIGIL_POLICY_VIOLATION_NOT_ON_ALLOWLIST`. Regex patterns are capped at 256 characters; invalid patterns deny without throwing. **Deny rules win:** deny_if/deny_string are evaluated first, so a value matching both a deny rule and the allowlist is denied with the deny rule's code.
 
 ### `## soft_limits`
-Under 1.x, soft limits are informational metadata flagged for audit but never hard-enforced. Under 2.0, named aggregate caps are enforced and deny actions when exceeded; deploy only after reviewing that semantic change.
+Under 1.x, soft limits are informational metadata flagged for audit but never hard-enforced. Current 2.0 engines reject `## soft_limits`; named aggregate caps remain a Phase 2 release dependency and must not appear in a 2.0 policy yet.
 
 ### `## execution_limits`
 Hard ceilings that stop runaway tool loops before the next tool executes.
