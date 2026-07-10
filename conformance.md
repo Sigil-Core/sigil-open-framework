@@ -203,6 +203,8 @@ The **SOF Conformance Test Suite** is in active development. When released, it w
 - A negative-test corpus for adversarial intent submissions
 - A public registry of certified conforming implementations
 
+The Policy Primitives v2 corpus already tracks pending release-gating cases for [Google Ads bid management](conformance/pending/google-ads-bid-manager.md), [Meta Ads budget operations](conformance/pending/meta-ads-budget-operator.md), and the [Buffer MCP social scheduler](conformance/pending/buffer-social-scheduler.md). These cases are requirements, not deployable examples, until their aggregate-cap, Buffer count-cap, and MCP provenance dependencies ship.
+
 To express interest in early access, open an issue on the [sigil-attestations](https://github.com/Sigil-Core/sigil-attestations/issues) repository with the label `conformance-suite`.
 
 ### Self-Assertion (Interim)
