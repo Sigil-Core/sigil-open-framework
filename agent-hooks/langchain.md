@@ -14,6 +14,8 @@ npm install @sigilcore/agent-hooks
 ```typescript
 import { wrapLangChainTool } from '@sigilcore/agent-hooks';
 
+HTTP note: typed `http` requires an explicit valid method in the tool input. Inputs without a method remain legacy `web_fetch`; no default method is inferred.
+
 const config = {
   apiKey: process.env.SIGIL_API_KEY!,
   agentId: 'my-langchain-agent',

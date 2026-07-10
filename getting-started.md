@@ -209,6 +209,11 @@ email.require_approval: true
 email.allowed_recipients: *@yourcompany.com, partner@example.com
 email.blocked_recipients: noreply@yourcompany.com
 
+# Typed HTTP profile (2.0.0; method must be explicit in the submitted intent)
+http.allowed_methods: GET, POST
+http.blocked_methods: DELETE
+http.allowed_hosts: api.example.com, *.uploads.example.com
+
 ## custom
 allow_only.intent.metadata.job_type: research, data_labeling
 deny_if.metadata.phone starts_with +1900
@@ -232,8 +237,9 @@ sigil-sig: <base64url-ed25519-signature>
 |---|---|
 | `## evm` | EVM transaction limits and consensus gates. Violations return `DENIED`. Consensus-gated intents return `PENDING`. Per-token rules (`token.<SYM>.*`) cap ERC-20 spends; an intent carrying a `token` with no matching rule is `DENIED` fail-closed, and ETH-denominated limits never apply to token amounts. |
 | `## tool_calls` | Agent tool call allowlist and blocklists. Blocked calls return `DENIED`. For `email.send`, recipient checks run denylist first, then allowlist, then the `require_approval` hold (`PENDING`). Missing recipients with recipient rules present are `DENIED` fail-closed. |
-| `## custom` | Operator-defined deny rules and affirmative allowlists. Deny matches return `DENIED`. `allow_only.<field>` requires the field to equal one of the listed values. A missing field or unlisted value is `DENIED` fail-closed, and deny rules take precedence when both match. |
-| `## soft_limits` | Aggregate daily caps. Evaluation-only; never a hard denial. |
+| `## custom` | Operator-defined deny rules and affirmative allowlists. In 2.0, `allow_only` supports `equals`, `starts_with`, `ends_with`, `contains`, and bounded `matches`; missing or unlisted values are `DENIED` fail-closed, and deny rules take precedence. |
+| `## soft_limits` | Informational under 1.x; named aggregate caps deny on exceed under 2.0. |
+| Typed `http` | 2.0 HTTP intents carry an explicit method and URL; Sign derives host/path/query server-side. Legacy `web_fetch` remains supported but has no known method and cannot satisfy a non-empty HTTP method allowlist. |
 | `## execution_limits` | Hard runaway-loop ceilings for tool calls and model budget brakes. Tool-call overages return `DENIED` with `SIGIL_LOOP_LIMIT_EXCEEDED`. Model budget overages return `SIGIL_MODEL_SPEND_LIMIT_EXCEEDED` or `SIGIL_MODEL_TOKEN_LIMIT_EXCEEDED`. Available on the Developer tier. |
 
 Model budget brakes require a compatible adapter to report cumulative provider usage for the current `intent.task_id` in `intent.metadata.model_usage`. Sigil does not proxy LLM inference, bill model calls, or maintain a provider price table. Dollar caps depend on adapter-reported `estimated_spend_usd`; token caps depend on provider-reported token usage.
