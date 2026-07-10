@@ -111,7 +111,7 @@ Sigil Sign reads the operator's `warranty.md` at runtime and evaluates the inten
 | `## evm` | Hard limits on transaction value, chain, and action type | `DENIED` |
 | `## tool_calls` | Blocked tools, blocked domains, blocked commands | `DENIED` |
 | `## custom` | Operator-defined deny expressions | `DENIED` |
-| `## soft_limits` | Daily aggregate caps (ETH value, tool call count) | Informational |
+| `## soft_limits` | Version-gated aggregate count and USD-sum caps | Informational under 1.x; `DENIED` on breach under 2.0 |
 | `## execution_limits` | Hard runaway-loop ceilings for tool calls and adapter-reported model budget brakes | `DENIED` |
 
 **3. Authorization Decision**
@@ -184,7 +184,7 @@ Agent hooks are the client-side interception layer. Without hooks, OEE governs o
 
 ## Consensus Holds
 
-A consensus hold is a PENDING decision stored with a 24-hour TTL. It is triggered by configured approval gates such as EVM consensus thresholds or `email.require_approval`, not by informational `## soft_limits`.
+A consensus hold is a PENDING decision stored with a 24-hour TTL. It is triggered by configured approval gates such as EVM consensus thresholds or `email.require_approval`, not by `## soft_limits`. Under 1.x, soft limits remain informational. Under 2.0, an exceeded aggregate cap returns `DENIED`, never `PENDING`.
 
 The hold is not optional monitoring. The agent cannot execute the held action until a human resolves the hold. Resolution options are APPROVE (issue attestation) or REJECT (deny permanently). If the hold expires without resolution, it auto-rejects.
 

@@ -20,7 +20,7 @@ Both paths produce an identical signed `warranty.md` that Sigil Sign accepts at 
 
 ## File Format
 
-`warranty.md` uses a plain-text, typed-block format. Blocks are defined by `##` headers. At least one of `## evm`, `## tool_calls`, or `## custom` is required.
+`warranty.md` uses a plain-text, typed-block format. Blocks are defined by `##` headers. A 1.x policy requires an enforceable EVM, tool-call, custom, or model-budget rule. A 2.0 policy may also consist of enforced `## soft_limits`.
 
 > **Policy format 2.0.0:** 1.x policies keep their existing semantics. New 2.0 syntax is opt-in through the version line and requires a Sign build that supports the field. Phase 1 adds typed HTTP intents and allow-rule operators; `## mcp` and enforced named caps arrive in later phases.
 
@@ -120,7 +120,44 @@ Operators: `contains`, `starts_with`, `ends_with`, `equals`, `not_equals`, `matc
 **Allowlist semantics:** `allow_only` is an affirmative allowlist. In 1.x it keeps exact, case-sensitive matching; in 2.0 it accepts `equals` (the default), `starts_with`/`prefix`, `ends_with`, `contains`, and `matches` operators. A missing or non-matching field is `DENIED` fail-closed with `SIGIL_POLICY_VIOLATION_NOT_ON_ALLOWLIST`. Regex patterns are capped at 256 characters; invalid patterns deny without throwing. **Deny rules win:** deny_if/deny_string are evaluated first, so a value matching both a deny rule and the allowlist is denied with the deny rule's code.
 
 ### `## soft_limits`
-Under 1.x, soft limits are informational metadata flagged for audit but never hard-enforced. Current 2.0 engines reject `## soft_limits`; named aggregate caps remain a Phase 2 release dependency and must not appear in a 2.0 policy yet.
+`## soft_limits` is version-gated. Under 1.x, its legacy fields remain informational metadata and do not change an authorization decision. Under 2.0, declared limits are enforced after the engine approves the matching action type or namespace, and an exceeded cap returns `DENIED`. Existing signed 1.x policies keep their original behavior until an operator explicitly upgrades and re-signs them. A cap on a namespace the current engine does not approve cannot make that namespace executable.
+
+Policy format 2.0 supports legacy daily limits and named caps:
+
+```markdown
+## soft_limits
+daily_tool_calls: 500
+daily_evm_limit_eth: 20.0
+
+cap.linkedin_posts.max_count: 2
+cap.linkedin_posts.window: day
+cap.linkedin_posts.action: mcp.buffer.create_post
+cap.linkedin_posts.group_by: metadata.arguments.channelId
+
+cap.ad_spend.max_sum_usd: 500.00
+cap.ad_spend.window: day
+cap.ad_spend.action: mcp.google-ads.*
+cap.ad_spend.amount_field: metadata.arguments.budget_usd
+```
+
+<Note>
+  The `mcp.*` action strings above are forward-compatible policy vectors. Sign accepts and hashes the cap grammar now, but the MCP action namespace remains denied until the Phase 3 taxonomy and provenance release. Phase 2 aggregate enforcement is live for action types the current engine already approves, including typed `http` intents.
+</Note>
+
+| Field | Description |
+|---|---|
+| `cap.<name>.max_count` | Positive integer count ceiling. Mutually exclusive with `max_sum_usd` |
+| `cap.<name>.max_sum_usd` | Positive USD ceiling with up to six decimal places. Mutually exclusive with `max_count` |
+| `cap.<name>.window` | Counter window: `day`, `hour`, or `task` |
+| `cap.<name>.action` | Exact action or one trailing `*` prefix wildcard |
+| `cap.<name>.group_by` | Optional intent field path that creates an independent counter per value |
+| `cap.<name>.amount_field` | Required decimal-string intent field path for a USD sum cap |
+
+The counter key combines the API key, cap name, group value, and window bucket. Sign increments counters only after the base policy approves the intent. Base-policy `DENIED` and `PENDING` decisions do not consume aggregate budget. A missing or non-string `amount_field` value fails closed with `SIGIL_AGGREGATE_FIELD_MISSING`. Counter-store failure fails closed with `SIGIL_LIMIT_STORE_UNAVAILABLE`.
+
+<Warning>
+  `day` and `hour` use UTC calendar buckets, not rolling windows or the operator's local timezone. The reserved `window_days`, `window_hours`, and `timezone` keys are not supported yet and cause a parse error.
+</Warning>
 
 ### `## execution_limits`
 Hard ceilings that stop runaway tool loops before the next tool executes.
