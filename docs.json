@@ -35,6 +35,14 @@
             ]
           },
           {
+            "group": "Pending Policy Corpus",
+            "pages": [
+              "conformance/pending/google-ads-bid-manager",
+              "conformance/pending/meta-ads-budget-operator",
+              "conformance/pending/buffer-social-scheduler"
+            ]
+          },
+          {
             "group": "Developer Toolkit",
             "pages": [
               "developer-toolkit/quick-start",
@@ -76,6 +84,7 @@
           {
             "group": "Examples",
             "pages": [
+              "examples/cms-publisher-agent/warranty",
               "examples/defi-agent/warranty",
               "examples/claude-code-agent/warranty",
               "examples/api-agent/warranty",
