@@ -129,6 +129,18 @@ description: "Diagnosing policy violations, validation errors, startup failures,
     Warrant after signing. Compare it to the `policyHash` in any attestation
     JWT to confirm the right policy was evaluated.
   </Accordion>
+
+  <Accordion title="Does blocking bash commands block network access?">
+    **No.** `bashBlockedCommands` checks the command string before the shell
+    starts. It can deny a command whose declared text matches policy.
+    Child-process network egress is not intercepted after shell execution
+    begins. It is a command-string control, not a network control.
+
+    For agents governed on SaaS surfaces, omit `bash` from `tool_calls.allowed`
+    when the agent does not need a shell and allow only the required tool
+    classes. If the agent requires `bash`, document the child-process network
+    boundary and apply a separate network control or explicit risk acceptance.
+  </Accordion>
 </AccordionGroup>
 
 ---

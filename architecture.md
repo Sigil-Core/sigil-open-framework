@@ -126,6 +126,12 @@ Sigil Sign returns one of three decisions:
 
 The Sigil RPC and Bundler gateway reject any write operation that does not present a valid, unexpired Intent Attestation. The agent cannot bypass this — the gateway is the only path to execution.
 
+### Enforcement Boundary
+
+Enforcement follows the interception point exposed by each integration. For a `bash` intent, the `bash` gate evaluates the submitted command string before execution. Sigil Sign can approve, deny, or hold that command string before the shell starts.
+
+Child-process network egress is not intercepted after shell execution begins. `bashBlockedCommands` evaluates the declared command string. It is a command-string control, not a network control. Operators must not claim network-egress coverage from a `bash` gate alone.
+
 ---
 
 ## Cryptographic Architecture
@@ -166,7 +172,7 @@ No Sigil infrastructure required for verification. Any JWT library that supports
 
 ## Agent Hooks
 
-Agent hooks are the client-side interception layer. Without hooks, OEE governs only EVM transactions routed through the gateway. With hooks, OEE governs **any agent action on any framework** — bash commands, file writes, HTTP requests, wallet signing, email sends.
+Agent hooks are the client-side interception layer. Without hooks, OEE governs only EVM transactions routed through the gateway. With hooks, OEE can govern each action class that the installed hook intercepts and represents as a structured intent, including bash commands, file writes, HTTP requests, wallet signing, and email sends. The enforcement boundary remains the intercepted intent. For `bash`, that boundary is the command string before shell execution, not network egress initiated later by a child process.
 
 `@sigilcore/agent-hooks` and `agent-hooks-rs` intercept tool calls before they execute and route them through Sigil Sign for evaluation. Approved intents proceed; denied intents are blocked; held intents wait for operator review. For Sigil unreachability, TypeScript hooks support explicit `failMode: 'open' | 'closed'`, while the Rust crates default closed.
 
