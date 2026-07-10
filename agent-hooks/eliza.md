@@ -14,6 +14,8 @@ npm install @sigilcore/agent-hooks
 ```typescript
 import { checkElizaAction } from '@sigilcore/agent-hooks';
 
+HTTP note: emit typed `http` only for an explicit valid method in the intercepted action; otherwise preserve `web_fetch` and its unknown-method semantics.
+
 const config = {
   apiKey: process.env.SIGIL_API_KEY!,
   agentId: 'my-eliza-agent',

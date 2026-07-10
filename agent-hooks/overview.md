@@ -92,11 +92,14 @@ calls, then let the IronClaw hook continue to gate tool execution.
 |---|---|
 | `bash` | Shell command execution |
 | `web_fetch` | Outbound HTTP requests |
+| `http` | Typed outbound HTTP requests with an explicit method; Sign derives host/path/query from the URL |
 | `file_write` | Filesystem writes |
 | `wallet_sign` | EVM wallet signing |
 | `email.send` | Outbound email |
 | `wallet.transfer` | EVM token transfers |
 | `contract.call` | EVM contract calls |
+
+HTTP adapter rule: emit `http` only when the intercepted tool input explicitly contains a valid method. Never infer `GET`; when the method is absent, keep the legacy `web_fetch` action. `web_fetch` has an unknown method and cannot satisfy a non-empty HTTP method allowlist.
 
 ## Prerequisites
 

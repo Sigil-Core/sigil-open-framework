@@ -16,6 +16,8 @@ Because this hooks the execution step rather than any OpenRouter-specific featur
 the same pattern works for every model OpenRouter routes to. Set
 `framework: 'openrouter'` so the intents are tagged correctly in your audit log.
 
+HTTP note: the host may emit typed `http` only when an OpenRouter tool call includes an explicit valid method. Otherwise submit `web_fetch`; do not infer `GET` from a URL alone.
+
 `@sigilcore/agent-hooks` ships a dedicated OpenRouter export:
 `createOpenRouterToolGate`. It parses tool calls, normalizes function names and
 arguments into Sigil intents, and returns rejection context as a tool result.
