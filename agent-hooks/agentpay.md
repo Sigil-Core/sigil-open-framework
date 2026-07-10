@@ -16,6 +16,8 @@ When an AgentPay agent executes a USD1 transfer on Ethereum (chainId 1) or BNB S
 transaction commit, and AgentPay metadata into a `wallet.transfer` intent. It
 forces `failMode: 'closed'` for value-transfer checks.
 
+This adapter does not emit typed `http` intents; HTTP method derivation is not part of the AgentPay transfer payload.
+
 ## Usage
 
 ```typescript

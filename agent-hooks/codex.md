@@ -21,6 +21,8 @@ intended action to Sigil Sign `/v1/authorize` and blocks when the policy returns
   [Codex hooks docs](https://developers.openai.com/codex/hooks) as coverage expands.
 </Note>
 
+HTTP note: Codex emits typed `http` only when a web tool input explicitly carries a valid method. Web inputs without a method remain `web_fetch`; the adapter never infers `GET`.
+
 ## Prerequisites
 
 You need a Sigil API key and a signed `warranty.md` policy file deployed to Sigil Sign.

@@ -22,6 +22,8 @@ Both paths produce an identical signed `warranty.md` that Sigil Sign accepts at 
 
 `warranty.md` uses a plain-text, typed-block format. Blocks are defined by `##` headers. At least one of `## evm`, `## tool_calls`, or `## custom` is required.
 
+> **Policy format 2.0.0:** 1.x policies keep their existing semantics. New 2.0 syntax is opt-in through the version line and requires a Sign build that supports the field. Phase 1 adds typed HTTP intents and allow-rule operators; `## mcp` and enforced named caps arrive in later phases.
+
 ```markdown
 version: 1.0.0
 
@@ -93,6 +95,9 @@ Controls non-EVM agent tool execution.
 | `email.require_approval` | Hold all email.send for human approval |
 | `email.allowed_recipients` | Recipients permitted for email.send, using exact addresses or `*@domain` wildcards |
 | `email.blocked_recipients` | Recipients always denied for email.send, using the same entry forms |
+| `http.allowed_methods` | HTTP methods permitted for typed `http` intents |
+| `http.blocked_methods` | HTTP methods denied before the allowlist is evaluated |
+| `http.allowed_hosts` | Exact hosts, or `*.example.com` subdomain patterns, permitted for typed `http` intents |
 
 **Recipient semantics:** `email.send` intents carry recipients in `intent.to` (string or array). Checks run in order: denylist, allowlist, approval hold. A blocked recipient is `DENIED` (`SIGIL_POLICY_VIOLATION_BLOCKED_RECIPIENT`) before any hold is created, and an off-allowlist recipient returns `SIGIL_POLICY_VIOLATION_RECIPIENT_NOT_ALLOWED`. Every recipient in an array must pass. A missing `to` while either list is declared is `DENIED` fail-closed. Each recipient list must contain at least one entry; empty recipient lists reject the policy. `*@domain` matches that exact domain only; subdomains do not match. Matching is case-insensitive.
 
@@ -112,10 +117,10 @@ deny_string: <literal>
 
 Operators: `contains`, `starts_with`, `ends_with`, `equals`, `not_equals`, `matches` (regex)
 
-**Allowlist semantics:** `allow_only` is an affirmative allowlist with exact, case-sensitive matching (no operators). The rule applies to **every** intent the policy evaluates: if the field is missing, non-string, or its value is not listed, the intent is `DENIED` fail-closed with `SIGIL_POLICY_VIOLATION_NOT_ON_ALLOWLIST`. Each line must include at least one value; empty `allow_only` lists reject the policy. Repeat the line for the same field path to extend the value set (entries merge). **Deny rules win:** deny_if/deny_string are evaluated first, so a value matching both a deny rule and the allowlist is denied with the deny rule's code.
+**Allowlist semantics:** `allow_only` is an affirmative allowlist. In 1.x it keeps exact, case-sensitive matching; in 2.0 it accepts `equals` (the default), `starts_with`/`prefix`, `ends_with`, `contains`, and `matches` operators. A missing or non-matching field is `DENIED` fail-closed with `SIGIL_POLICY_VIOLATION_NOT_ON_ALLOWLIST`. Regex patterns are capped at 256 characters; invalid patterns deny without throwing. **Deny rules win:** deny_if/deny_string are evaluated first, so a value matching both a deny rule and the allowlist is denied with the deny rule's code.
 
 ### `## soft_limits`
-Informational limits flagged for audit but never hard-enforced. Included so the `policyHash` reflects the operator's stated intent.
+Under 1.x, soft limits are informational metadata flagged for audit but never hard-enforced. Under 2.0, named aggregate caps are enforced and deny actions when exceeded; deploy only after reviewing that semantic change.
 
 ### `## execution_limits`
 Hard ceilings that stop runaway tool loops before the next tool executes.
@@ -124,6 +129,8 @@ Hard ceilings that stop runaway tool loops before the next tool executes.
 |---|---|
 | `max_tool_calls_per_task` | Maximum tool calls for one `intent.task_id`; the next call is `DENIED` |
 | `max_tool_calls_per_hour` | Maximum tool calls per API key in the current UTC clock-hour bucket |
+| `max_model_spend_usd_per_task` | Maximum adapter-reported model spend for one `intent.task_id` |
+| `max_model_tokens_per_task` | Maximum adapter-reported model tokens for one `intent.task_id` |
 
 Execution limits are hard denials, not soft caps. A ceiling breach returns `SIGIL_LOOP_LIMIT_EXCEEDED`; if the counter store is unavailable, Sigil Sign fails closed with `SIGIL_LIMIT_STORE_UNAVAILABLE`. The per-task ceiling applies only when the request includes `intent.task_id`; the hourly ceiling applies per API key.
 
