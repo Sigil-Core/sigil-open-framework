@@ -44,7 +44,7 @@ SOF defines two conformance levels.
 
 A **Core Conformant** signer implements the minimum surface required for interoperability with SOF-aware policy authors and gateways. Most third-party signers will start here.
 
-Core Conformance does not expand an implementation's enforcement surface beyond the interception point it controls. For `bash`, a signer gates the submitted command string before execution. Child-process network egress is not intercepted after the shell starts. `bashBlockedCommands` is a command-string control, not a network control. A signer **MUST NOT** claim network-egress coverage from a `bash` gate alone.
+Core Conformance does not expand an implementation's enforcement surface beyond the interception point it controls. When a signer supports `bash` intents, it evaluates the submitted command string. The integrating hook must submit that string before execution and block execution without approval. That command-string gate alone does not intercept child-process network egress after the shell starts. The `bash.blocked_commands` policy key is a command-string control, not a network control. A signer **MUST NOT** claim network-egress coverage from a `bash` gate alone.
 
 Core Conformance requires implementation of the six behaviors detailed in CR-01 through CR-06 below:
 

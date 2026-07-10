@@ -128,9 +128,9 @@ The Sigil RPC and Bundler gateway reject any write operation that does not prese
 
 ### Enforcement Boundary
 
-Enforcement follows the interception point exposed by each integration. For a `bash` intent, the `bash` gate evaluates the submitted command string before execution. Sigil Sign can approve, deny, or hold that command string before the shell starts.
+Enforcement follows the interception point exposed by each integration. For a `bash` intent, the `bash` gate evaluates the submitted command string before execution. Sigil Sign can approve or deny that command string before the shell starts.
 
-Child-process network egress is not intercepted after shell execution begins. `bashBlockedCommands` evaluates the declared command string. It is a command-string control, not a network control. Operators must not claim network-egress coverage from a `bash` gate alone.
+Child-process network egress is not intercepted after shell execution begins. The `bash.blocked_commands` policy key evaluates the declared command string. It is a command-string control, not a network control. Operators must not claim network-egress coverage from a `bash` gate alone.
 
 ---
 
