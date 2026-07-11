@@ -22,7 +22,7 @@ Both paths produce an identical signed `warranty.md` that Sigil Sign accepts at 
 
 `warranty.md` uses a plain-text, typed-block format. Blocks are defined by `##` headers. A 1.x policy requires an enforceable EVM, tool-call, custom, or model-budget rule. A 2.0 policy may also consist of enforced `## soft_limits`.
 
-> **Policy format 2.0.0:** 1.x policies keep their existing semantics. New 2.0 syntax is opt-in through the version line and requires a Sign build that supports the field. Phase 1 adds typed HTTP intents and allow-rule operators; `## mcp` and enforced named caps arrive in later phases.
+> **Policy format 2.0.0:** 1.x policies keep their existing semantics. New 2.0 syntax is opt-in through the version line and requires a Sign build that supports the field. Policy format 2.0 adds typed HTTP intents, allow-rule operators, enforced named caps, MCP-native actions, approval patterns, and provenance gates. Existing signed 1.x files remain unchanged.
 
 ```markdown
 version: 1.0.0
@@ -98,6 +98,8 @@ Controls non-EVM agent tool execution.
 | `http.allowed_methods` | HTTP methods permitted for typed `http` intents |
 | `http.blocked_methods` | HTTP methods denied before the allowlist is evaluated |
 | `http.allowed_hosts` | Exact hosts, or `*.example.com` subdomain patterns, permitted for typed `http` intents |
+| `require_approval` | Generic action patterns that create a durable approval hold after the base profile allows the action |
+| `require_shim` | Require `provenance: shim`, derived from the API-key record, for actions governed by this block |
 
 **Recipient semantics:** `email.send` intents carry recipients in `intent.to` (string or array). Checks run in order: denylist, allowlist, approval hold. A blocked recipient is `DENIED` (`SIGIL_POLICY_VIOLATION_BLOCKED_RECIPIENT`) before any hold is created, and an off-allowlist recipient returns `SIGIL_POLICY_VIOLATION_RECIPIENT_NOT_ALLOWED`. Every recipient in an array must pass. A missing `to` while either list is declared is `DENIED` fail-closed. Each recipient list must contain at least one entry; empty recipient lists reject the policy. `*@domain` matches that exact domain only; subdomains do not match. Matching is case-insensitive.
 
@@ -113,11 +115,45 @@ deny_if.<field_path> <operator> <value>
 
 # Block any intent containing a string in any field
 deny_string: <literal>
+
+# Require shim-derived metadata for an affirmative allowlist.
+allow_only[action=mcp.buffer.create_post].metadata.arguments.channelId attested equals: linkedin-company
 ```
 
 Operators: `contains`, `starts_with`, `ends_with`, `equals`, `not_equals`, `matches` (regex)
 
 **Allowlist semantics:** `allow_only` is an affirmative allowlist. In 1.x it keeps exact, case-sensitive matching; in 2.0 it accepts `equals` (the default), `starts_with`/`prefix`, `ends_with`, `contains`, and `matches` operators. A missing or non-matching field is `DENIED` fail-closed with `SIGIL_POLICY_VIOLATION_NOT_ON_ALLOWLIST`. Regex patterns are capped at 256 characters; invalid patterns deny without throwing. **Deny rules win:** deny_if/deny_string are evaluated first, so a value matching both a deny rule and the allowlist is denied with the deny rule's code.
+
+An `attested` allowlist rule must target `metadata.*` and fails closed unless
+the request arrived through a trusted shim. `require_shim: true` is a
+block-level gate. Sign stamps `provenance: agent` or `provenance: shim` from
+the API-key record; the request body cannot self-assert either value. Generic
+`require_approval` patterns can appear in any policy block and match exact
+actions or one trailing `*` prefix wildcard. `email.require_approval` remains
+syntax sugar for the same durable hold class.
+
+### `## mcp`
+
+MCP policy is deny-by-default unless this block exists. Sign dispatches on the
+`mcp.` action prefix and evaluates the trusted metadata values instead of
+splitting the action string.
+
+| Field | Description |
+|---|---|
+| `allowed_servers` | Exact server IDs or one trailing `*` prefix wildcard |
+| `allowed_tools` | Exact `serverId.toolName` identities, tool names, or trailing `*` prefix wildcards |
+| `blocked_tools` | MCP tool identities or tool names that always deny |
+| `require_approval` | MCP tool patterns that return `PENDING` with a durable 24-hour hold |
+| `require_shim` | Require `provenance: shim` for MCP actions governed by this block |
+
+```markdown
+## mcp
+allowed_servers: buffer, notion
+allowed_tools: buffer.create_post, notion.notion-create-pages
+blocked_tools: buffer.delete_*
+require_approval: buffer.create_post
+require_shim: true
+```
 
 ### `## soft_limits`
 `## soft_limits` is version-gated. Under 1.x, its legacy fields remain informational metadata and do not change an authorization decision. Under 2.0, declared limits are enforced after the engine approves the matching action type or namespace, and an exceeded cap returns `DENIED`. Existing signed 1.x policies keep their original behavior until an operator explicitly upgrades and re-signs them. A cap on a namespace the current engine does not approve cannot make that namespace executable.
@@ -141,7 +177,9 @@ cap.ad_spend.amount_field: metadata.arguments.budget_usd
 ```
 
 <Note>
-  The `mcp.*` action strings above are forward-compatible policy vectors. Sign accepts and hashes the cap grammar now, but the MCP action namespace remains denied until the Phase 3 taxonomy and provenance release. Phase 2 aggregate enforcement is live for action types the current engine already approves, including typed `http` intents.
+  Named caps can target `mcp.*` actions. The cap applies after the MCP block and
+  base policy approve the call, and a denied or pending call does not consume
+  aggregate budget.
 </Note>
 
 | Field | Description |
