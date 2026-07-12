@@ -104,12 +104,13 @@ The agent submits a structured JSON payload describing what it is about to do â€
 
 **2. Policy Evaluation (Sigil Sign)**
 
-Sigil Sign reads the operator's `warranty.md` at runtime and evaluates the intent against five typed policy blocks:
+Sigil Sign reads the operator's `warranty.md` at runtime and evaluates the intent against six typed policy blocks:
 
 | Block | Type | Behavior on violation |
 |---|---|---|
 | `## evm` | Hard limits on transaction value, chain, and action type | `DENIED` |
 | `## tool_calls` | Blocked tools, blocked domains, blocked commands | `DENIED` |
+| `## mcp` | MCP server and tool allowlists, approval patterns, and shim provenance | `DENIED` or `PENDING` |
 | `## custom` | Operator-defined deny expressions | `DENIED` |
 | `## soft_limits` | Version-gated aggregate count and USD-sum caps | Informational under 1.x; `DENIED` on breach under 2.0 |
 | `## execution_limits` | Hard runaway-loop ceilings for tool calls and adapter-reported model budget brakes | `DENIED` |

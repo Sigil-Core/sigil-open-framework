@@ -1,0 +1,25 @@
+{
+  "id": "sof-policy-2-mcp-buffer-boundary",
+  "policy": "version: 2.0.0\n\n## mcp\nallowed_servers: buffer\nallowed_tools: buffer.create_post\nblocked_tools: buffer.delete_*\nrequire_approval: buffer.create_post\nrequire_shim: true\n\n## custom\nallow_only[action=mcp.buffer.create_post].metadata.arguments.channelId attested equals: linkedin-company\n\n## soft_limits\ncap.linkedin_posts.max_count: 2\ncap.linkedin_posts.window: day\ncap.linkedin_posts.action: mcp.buffer.create_post\ncap.linkedin_posts.group_by: metadata.arguments.channelId\n",
+  "policy_hash": "computed-after-parse",
+  "intents": [
+    {
+      "name": "approval-required",
+      "intent": { "action": "mcp.buffer.create_post", "provenance": "shim", "metadata": { "serverId": "buffer", "toolName": "create_post", "arguments": { "channelId": "linkedin-company" } } },
+      "expected_decision": "PENDING",
+      "expected_error_code": "LEX_TOOL_CALL_REQUIRES_APPROVAL"
+    },
+    {
+      "name": "agent-provenance-denied",
+      "intent": { "action": "mcp.buffer.create_post", "provenance": "agent", "metadata": { "serverId": "buffer", "toolName": "create_post", "arguments": { "channelId": "linkedin-company" } } },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_PROVENANCE_REQUIRED"
+    },
+    {
+      "name": "destructive-tool-denied",
+      "intent": { "action": "mcp.buffer.delete_post", "provenance": "shim", "metadata": { "serverId": "buffer", "toolName": "delete_post" } },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_TOOL_CALL_NOT_ALLOWED"
+    }
+  ]
+}
