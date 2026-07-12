@@ -230,6 +230,8 @@ sigil-sig: <base64url-ed25519-signature>
 
 Policy format 2.0 is opt-in. A typed HTTP policy must declare `version: 2.0.0`; adding HTTP keys to a 1.x policy is a parse error.
 
+MCP actions use the same 2.0 policy gate and are deny-by-default unless an `## mcp` block declares an allowed server or allowed tool boundary. `blocked_tools` only narrows an existing allow boundary and never grants access by itself, so a block containing only `blocked_tools` remains deny-by-default. Named caps live under `## soft_limits` and consume budget only after the base policy approves the action.
+
 ```markdown
 version: 2.0.0
 
@@ -241,6 +243,19 @@ http.allowed_hosts: api.example.com, *.uploads.example.com
 
 ## custom
 allow_only[action=http].intent.path starts_with: /v1/posts, /v1/uploads/
+
+## mcp
+allowed_servers: buffer
+allowed_tools: buffer.*
+blocked_tools: buffer.delete_*
+require_approval: buffer.create_post
+require_shim: true
+
+## soft_limits
+cap.linkedin_posts.max_count: 2
+cap.linkedin_posts.window: day
+cap.linkedin_posts.action: mcp.buffer.create_post
+cap.linkedin_posts.group_by: metadata.arguments.channelId
 
 ## execution_limits
 max_tool_calls_per_task: 50

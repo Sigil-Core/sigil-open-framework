@@ -1,11 +1,12 @@
 /**
- * Sigil Demo - five agent actions against the live /v1/authorize endpoint.
+ * Sigil Demo - six agent actions against the live /v1/authorize endpoint.
  *
  * Scene 1: APPROVED  - Base USDC contract.call under token cap
  * Scene 2: DENIED    - Base USDC contract.call over token cap
  * Scene 3: PENDING   - allowed email recipient held for approval
  * Scene 4: DENIED    - blocked email recipient
  * Scene 5: DENIED    - non-allowlisted AWP job type
+ * Scene 6: PENDING   - allowlisted MCP publish tool held for approval
  *
  * Requires: SIGIL_API_KEY env var and a deployed warranty.md with the policy
  * defined in this directory's warranty.md (or equivalent).
@@ -174,13 +175,32 @@ async function scene5(): Promise<void> {
   console.log(JSON.stringify(result, null, 2));
 }
 
+async function scene6(): Promise<void> {
+  header("Scene 6: PENDING");
+  desc("mcp.buffer.create_post for LinkedIn, held for approval");
+
+  const intent = {
+    action: "mcp.buffer.create_post",
+    metadata: { channel: "linkedin", job_type: "research" },
+  };
+  const result = await authorize({
+    framework: "demo",
+    agentId: "demo-agent",
+    chainId: 8453,
+    txCommit: txCommit(intent),
+    intent,
+  });
+
+  console.log(JSON.stringify(result, null, 2));
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
 async function main(): Promise<void> {
   console.log(
-    "\x1b[1mSigil Demo\x1b[0m - five agent actions against the live policy engine\n",
+    "\x1b[1mSigil Demo\x1b[0m - six agent actions against the live policy engine\n",
   );
 
   await scene1();
@@ -188,6 +208,7 @@ async function main(): Promise<void> {
   await scene3();
   await scene4();
   await scene5();
+  await scene6();
 
   console.log(
     "\n\x1b[2mDone. See https://docs.sigilcore.com for full documentation.\x1b[0m\n",

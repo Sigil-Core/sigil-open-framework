@@ -1,6 +1,6 @@
 # Warranty Policy - Sigil Demo
 
-version: 1.0.0
+version: 2.0.0
 
 ## evm
 max_transaction_eth: 1.0
@@ -19,6 +19,12 @@ email.require_approval: true
 email.allowed_recipients: *@sigilcore.com, partner@example.com
 email.blocked_recipients: noreply@sigilcore.com
 
+## mcp
+allowed_servers: buffer
+allowed_tools: buffer.create_post
+blocked_tools: buffer.delete_*
+require_approval: buffer.create_post
+
 ## custom
 # AWP-style job-type allowlist: every governed intent must carry one of these values.
 allow_only.intent.metadata.job_type: research, data_labeling, escrow_release
@@ -27,6 +33,12 @@ deny_string: "OPENAI_API_KEY"
 
 ## execution_limits
 max_tool_calls_per_task: 50
+
+## soft_limits
+cap.linkedin_posts.max_count: 2
+cap.linkedin_posts.window: day
+cap.linkedin_posts.action: mcp.buffer.create_post
+cap.linkedin_posts.group_by: metadata.channel
 
 ## signature
 sigil-sig: REPLACE_WITH_OUTPUT_FROM_SIGNING_TOOL
