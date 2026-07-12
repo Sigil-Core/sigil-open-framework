@@ -22,7 +22,7 @@ An Intent Attestation is a JSON Web Token (JWT) that:
 - Is signed by a conforming signer using **Ed25519** (`alg: EdDSA`, `crv: Ed25519`)
 - Is **short-lived** — expires no more than 60 seconds after issuance
 - Is **tightly bound** — cryptographically linked to a specific transaction context via `txCommit` (or `userOpHash` for ERC-4337) and `chainId`
-- Includes a **`policyHash`** claim — SHA-256 of the canonical JSON serialization of the evaluated `warranty.md` policy, creating a verifiable link between the authorization decision and the policy version that made it
+- Includes a **`policyHash`** claim — SHA-256 of the canonical policy object defined in [Policy hash canonical input](#policy-hash-canonical-input), creating a verifiable link between the authorization decision and the policy version that made it
 
 Every claim in the attestation is purposeful. Together they form the cryptographic chain: *operator policy → policy hash → attestation → execution outcome*. Any link in that chain can be independently verified, after the fact, by any party.
 
@@ -57,7 +57,7 @@ The flow:
 3. Locate the matching public key by `kid`.
 4. Verify the Ed25519 signature.
 5. Validate claims: `iss` in the trusted issuer set, `exp`, `iat`, `aud`, and the binding fields (`chainId` + `txCommit` or `userOpHash`).
-6. Optionally cross-check the `policyHash` against the published `warranty.md` to confirm policy version.
+6. Optionally parse the published unsigned `warranty.md` body with the same canonical-input algorithm and compare its SHA-256 to `policyHash`.
 
 The hosted reference issuer is `sigil-core` and publishes keys at `https://sign.sigilcore.com/.well-known/jwks.json`. Third-party conforming signers publish their own keys at their own domains. Federated verifiers add approved issuer IDs to their trusted issuer set and reject any otherwise valid signature whose `iss` is not configured.
 
@@ -75,6 +75,23 @@ Together, the two documents form the complete contract for any third-party signe
 - **[Conformance Contract](/conformance)** — the operational obligations a signer must honor (intent submission interface, policy evaluation, JWKS publication, denial response semantics, versioning)
 
 A signer is conforming if and only if it honors both.
+
+## Policy hash canonical input
+
+`policyHash` hashes the parsed policy object, not the Markdown bytes and not the `## signature` block. The canonical input is produced as follows:
+
+1. Parse the unsigned policy body with the strict `warranty.md` parser.
+2. Represent each policy block with the parser's runtime field names, such as `allowedTools`, `requireApproval`, `maxCount`, and `groupBy`.
+3. Remove absent optional fields. Do not remove `false`, `0`, empty arrays that the schema permits, or any declared value.
+4. Recursively sort object keys in ascending lexicographic order. Preserve array order.
+5. Serialize as compact JSON with UTF-8 string values and no trailing newline.
+6. Compute SHA-256 over those UTF-8 JSON bytes and encode the digest as lowercase hexadecimal.
+
+The parser's field normalization is part of the canonical input. For example, `allowed_tools` in Markdown becomes `allowedTools` in the object, and a named cap becomes `soft_limits.caps.<name>.maxCount` or `maxSumUsd`. Independent signers MUST compare their canonical JSON and digest against the shared vectors before issuing attestations.
+
+## Policy 2.0 binding
+
+Policy format 2.0 does not change the attestation envelope. It expands the policy evaluation surface before issuance with typed HTTP boundaries, MCP server and tool identity, shim-derived provenance, durable approval patterns, and named aggregate caps. The `policyHash` claim binds the resulting decision to the canonical parsed policy, including those fields and using the algorithm above. A signer MUST NOT issue an attestation when a 2.0 parser or evaluator cannot represent a declared field without loss.
 
 ---
 

@@ -24,6 +24,8 @@ Both paths produce an identical signed `warranty.md` that Sigil Sign accepts at 
 
 > **Policy format 2.0.0:** 1.x policies keep their existing semantics. New 2.0 syntax is opt-in through the version line and requires a Sign build that supports the field. Policy format 2.0 adds typed HTTP intents, allow-rule operators, enforced named caps, MCP-native actions, approval patterns, and provenance gates. Existing signed 1.x files remain unchanged.
 
+For a controlled upgrade, follow the [1.x to 2.0 migration guide](/developer-toolkit/migrating-1x-to-2). The guide includes the re-sign, rollback, and conformance-vector checks required before activation.
+
 ```markdown
 version: 1.0.0
 

@@ -28,6 +28,12 @@ deny_string: "service_role"
 ## execution_limits
 max_tool_calls_per_task: 12
 
+## soft_limits
+cap.blog_posts.max_count: 10
+cap.blog_posts.window: day
+cap.blog_posts.action: http
+cap.blog_posts.group_by: metadata.category
+
 ## signature
 sigil-sig: REPLACE_WITH_OUTPUT_FROM_SIGNING_TOOL
 ```

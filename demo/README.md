@@ -4,7 +4,7 @@
 2. Deploy the included `warranty.md` via [Sigil Warrant](https://sigilcore.com/tools/warrant) (or use an existing policy with equivalent rules)
 3. `cd demo && npm install`
 4. `SIGIL_API_KEY=sk_sigil_... npm run demo`
-5. Watch five agent actions exercise token caps, recipient bounds, and job-type allowlisting.
+5. Watch six agent actions exercise token caps, recipient bounds, job-type allowlisting, and an MCP approval boundary.
 
 ### What it does
 
@@ -17,11 +17,12 @@ The demo sends five `POST /v1/authorize` requests to the live Sigil Sign API:
 | 3 | `email.send` to `team@sigilcore.com` | **PENDING** - recipient allowed, `email.require_approval: true` |
 | 4 | `email.send` to `noreply@sigilcore.com` | **DENIED** - recipient is blocked before approval |
 | 5 | AWP-style `contract.call` with `metadata.job_type: "yield_farming"` | **DENIED** - not on `allow_only.intent.metadata.job_type` |
+| 6 | `mcp.buffer.create_post` for the LinkedIn channel | **PENDING** - MCP tool requires approval |
 
 ### Notes
 
 - Nothing is mocked. All requests hit `https://sign.sigilcore.com/v1/authorize`.
-- The `warranty.md` in this directory is a reference showing the policy your API key must be associated with. Sign and deploy it via Sigil Warrant before running.
+- The `warranty.md` in this directory is a format 2.0 reference showing the policy your API key must be associated with. Sign and deploy it via Sigil Warrant before running.
 - Requires Node.js >= 20 (native `fetch`).
 - `framework` is set to `"demo"` - a custom testing framework identifier. Custom identifiers are accepted by the [Framework Registry](../framework-registry) validation rules.
 

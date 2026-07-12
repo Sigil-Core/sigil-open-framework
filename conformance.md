@@ -165,6 +165,7 @@ The signer **MAY** implement Class 2 rule evaluation, including:
 - Pinned token contract binding: when a matching token rule includes `addresses`, the intent `targetAddress` **MUST** match one of those addresses
 - `email.send` recipient allowlist/denylist evaluation in the order denylist, allowlist, approval hold
 - `execution_limits` hard ceilings for tool calls, including fail-closed `SIGIL_LIMIT_STORE_UNAVAILABLE` behavior when counter state cannot be updated
+- Policy format 2.0 typed HTTP method and host boundaries, MCP server and tool taxonomy, trailing-wildcard validation, shim provenance gates, and named count or USD caps
 
 ### XR-02 -- Class 3 Consensus Rules
 
@@ -194,14 +195,15 @@ A signer **MAY** describe itself as "SOF-conforming," "an implementation of the 
 
 ## Conformance Verification
 
-### Conformance Test Suite
+### Policy 2.0 Vector Corpus
 
-The **SOF Conformance Test Suite** is in active development. When released, it will provide:
+The **SOF Conformance Test Suite** starts with the portable [Policy 2.0 vector corpus](conformance/vectors/). A signer harness should run these fixtures against its parser, evaluator, counter store, and audit projection. The corpus provides:
 
-- A vector-based test harness covering every `MUST` and `MUST NOT` clause in this document
-- An interoperability checklist for integration with conforming gateways
+- A vector format covering typed HTTP, MCP, provenance, approval, and aggregate-cap decisions
 - A negative-test corpus for adversarial intent submissions
-- A public registry of certified conforming implementations
+- Promotion rules for connector-specific vectors, including one controlled OBSERVE-to-ENFORCE run
+
+The vector corpus does not replace the signer harness. The corpus is available now; a maintained automated runner and formal verification workflow are not shipped yet. Until they are available, each implementation remains responsible for running the fixtures manually, signing the fixture policy, submitting the intents, and recording the policy hash and public error fields.
 
 The Policy Primitives v2 corpus already tracks pending release-gating cases for [Google Ads bid management](conformance/pending/google-ads-bid-manager.md), [Meta Ads budget operations](conformance/pending/meta-ads-budget-operator.md), and the [Buffer MCP social scheduler](conformance/pending/buffer-social-scheduler.md). These cases are requirements, not deployable examples, until their aggregate-cap, Buffer count-cap, and MCP provenance dependencies ship.
 
@@ -209,14 +211,14 @@ To express interest in early access, open an issue on the [sigil-attestations](h
 
 ### Self-Assertion (Interim)
 
-Until the test suite ships, conformance is asserted by the signer operator. To self-assert:
+Until an automated runner and formal verification workflow ship, conformance is asserted by the signer operator. To self-assert:
 
 1. Implement every Core Conformance behavior in this document
 2. Verify interoperability against the reference implementation at `sign.sigilcore.com`
 3. Publish a conformance declaration at `/.well-known/sof-conformance.json` on your signer's domain (schema below)
 4. Open a registry issue on the sigil-open-framework repository with a link to your conformance declaration
 
-A self-asserted implementation is listed in the registry with a `self-asserted` flag. Once the test suite ships, self-asserted implementations are invited to undergo formal verification.
+A self-asserted implementation is listed in the registry with a `self-asserted` flag. Once the automated runner ships, self-asserted implementations are invited to undergo formal verification.
 
 ### Conformance Declaration Schema
 
@@ -225,10 +227,12 @@ Schema field notes:
 - `conformance_level` **MUST** be either `core` or `extended`.
 - `extended_capabilities` **MUST** be an array. Core-only signers use an empty array.
 - Valid extended capability identifiers are `class_2`, `class_3`, `capability_broker`, and `operator_oversight`.
+- `policy_schema_versions_supported` **MUST** list every `warranty.md` policy schema version the signer accepts.
 
 ```json
 {
   "spec_version": "sigil-attestations-v1",
+  "policy_schema_versions_supported": ["1.0.0", "2.0.0"],
   "conformance_level": "extended",
   "extended_capabilities": ["class_2", "class_3"],
   "implementation_name": "Acme Signer",

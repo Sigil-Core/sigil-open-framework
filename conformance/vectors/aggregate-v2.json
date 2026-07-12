@@ -1,0 +1,22 @@
+{
+  "id": "sof-policy-2-aggregate-count",
+  "policy": "version: 2.0.0\n\n## mcp\nallowed_servers: buffer\nallowed_tools: buffer.create_post\n\n## soft_limits\ncap.linkedin_posts.max_count: 2\ncap.linkedin_posts.window: day\ncap.linkedin_posts.action: mcp.buffer.create_post\ncap.linkedin_posts.group_by: metadata.arguments.channelId\n",
+  "policy_hash": "computed-after-parse",
+  "intents": [
+    {
+      "name": "cap-reservation-approved",
+      "intent": { "action": "mcp.buffer.create_post", "provenance": "shim", "metadata": { "serverId": "buffer", "toolName": "create_post", "arguments": { "channelId": "linkedin-company" } } },
+      "aggregate_store_result": { "approved": true, "total": 2 },
+      "expected_decision": "APPROVED",
+      "expected_error_code": null
+    },
+    {
+      "name": "cap-reservation-denied",
+      "intent": { "action": "mcp.buffer.create_post", "provenance": "shim", "metadata": { "serverId": "buffer", "toolName": "create_post", "arguments": { "channelId": "linkedin-company" } } },
+      "aggregate_store_result": { "approved": false, "attempted_total": 3 },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_AGGREGATE_LIMIT_EXCEEDED",
+      "expected_violated_rule": "soft_limits.cap.linkedin_posts.max_count"
+    }
+  ]
+}

@@ -130,13 +130,9 @@ A conforming signer MAY:
 
 ### Conformance Verification
 
-The **SOF Conformance Test Suite** is in development and will provide:
+The **SOF Conformance Test Suite** begins with the portable Policy 2.0 vector corpus in [`conformance/vectors/`](conformance/vectors/). Implementations should run those fixtures through their parser, evaluator, counter store, and audit projection, then publish the resulting policy hash and decision evidence with their conformance declaration.
 
-- A vector-based test harness covering required attestation semantics
-- An interoperability checklist for integration with gated execution layers
-- A public registry of certified conforming implementations
-
-Until the test suite ships, conformance is asserted by the signer operator and verified through direct integration testing with the reference implementation at sign.sigilcore.com. To express interest in early access, open an issue on the [sigil-attestations](https://github.com/Sigil-Core/sigil-attestations) repository.
+For the cryptographic conformance declaration, publish `/.well-known/sof-conformance.json` using the schema in [`conformance.md`](conformance.md). The declaration keeps the attestation contract version (`sigil-attestations-v1`) separate from the supported `warranty.md` policy schema versions.
 
 ### Why Build a Conforming Signer
 
@@ -173,6 +169,7 @@ sof-warranty:
   enforcement_layer: "sigil-lex"          # any conforming signer identifier
   policy_uri: "ipfs://QmYourWarrantyPolicyHashHere"
   attestation_standard: "sigil-attestations-v1"
+  policy_schema_versions_supported: ["1.0.0", "2.0.0"]
   warranty_blocks:
     evm:
       max_transaction_eth: 5.0
@@ -242,7 +239,7 @@ If you are an audit firm, custody provider, or enterprise security team building
 
 → [**Read the Sigil Attestations Specification**](https://github.com/Sigil-Core/sigil-attestations)
 
-The SOF Conformance Test Suite is in development. To express interest in early access or coordinate on conformance verification, open an issue on the Attestations repository.
+The SOF Conformance Test Suite begins with the portable Policy 2.0 vector corpus in [`conformance/vectors/`](conformance/vectors/). Implementations should run those fixtures through their parser, evaluator, counter store, and audit projection, then publish the resulting policy hash and decision evidence with their conformance declaration.
 
 ---
 
