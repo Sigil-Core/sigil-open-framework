@@ -18,7 +18,7 @@ description: "Diagnosing policy violations, validation errors, startup failures,
 
     **Pricing:**
     - **Developer:** Free, 1,000 governed actions/month
-    - **Growth:** $25/month, 10,000 governed actions, $0.002 per action above
+    - **Growth:** $49/month, 10,000 governed actions, $0.002 per action above
     - **Enterprise:** Custom, dedicated infrastructure, SLAs, audit support via
       [Sigil Governance](https://sigilgovernance.com)
 

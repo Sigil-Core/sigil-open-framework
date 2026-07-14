@@ -40,7 +40,7 @@ That is the complete flow. The sections below cover each step in detail.
 | Tier | Cost | Governed actions |
 |---|---|---|
 | Developer | Free | 1,000/month |
-| Growth | $25/month | 10,000/month, $0.002 per action above |
+| Growth | $49/month | 10,000/month, $0.002 per action above |
 | Enterprise | Custom | Dedicated infrastructure, custom SLAs, audit support via [Sigil Governance](https://sigilgovernance.com) |
 
 > Need to run your own signing infrastructure? `sigil-sign` is MIT-licensed and self-hostable. See the [Self-hosted deployment](#self-hosted-deployment) section below. For most teams, managing your own cryptographic signing layer is unnecessary overhead.
