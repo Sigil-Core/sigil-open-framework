@@ -199,7 +199,7 @@ The reference SOF implementation is operated by Sigil Core as a hosted service a
 
 **Start free.** Register your email at [sigilcore.com/tools/keys](https://sigilcore.com/tools/keys) to receive a Developer tier key — 1,000 governed actions per month, no account required.
 
-**Scale on demand.** When you outgrow the free tier, upgrade to $25/month — includes 10,000 governed actions, $0.002 per action above that. → [sigilcore.com/tools/upgrade](https://sigilcore.com/tools/upgrade)
+**Scale on demand.** When you outgrow the free tier, upgrade to $49/month — includes 10,000 governed actions, $0.002 per action above that. → [sigilcore.com/tools/upgrade](https://sigilcore.com/tools/upgrade)
 
 **Enterprise and regulated deployments** with dedicated infrastructure, custom SLAs, and audit support are available through [Sigil Governance](https://sigilgovernance.com).
 
