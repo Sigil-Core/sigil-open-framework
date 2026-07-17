@@ -1,0 +1,6 @@
+{
+  "id": "SENSITIVE_FILES_PROTECTED",
+  "policy": "version: 2.1.0\n\n## filesystem\nactions: file.*\nwrite_roots: /workspace/repository\nread_roots: /workspace/repository\nallowed_effects: read, overwrite\nprotected_file_classes: credentials, private_keys\nprotected_effects: read, overwrite\nrequire_shim: true",
+  "intent": {"action": "file_write", "provenance": "shim", "metadata": {"filesystem": {"effects": ["read"], "targets": [{"absolute": "/workspace/repository/.env", "resolved_parent": "/workspace/repository", "classification": ["credentials"]}]}, "execution": {"adapter": "reference-shim", "adapter_version": "2.1.0", "fail_mode": "closed", "boundary_type": "structured_tool", "writable_roots": ["/workspace/repository"], "readable_roots": ["/workspace/repository"], "credentials_exposed": false, "race_safe_path_resolution": true, "external_write_handles_exposed": false, "special_files_allowed": false, "case_behavior": "sensitive", "unicode_behavior": "nfc"}}},
+  "expected": {"decision": "DENIED", "error_code": "SIGIL_POLICY_VIOLATION_SENSITIVE_FILE"}
+}

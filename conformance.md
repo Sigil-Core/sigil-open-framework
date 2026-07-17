@@ -195,13 +195,15 @@ A signer **MAY** describe itself as "SOF-conforming," "an implementation of the 
 
 ## Conformance Verification
 
-### Policy 2.0 Vector Corpus
+### Policy 2.0 and 2.1 Vector Corpus
 
-The **SOF Conformance Test Suite** starts with the portable [Policy 2.0 vector corpus](conformance/vectors/). A signer harness should run these fixtures against its parser, evaluator, counter store, and audit projection. The corpus provides:
+The **SOF Conformance Test Suite** starts with the portable [Policy 2.0 and Policy 2.1 vector corpus](conformance/vectors/). A signer harness should run these fixtures against its parser, evaluator, counter store, and audit projection. The corpus provides:
 
 - A vector format covering typed HTTP, MCP, provenance, approval, and aggregate-cap decisions
 - A negative-test corpus for adversarial intent submissions
 - Promotion rules for connector-specific vectors, including one controlled OBSERVE-to-ENFORCE run
+
+Policy 2.1 adds destructive-resource safety profiles for repositories, filesystems, Git providers, and production databases. A signer claiming Policy 2.1 support MUST validate structured execution-boundary metadata, effect manifests, adapter compatibility, and one-time execution grants. A preflight-only adapter MUST NOT claim final mutation ownership or Policy 2.1 destructive-write conformance.
 
 The vector corpus does not replace the signer harness. The corpus is available now; a maintained automated runner and formal verification workflow are not shipped yet. Until they are available, each implementation remains responsible for running the fixtures manually, signing the fixture policy, submitting the intents, and recording the policy hash and public error fields.
 
@@ -232,7 +234,7 @@ Schema field notes:
 ```json
 {
   "spec_version": "sigil-attestations-v1",
-  "policy_schema_versions_supported": ["1.0.0", "2.0.0"],
+  "policy_schema_versions_supported": ["1.0.0", "2.0.0", "2.1.0"],
   "conformance_level": "extended",
   "extended_capabilities": ["class_2", "class_3"],
   "implementation_name": "Acme Signer",

@@ -3,18 +3,20 @@ title: "Migrate warranty.md from 1.x to 2.0"
 description: "A field-by-field migration path for typed HTTP, MCP, provenance, approval, and aggregate cap controls."
 ---
 
-# Migrate warranty.md from 1.x to 2.0
+# Migrate warranty.md from 1.x to 2.0 and 2.1
 
-Policy format 2.0 keeps the 1.x EVM, tool-call, custom, and execution-limit semantics. The version line opts into the new grammar. Operators must review the new boundaries, sign the resulting file again, and redeploy it before the new controls take effect.
+Policy formats 2.0 and 2.1 keep the 1.x EVM, tool-call, custom, and execution-limit semantics. The version line opts into the new grammar. Operators must review the new boundaries, sign the resulting file again, and redeploy it before the new controls take effect.
 
 ## Migration sequence
 
 1. Copy the signed 1.x policy into a working file.
-2. Remove the old `## signature` block and change the root line to `version: 2.0.0`.
+2. Remove the old `## signature` block and change the root line to `version: 2.0.0` or `version: 2.1.0`.
 3. Add only the v2 sections the agent actually uses.
 4. Parse and test approved, denied, and pending intents against the new policy.
 5. Sign the complete body with Sigil Warrant and deploy the new file.
 6. Verify the returned `policyHash` and the first audit records before switching traffic.
+
+For destructive repository, Git, provider, or production database actions, choose Policy 2.1. Configure the repository and resource profiles, then use an adapter that attests the complete effect manifest and owns the final mutation. A preflight-only hook must fail closed and must not be described as final mutation enforcement.
 
 Sigil Warrant's Builder can load an existing warranty and prepare the 2.0 form. It does not carry the old signature into the new file.
 
@@ -29,6 +31,9 @@ Sigil Warrant's Builder can load an existing warranty and prepare the 2.0 form. 
 | Human approval | `require_approval` action patterns in the governing block | Returns `PENDING` with a durable hold |
 | Aggregate count or spend | `## soft_limits` named `cap.<name>.*` fields | Enforced after base policy approval |
 | Runaway tool loop | `## execution_limits` | Hard denial before the next call |
+| Repository writes | `## repository` plus `## filesystem` | Component-aware roots, blocked paths, sensitive-file classes, and impact ceilings |
+| Git history and hosted providers | `## git` plus provider metadata | Full ref topology, fast-forward rules, provider operation taxonomy, and approval gates |
+| Production database effects | `## database` | Explicit SQL effects, resource allowlists, routine catalogs, read-only transactions, and timeouts |
 
 ## Example
 

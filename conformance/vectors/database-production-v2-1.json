@@ -1,0 +1,6 @@
+{
+  "id": "PRODUCTION_DATABASE_DESTRUCTIVE_EFFECTS_BLOCKED",
+  "policy": "version: 2.1.0\n\n## database\nactions: mcp.database.*\nprotected_environments: production\nallowed_operations: select\nallowed_resources: app.*\nroutine_catalog: catalog-v1\nrequire_read_only_for_select: true\ndeny_unreviewed_indirect_effects: true\nrequire_shim: true",
+  "intent": {"action": "mcp.database.execute_sql", "provenance": "shim", "metadata": {"database": {"engine": "postgresql", "environment": "production", "operations": ["drop_table"], "resources": ["app.users"], "statement_count": 1, "credential_capabilities": ["select:app.*"]}}},
+  "expected": {"decision": "DENIED", "error_code": "SIGIL_POLICY_VIOLATION_DATABASE_OPERATION_NOT_ALLOWED"}
+}
