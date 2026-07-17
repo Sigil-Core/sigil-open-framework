@@ -106,6 +106,8 @@ For every intent that passes policy evaluation, the signer **MUST** issue an Int
 
 The signer **MUST NOT** issue Intent Attestations with arbitrary or omitted required claims.
 
+The signer **MAY** additionally embed a hybrid post-quantum signature in an OPTIONAL `pqc` claim (an ML-DSA-65 signature over the canonicalized claim set, per the sigil-attestations specification). A signer that does so **SHOULD** declare the `pqc_hybrid_attestations` extended capability and publish its ML-DSA-65 public key set. The Ed25519 signature remains mandatory; the `pqc` claim never replaces it.
+
 ### CR-04 -- JWKS Publication and Issuer Trust
 
 The signer **MUST** publish its public verification key set at a stable URL using the JWKS format defined in [RFC 7517](https://www.rfc-editor.org/rfc/rfc7517). The conventional path is `/.well-known/jwks.json`.
@@ -226,7 +228,7 @@ Schema field notes:
 
 - `conformance_level` **MUST** be either `core` or `extended`.
 - `extended_capabilities` **MUST** be an array. Core-only signers use an empty array.
-- Valid extended capability identifiers are `class_2`, `class_3`, `capability_broker`, and `operator_oversight`.
+- Valid extended capability identifiers are `class_2`, `class_3`, `capability_broker`, `operator_oversight`, and `pqc_hybrid_attestations`.
 - `policy_schema_versions_supported` **MUST** list every `warranty.md` policy schema version the signer accepts.
 
 ```json
@@ -251,7 +253,7 @@ Schema field notes:
 
 | Implementation             | Implementer | Level                                          | Self-Asserted | Notes                    |
 | -------------------------- | ----------- | ---------------------------------------------- | ------------- | ------------------------ |
-| Sigil Sign (OEE reference) | Sigil Core  | Extended (`class_2`, `class_3`, `operator_oversight`) | N/A           | Reference implementation |
+| Sigil Sign (OEE reference) | Sigil Core  | Extended (`class_2`, `class_3`, `operator_oversight`, `pqc_hybrid_attestations`) | N/A           | Reference implementation |
 
 Third-party implementations are added to this registry by opening a PR against this document, including a link to the implementation's conformance declaration.
 

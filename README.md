@@ -62,7 +62,7 @@ The `sigil-attestations` specification is the conformance target for the entire 
 
 The specification defines:
 
-- The structure and claim set of short-lived, Ed25519-signed JWTs (**Intent Attestations**)
+- The structure and claim set of short-lived, Ed25519-signed JWTs (**Intent Attestations**), including the OPTIONAL hybrid ML-DSA-65 post-quantum signature claim
 - JWKS publication requirements for conforming signers
 - Trusted issuer validation rules for federated signers
 - Chain binding and commit binding semantics
@@ -200,7 +200,7 @@ The pattern originates in the Policy Enforcement Point (PEP) and Policy Decision
 
 The same control concept is in broad, independent use across the AI agent governance field, including work from [Microsoft](https://techcommunity.microsoft.com/blog/microsoft-security-blog/authorization-and-governance-for-ai-agents-runtime-authorization-beyond-identity/4509161) and Oracle on runtime authorization for agents, and a growing body of published research on pre-action and pre-execution authorization for autonomous systems. Regulatory frameworks such as the EU AI Act and the NIST AI Risk Management Framework increasingly expect governance to be enforced at the point of execution rather than reconstructed after the fact.
 
-SOF does not claim to have originated this primitive. SOF's contribution is a specific implementation of it for AI agents: a cryptographically signed Sigil Warrant, Ed25519 intent attestations, deterministic deny, allow, and hold decisions enforced at the agent's PreToolUse boundary, and a tamper-evident evidence trail suitable for audit. SOF uses the field's established, descriptive terminology by design, so operators can map it to the access-control and compliance concepts they already know.
+SOF does not claim to have originated this primitive. SOF's contribution is a specific implementation of it for AI agents: a cryptographically signed Sigil Warrant, hybrid Ed25519 + ML-DSA-65 intent attestations, deterministic deny, allow, and hold decisions enforced at the agent's PreToolUse boundary, and a tamper-evident evidence trail suitable for audit. SOF uses the field's established, descriptive terminology by design, so operators can map it to the access-control and compliance concepts they already know.
 
 ---
 

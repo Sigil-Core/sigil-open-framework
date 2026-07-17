@@ -131,7 +131,7 @@ curl -X POST https://sign.sigilcore.com/v1/authorize \
 - `intent.token` (optional): ERC-20 token symbol (`"USDC"`) or `0x` contract address. When present, the policy's `token.<SYM>.*` rules govern the amount; without a matching rule the intent is `DENIED`. If the matched rule pins addresses, `targetAddress` must match one of them. Omit for native ETH.
 - `intent.to` (optional): recipient email address or array of addresses for `email.send` intents. Required when the policy declares `email.allowed_recipients` or `email.blocked_recipients`.
 
-If your intent passes your warranty.md policy, you will receive an Ed25519-signed JWT in the `intent_attestation` field. The JWT embeds a `policyHash`, a SHA-256 of the exact policy content that was evaluated, excluding the signature block. This is your cryptographic proof that the correct policy version was in effect.
+If your intent passes your warranty.md policy, you will receive an Ed25519-signed JWT in the `intent_attestation` field, with a parallel ML-DSA-65 post-quantum signature embedded in its `pqc` claim. The JWT embeds a `policyHash`, a SHA-256 of the exact policy content that was evaluated, excluding the signature block. This is your cryptographic proof that the correct policy version was in effect.
 
 ---
 
