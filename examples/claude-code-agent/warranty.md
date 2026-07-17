@@ -1,11 +1,11 @@
 ---
-title: "Claude Code Agent"
-description: "Warranty policy for an autonomous coding agent: blocks destructive shell commands, bounds outbound email, and requires allowlisted job types."
+title: "Protect Your Repository"
+description: "Block destructive shell and Git commands, deny writes to named sensitive paths, and reject known credential strings."
 ---
 
-# Warranty Policy - Claude Code Agent
+# Warranty Policy - Protect Your Repository
 
-This `warranty.md` governs an autonomous Claude Code agent. It blocks destructive shell commands, restricts file writes outside the working directory, bounds outbound email recipients, requires a known job type, and prevents credential exfiltration.
+This warranty.md governs a coding agent that writes, tests, and ships code. It blocks destructive shell commands, protects Git history and sensitive files, holds outbound email for approval, and requires a known job type.
 
 ```markdown
 version: 1.0.0
@@ -57,3 +57,5 @@ max_tool_calls_per_task: 50
 ## signature
 sigil-sig: REPLACE_WITH_OUTPUT_FROM_SIGNING_TOOL
 ```
+
+This policy governs actions that reach Sigil enforcement. Review adapter coverage before relying on it. Shell command checks do not independently govern network activity started by a child process.
