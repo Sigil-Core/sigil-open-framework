@@ -17,7 +17,9 @@ A Policy 2.1 action requires:
 - fail-closed execution
 - component-aware roots and race-safe path resolution for filesystem mutations
 - no exposed outside-root write handles, credentials, or special-file access
-- a one-time execution grant bound to the policy hash, effect-manifest hash, adapter, and repository identity when applicable
+- a one-time execution grant bound to the policy hash, effect-manifest hash, adapter, and repository identity for repository-scoped filesystem and Git actions
+
+Repository-scoped filesystem and Git grants MUST include the canonical repository identity. Adapters MUST deny when that identity is missing or does not match the grant. Non-repository profiles may omit the repository identity.
 
 The stable public denial codes include `SIGIL_POLICY_VIOLATION_FILE_TARGET_UNTRUSTED`, `SIGIL_POLICY_VIOLATION_FILE_OUTSIDE_ROOT`, `SIGIL_POLICY_VIOLATION_GIT_OPERATION_BLOCKED`, `SIGIL_POLICY_VIOLATION_PROVIDER_OPERATION_BLOCKED`, `SIGIL_POLICY_VIOLATION_DATABASE_OPERATION_NOT_ALLOWED`, `SIGIL_POLICY_VIOLATION_DATABASE_CAPABILITY_UNTRUSTED`, and `SIGIL_POLICY_VIOLATION_EXECUTION_GRANT_INVALID`.
 
