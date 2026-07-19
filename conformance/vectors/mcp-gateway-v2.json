@@ -1,0 +1,37 @@
+{
+  "id": "sof-policy-2-mcp-gateway-boundary",
+  "policy": "version: 2.0.0\n\n## mcp\nallowed_servers: github, slack, postgres-readonly\nallowed_tools: github.*, slack.send_message, postgres-readonly.query\nblocked_tools: github.delete_repository, github.force_push, delete_*\n",
+  "policy_hash": "computed-after-parse",
+  "intents": [
+    {
+      "name": "allowed-server-tool-approved",
+      "intent": { "action": "mcp.github.create_issue", "metadata": { "serverId": "github", "toolName": "create_issue" } },
+      "expected_decision": "APPROVED",
+      "expected_error_code": null
+    },
+    {
+      "name": "blocked-destructive-tool-denied",
+      "intent": { "action": "mcp.github.delete_repository", "metadata": { "serverId": "github", "toolName": "delete_repository" } },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_TOOL_CALL_NOT_ALLOWED"
+    },
+    {
+      "name": "delete-wildcard-blocks-any-server",
+      "intent": { "action": "mcp.slack.delete_message", "metadata": { "serverId": "slack", "toolName": "delete_message" } },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_TOOL_CALL_NOT_ALLOWED"
+    },
+    {
+      "name": "unlisted-server-denied",
+      "intent": { "action": "mcp.filesystem.read_file", "metadata": { "serverId": "filesystem", "toolName": "read_file" } },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_TOOL_CALL_NOT_ALLOWED"
+    },
+    {
+      "name": "missing-tool-metadata-fails-closed",
+      "intent": { "action": "mcp.github.create_issue", "metadata": { "serverId": "github" } },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_VALIDATION_ERROR"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "id": "sof-policy-2-evm-amount-required",
+  "policy": "version: 2.0.0\n\n## evm\nmax_transaction_eth: 2.0\nallowed_actions: wallet.transfer, contract.call\nallowed_chains: 1\nconsensus_threshold_eth: 1.0\nconsensus_require_hold: true\n\n## custom\nallow_only[action=wallet.transfer].intent.amount matches: ^\\d+(\\.\\d+)?$\nallow_only[action=contract.call].intent.amount matches: ^\\d+(\\.\\d+)?$\n",
+  "policy_hash": "computed-after-parse",
+  "intents": [
+    {
+      "name": "missing-amount-denied-fail-closed",
+      "intent": { "action": "wallet.transfer", "chainId": 1, "targetAddress": "0x1111111111111111111111111111111111111111" },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_CUSTOM_ALLOWLIST_VIOLATION"
+    },
+    {
+      "name": "unparseable-amount-denied",
+      "intent": { "action": "contract.call", "chainId": 1, "amount": "all", "targetAddress": "0x1111111111111111111111111111111111111111" },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_CUSTOM_ALLOWLIST_VIOLATION"
+    },
+    {
+      "name": "amount-under-caps-approved",
+      "intent": { "action": "wallet.transfer", "chainId": 1, "amount": "0.5", "targetAddress": "0x1111111111111111111111111111111111111111" },
+      "expected_decision": "APPROVED",
+      "expected_error_code": null
+    },
+    {
+      "name": "amount-above-consensus-threshold-held",
+      "intent": { "action": "wallet.transfer", "chainId": 1, "amount": "1.5", "targetAddress": "0x1111111111111111111111111111111111111111" },
+      "expected_decision": "PENDING",
+      "expected_error_code": "LEX_CONSENSUS_HOLD_REQUIRED"
+    }
+  ]
+}

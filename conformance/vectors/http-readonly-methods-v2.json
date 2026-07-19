@@ -1,0 +1,37 @@
+{
+  "id": "sof-policy-2-http-readonly-methods",
+  "policy": "version: 2.0.0\n\n## tool_calls\nallowed: http\nhttp.allowed_methods: GET, HEAD\nweb_fetch.blocked_domains: localhost, 127.0.0.1, 0.0.0.0, 169.254.169.254, metadata.google.internal\n",
+  "policy_hash": "computed-after-parse",
+  "intents": [
+    {
+      "name": "get-approved",
+      "intent": { "action": "http", "method": "GET", "url": "https://api.audited.example.com/v1/reports" },
+      "expected_decision": "APPROVED",
+      "expected_error_code": null
+    },
+    {
+      "name": "head-approved",
+      "intent": { "action": "http", "method": "HEAD", "url": "https://api.audited.example.com/v1/reports" },
+      "expected_decision": "APPROVED",
+      "expected_error_code": null
+    },
+    {
+      "name": "post-denied-fail-closed",
+      "intent": { "action": "http", "method": "POST", "url": "https://api.audited.example.com/v1/reports" },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_TOOL_CALL_NOT_ALLOWED"
+    },
+    {
+      "name": "lowercase-method-denied",
+      "intent": { "action": "http", "method": "get", "url": "https://api.audited.example.com/v1/reports" },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_VALIDATION_ERROR"
+    },
+    {
+      "name": "blocked-hostname-denied",
+      "intent": { "action": "http", "method": "GET", "url": "https://localhost/admin" },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_TOOL_CALL_BLOCKED_DOMAIN"
+    }
+  ]
+}
