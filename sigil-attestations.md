@@ -5,7 +5,7 @@ description: "The canonical specification for Intent Attestations — the crypto
 
 # Sigil Attestations Specification
 
-The `sigil-attestations` specification defines **Intent Attestations** — the cryptographic primitive at the center of the Sigil Open Framework. An Intent Attestation is a short-lived, Ed25519-signed JWT that proves an agent action was authorized against a specific policy version before execution.
+The `sigil-attestations` specification defines **Intent Attestations** — the cryptographic primitive at the center of the Sigil Open Framework. An Intent Attestation is a short-lived, Ed25519-signed JWT, carrying a parallel ML-DSA-65 post-quantum signature on the hosted reference signer, that proves an agent action was authorized against a specific policy version before execution.
 
 This page is the developer-facing summary. The full specification lives in the [sigil-attestations repository](https://github.com/Sigil-Core/sigil-attestations), and the [Conformance Contract](/conformance) defines what every SOF-conforming signer must produce.
 
@@ -23,6 +23,7 @@ An Intent Attestation is a JSON Web Token (JWT) that:
 - Is **short-lived** — expires no more than 60 seconds after issuance
 - Is **tightly bound** — cryptographically linked to a specific transaction context via `txCommit` (or `userOpHash` for ERC-4337) and `chainId`
 - Includes a **`policyHash`** claim — SHA-256 of the canonical policy object defined in [Policy hash canonical input](#policy-hash-canonical-input), creating a verifiable link between the authorization decision and the policy version that made it
+- May carry a **hybrid post-quantum signature** — an OPTIONAL `pqc` claim holding a parallel ML-DSA-65 signature over the same claim set, defined in [Hybrid post-quantum signatures](#hybrid-post-quantum-signatures)
 
 Every claim in the attestation is purposeful. Together they form the cryptographic chain: *operator policy → policy hash → attestation → execution outcome*. Any link in that chain can be independently verified, after the fact, by any party.
 
@@ -44,6 +45,8 @@ Every conforming Intent Attestation MUST include the following claims. The full 
 | `txCommit` *or* `userOpHash` | Transaction binding — SHA-256 of the transaction payload, or the ERC-4337 UserOp hash |
 | `policyHash` | SHA-256 of the canonical serialization of the evaluated `warranty.md` |
 
+A signer that advertises the `pqc_hybrid_attestations` extended capability additionally embeds an OPTIONAL `pqc` claim carrying the hybrid ML-DSA-65 signature described in [Hybrid post-quantum signatures](#hybrid-post-quantum-signatures). Verifiers that do not understand the claim ignore it; the Ed25519 envelope verifies unchanged.
+
 ---
 
 ## Verification
@@ -58,10 +61,36 @@ The flow:
 4. Verify the Ed25519 signature.
 5. Validate claims: `iss` in the trusted issuer set, `exp`, `iat`, `aud`, and the binding fields (`chainId` + `txCommit` or `userOpHash`).
 6. Optionally parse the published unsigned `warranty.md` body with the same canonical-input algorithm and compare its SHA-256 to `policyHash`.
+7. If the payload carries a `pqc` claim, optionally verify the parallel ML-DSA-65 signature as described in [Hybrid post-quantum signatures](#hybrid-post-quantum-signatures).
 
 The hosted reference issuer is `sigil-core` and publishes keys at `https://sign.sigilcore.com/.well-known/jwks.json`. Third-party conforming signers publish their own keys at their own domains. Federated verifiers add approved issuer IDs to their trusted issuer set and reject any otherwise valid signature whose `iss` is not configured.
 
 Any JWT library that supports EdDSA can verify a conforming attestation locally.
+
+---
+
+## Hybrid post-quantum signatures
+
+Approved attestations issued by the hosted reference signer carry a parallel **ML-DSA-65** (FIPS 204) signature alongside the Ed25519 JWT signature, making the attestation resistant to a future quantum adversary. The envelope is unchanged: `intent_attestation` remains a compact Ed25519 JWT, and existing integrations continue to verify against the issuer's JWKS with no modification. The post-quantum layer rides in a single OPTIONAL `pqc` claim:
+
+| Field | Value |
+|---|---|
+| `alg` | `ML-DSA-65` |
+| `kid` | Identifier of the signer's published ML-DSA-65 public key |
+| `ctx` | `sigil-pqc-attestation-v1` (domain-separation context) |
+| `canonicalization` | `json-sorted-v1` |
+| `sig` | Base64url-encoded ML-DSA-65 signature |
+
+A PQC-aware verifier checks the hybrid signature as follows:
+
+1. Decode the JWT payload and remove the `pqc` claim.
+2. Canonicalize the remaining claims with `json-sorted-v1`: recursively sort object keys in ascending lexicographic order, preserve array order, serialize as compact JSON.
+3. Prepend the signing context `sigil-pqc-attestation-v1` followed by a newline, and encode as UTF-8.
+4. Verify `pqc.sig` over those bytes with the ML-DSA-65 public key whose `kid` matches `pqc.kid`.
+
+The hosted signer publishes its ML-DSA-65 public keys at `https://sign.sigilcore.com/v1/pqc-keys` (canonical application path `/.well-known/sigil-pqc-keys.json`) and advertises the capability in its conformance declaration: `pqc_hybrid_attestations` in `extended_capabilities`, `ML-DSA-65` alongside `EdDSA` in `attestation_algorithms`, and the key endpoint in `pqc_keys_uri`.
+
+Because the scheme is hybrid, verification degrades gracefully: a verifier that only understands Ed25519 still gets the full classical guarantee, while a PQC-aware verifier gains post-quantum assurance over the identical claim set.
 
 ---
 
