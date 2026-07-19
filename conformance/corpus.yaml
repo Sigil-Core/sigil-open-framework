@@ -1,0 +1,19 @@
+version: "2.1.0"
+claims:
+  - id: REPOSITORY_WRITES_BLOCKED_OUTSIDE_ROOT
+    profile: filesystem
+    requirement: component-aware root enforcement
+  - id: GIT_HISTORY_PROTECTED
+    profile: git
+    requirement: non-fast-forward and history-rewrite denial
+  - id: SENSITIVE_FILES_PROTECTED
+    profile: filesystem
+    requirement: protected-file classification and effect denial
+  - id: PRODUCTION_DATABASE_DESTRUCTIVE_EFFECTS_BLOCKED
+    profile: database
+    requirement: explicit production operation and capability enforcement
+vectors:
+  - repository-write-v2-1.json
+  - git-history-v2-1.json
+  - sensitive-files-v2-1.json
+  - database-production-v2-1.json

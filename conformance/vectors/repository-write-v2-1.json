@@ -1,0 +1,47 @@
+{
+  "id": "REPOSITORY_WRITES_BLOCKED_OUTSIDE_ROOT",
+  "policy": "version: 2.1.0\n\n## repository\nroots: .\nblock_outside_writes: true\nprotect_git_history: true\nprotect_sensitive_files: true\ngit_providers: generic, github\nrequire_shim: true\n\n## filesystem\nactions: file.*\nwrite_roots: .\nread_roots: .\nallowed_effects: read, overwrite\nrequire_shim: true",
+  "policy_hash": "computed-after-parse",
+  "intents": [
+    {
+      "name": "denied-write-outside-root",
+      "intent": {
+        "action": "file_write",
+        "provenance": "shim",
+        "metadata": {
+          "filesystem": {
+            "effects": [
+              "overwrite"
+            ],
+            "targets": [
+              {
+                "absolute": "/workspace/repository-evil/file.txt",
+                "resolved_parent": "/workspace/repository-evil"
+              }
+            ]
+          },
+          "execution": {
+            "adapter": "reference-shim",
+            "adapter_version": "2.1.0",
+            "fail_mode": "closed",
+            "boundary_type": "structured_tool",
+            "writable_roots": [
+              "/workspace/repository"
+            ],
+            "readable_roots": [
+              "/workspace/repository"
+            ],
+            "credentials_exposed": false,
+            "race_safe_path_resolution": true,
+            "external_write_handles_exposed": false,
+            "special_files_allowed": false,
+            "case_behavior": "sensitive",
+            "unicode_behavior": "nfc"
+          }
+        }
+      },
+      "expected_decision": "DENIED",
+      "expected_error_code": "SIGIL_POLICY_VIOLATION_FILE_OUTSIDE_ROOT"
+    }
+  ]
+}
