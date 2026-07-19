@@ -1,0 +1,33 @@
+{
+  "id": "GIT_HISTORY_PROTECTED",
+  "policy": "version: 2.1.0\n\n## git\nactions: git.*\nfilesystem_actions: file.*\nproviders: github\nallowed_remote_schemes: https\nallowed_operations: push_fast_forward\nblocked_operations: force_push, rewrite_history\nprotected_refs: refs/*\nrequire_shim: true",
+  "policy_hash": "computed-after-parse",
+  "intents": [
+    {
+      "name": "denied-history-rewrite",
+      "intent": {
+        "action": "git.push",
+        "provenance": "shim",
+        "metadata": {
+          "git": {
+            "operation": "push_fast_forward",
+            "repository_id": "github:acme/repository",
+            "provider": "github",
+            "worktree": "/workspace/repository",
+            "git_dir": "/workspace/repository/.git",
+            "common_dir": "/workspace/repository/.git",
+            "object_dir": "/workspace/repository/.git/objects",
+            "ref_updates": [
+              {
+                "ref": "refs/heads/main",
+                "fast_forward": false
+              }
+            ]
+          }
+        }
+      },
+      "expected_decision": "DENIED",
+      "expected_error_code": "SIGIL_POLICY_VIOLATION_GIT_OPERATION_BLOCKED"
+    }
+  ]
+}

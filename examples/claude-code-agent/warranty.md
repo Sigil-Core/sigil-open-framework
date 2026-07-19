@@ -1,11 +1,11 @@
 ---
 title: "Protect Your Repository"
-description: "Block destructive shell and Git commands, deny writes to named sensitive paths, and reject known credential strings."
+description: "Deny listed shell strings and named sensitive path patterns at the governed intent boundary."
 ---
 
 # Warranty Policy - Protect Your Repository
 
-This warranty.md governs a coding agent that writes, tests, and ships code. It blocks destructive shell commands, protects Git history and sensitive files, holds outbound email for approval, and requires a known job type.
+This warranty.md governs a coding agent that writes, tests, and ships code. It denies the listed command strings and path patterns, holds outbound email for approval, and requires a known job type. It does not by itself attest child-process effects, Git topology, filesystem race safety, or network activity.
 
 ```markdown
 version: 1.0.0
