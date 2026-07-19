@@ -3,7 +3,7 @@
   "description": "A 1.x policy preserves the documented lenient legacy ETH path when the SIGIL_EVM_AMOUNT_REQUIRED deployment flag is unset: a missing amount skips max_transaction_eth and consensus_threshold_eth. The engine-side fail-closed erratum applies to these policies only behind the flag.",
   "env": { "SIGIL_EVM_AMOUNT_REQUIRED": null },
   "policy": "version: 1.0.0\n\n## evm\nmax_transaction_eth: 2.0\nallowed_actions: wallet.transfer, contract.call\nallowed_chains: 1\nconsensus_threshold_eth: 1.0\nconsensus_require_hold: true\n",
-  "policy_hash": "computed-after-parse",
+  "policy_hash": "f6b4978c4f7760064255fb0afb899b8532bcebccec1b91c5ae3ef1b8be4dce29",
   "intents": [
     {
       "name": "missing-amount-preserves-legacy-approval",
@@ -15,7 +15,8 @@
       "name": "explicit-amount-still-capped",
       "intent": { "action": "wallet.transfer", "chainId": 1, "amount": "3.0", "targetAddress": "0x1111111111111111111111111111111111111111" },
       "expected_decision": "DENIED",
-      "expected_error_code": "LEX_AMOUNT_EXCEEDS_EVM_LIMIT"
+      "expected_error_code": "LEX_AMOUNT_EXCEEDS_EVM_LIMIT",
+      "expected_violated_rule": "evm.maxTransactionEth"
     }
   ]
 }
