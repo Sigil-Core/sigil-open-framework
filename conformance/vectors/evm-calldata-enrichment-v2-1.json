@@ -1,8 +1,8 @@
 {
   "id": "sign-evm-calldata-enrichment-v2-1",
-  "description": "Policy 2.1 EVM calldata enrichment: with require_calldata_enrichment set, a contract.call without shim-attested decoded-calldata metadata (metadata.evm) denies; decoded ERC-20 intents are evaluated against the pinned token rules using the decoded values; the max-uint256 approval sentinel denies as unbounded; unknown selectors deny under calldata_unknown_selector: deny.",
+  "description": "Policy 2.1 EVM calldata enrichment: with require_calldata_enrichment set, a contract.call without shim-attested decoded-calldata metadata (metadata.evm) denies; decoded ERC-20 intents are evaluated against the pinned token rules using the decoded values; the max-uint256 approval sentinel denies as unbounded; shim-attested selector-only enrichment for unknown calldata denies under calldata_unknown_selector: deny.",
   "policy": "version: 2.1.0\n\n## evm\nmax_transaction_eth: 2.0\nallowed_actions: contract.call\nallowed_chains: 1\nrequire_calldata_enrichment: true\ncalldata_unknown_selector: deny\ntoken.USDC.max_transaction: 10000\ntoken.USDC.decimals: 6\ntoken.USDC.addresses: 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\n",
-  "policy_hash": "computed-after-parse",
+  "policy_hash": "91bce2ab2923d49a0c97b89c4a6ea0416d18fa824542e44e72f0263acfa758ea",
   "intents": [
     {
       "name": "raw-transfer-over-usdc-cap-denied",
@@ -21,7 +21,8 @@
         }
       },
       "expected_decision": "DENIED",
-      "expected_error_code": "LEX_AMOUNT_EXCEEDS_TOKEN_LIMIT"
+      "expected_error_code": "LEX_AMOUNT_EXCEEDS_TOKEN_LIMIT",
+      "expected_violated_rule": "evm.tokenRules.USDC.maxTransaction"
     },
     {
       "name": "missing-enrichment-metadata-denied",
@@ -33,7 +34,8 @@
         "provenance": "shim"
       },
       "expected_decision": "DENIED",
-      "expected_error_code": "LEX_CALLDATA_ENRICHMENT_REQUIRED"
+      "expected_error_code": "LEX_CALLDATA_ENRICHMENT_REQUIRED",
+      "expected_violated_rule": "evm.require_calldata_enrichment"
     },
     {
       "name": "agent-provenance-enrichment-untrusted-denied",
@@ -52,7 +54,8 @@
         }
       },
       "expected_decision": "DENIED",
-      "expected_error_code": "LEX_CALLDATA_ENRICHMENT_REQUIRED"
+      "expected_error_code": "LEX_CALLDATA_ENRICHMENT_REQUIRED",
+      "expected_violated_rule": "evm.require_calldata_enrichment"
     },
     {
       "name": "unknown-selector-strict-denied",
@@ -61,11 +64,13 @@
         "chainId": 1,
         "amount": "0",
         "targetAddress": "0x3333333333333333333333333333333333333333",
+        "calldata": "0xdeadbeef",
         "provenance": "shim",
         "metadata": { "evm": { "selector": "0xdeadbeef" } }
       },
       "expected_decision": "DENIED",
-      "expected_error_code": "LEX_CALLDATA_ENRICHMENT_REQUIRED"
+      "expected_error_code": "LEX_CALLDATA_ENRICHMENT_REQUIRED",
+      "expected_violated_rule": "evm.calldata_unknown_selector"
     },
     {
       "name": "unbounded-approve-sentinel-denied",

@@ -2,13 +2,27 @@
   "id": "sign-http-method-rules-v2-1",
   "description": "Policy 2.1 per-method HTTP conditions: a method listed with require_query_matches denies when the derived query is missing or non-matching (fail closed); deny: true blocks the method after the base method/host gates; unlisted methods keep current behavior. Motivating case: PATCH against a PostgREST collection must carry a row filter.",
   "policy": "version: 2.1.0\n\n## tool_calls\nallowed: http\nhttp.allowed_methods: POST, PATCH, DELETE\nhttp.allowed_hosts: your-project-ref.supabase.co\nhttp.method_rules.PATCH.require_query_matches: ^slug=eq\\.[a-z0-9-]+$\nhttp.method_rules.DELETE.deny: true\n",
-  "policy_hash": "computed-after-parse",
+  "policy_hash": "f5ab123ff4e681e3885cbbc49dc84ec96d2a118679d000876d5e539510b75f95",
   "intents": [
     {
       "name": "patch-with-matching-row-filter-approved",
       "intent": { "action": "http", "method": "PATCH", "url": "https://your-project-ref.supabase.co/rest/v1/posts?slug=eq.launch-update" },
       "expected_decision": "APPROVED",
       "expected_error_code": null
+    },
+    {
+      "name": "patch-to-unlisted-host-denied-by-base-gate",
+      "intent": { "action": "http", "method": "PATCH", "url": "https://attacker.example/rest/v1/posts?slug=eq.launch-update" },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_TOOL_CALL_NOT_ALLOWED",
+      "expected_violated_rule": "http.allowed_hosts"
+    },
+    {
+      "name": "get-denied-by-base-method-gate",
+      "intent": { "action": "http", "method": "GET", "url": "https://your-project-ref.supabase.co/rest/v1/posts?slug=eq.launch-update" },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_TOOL_CALL_NOT_ALLOWED",
+      "expected_violated_rule": "http.allowed_methods"
     },
     {
       "name": "patch-with-empty-query-denied",
