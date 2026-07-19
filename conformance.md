@@ -106,6 +106,8 @@ For every intent that passes policy evaluation, the signer **MUST** issue an Int
 
 The signer **MUST NOT** issue Intent Attestations with arbitrary or omitted required claims.
 
+The signer **MAY** additionally embed a hybrid post-quantum signature in an OPTIONAL `pqc` claim (an ML-DSA-65 signature over the canonicalized claim set, per the sigil-attestations specification). A signer that does so **SHOULD** declare the `pqc_hybrid_attestations` extended capability and publish its ML-DSA-65 public key set. The Ed25519 signature remains mandatory; the `pqc` claim never replaces it.
+
 ### CR-04 -- JWKS Publication and Issuer Trust
 
 The signer **MUST** publish its public verification key set at a stable URL using the JWKS format defined in [RFC 7517](https://www.rfc-editor.org/rfc/rfc7517). The conventional path is `/.well-known/jwks.json`.
@@ -165,6 +167,7 @@ The signer **MAY** implement Class 2 rule evaluation, including:
 - Pinned token contract binding: when a matching token rule includes `addresses`, the intent `targetAddress` **MUST** match one of those addresses
 - `email.send` recipient allowlist/denylist evaluation in the order denylist, allowlist, approval hold
 - `execution_limits` hard ceilings for tool calls, including fail-closed `SIGIL_LIMIT_STORE_UNAVAILABLE` behavior when counter state cannot be updated
+- Policy format 2.0 typed HTTP method and host boundaries, MCP server and tool taxonomy, trailing-wildcard validation, shim provenance gates, and named count or USD caps
 
 ### XR-02 -- Class 3 Consensus Rules
 
@@ -194,27 +197,32 @@ A signer **MAY** describe itself as "SOF-conforming," "an implementation of the 
 
 ## Conformance Verification
 
-### Conformance Test Suite
+### Policy 2.0 and 2.1 Vector Corpus
 
-The **SOF Conformance Test Suite** is in active development. When released, it will provide:
+The **SOF Conformance Test Suite** starts with the portable [Policy 2.0 and Policy 2.1 vector corpus](conformance/vectors/). A signer harness should run these fixtures against its parser, evaluator, counter store, and audit projection. The corpus provides:
 
-- A vector-based test harness covering every `MUST` and `MUST NOT` clause in this document
-- An interoperability checklist for integration with conforming gateways
+- A vector format covering typed HTTP, MCP, provenance, approval, and aggregate-cap decisions
 - A negative-test corpus for adversarial intent submissions
-- A public registry of certified conforming implementations
+- Promotion rules for connector-specific vectors, including one controlled OBSERVE-to-ENFORCE run
+
+Policy 2.1 adds destructive-resource safety profiles for repositories, filesystems, Git providers, and production databases. A signer claiming Policy 2.1 support MUST validate structured execution-boundary metadata, effect manifests, adapter compatibility, and one-time execution grants. A preflight-only adapter MUST NOT claim final mutation ownership or Policy 2.1 destructive-write conformance.
+
+The vector corpus does not replace the signer harness. The corpus is available now; a maintained automated runner and formal verification workflow are not shipped yet. Until they are available, each implementation remains responsible for running the fixtures manually, signing the fixture policy, submitting the intents, and recording the policy hash and public error fields.
+
+The Policy Primitives v2 corpus already tracks pending release-gating cases for [Google Ads bid management](conformance/pending/google-ads-bid-manager.md), [Meta Ads budget operations](conformance/pending/meta-ads-budget-operator.md), and the [Buffer MCP social scheduler](conformance/pending/buffer-social-scheduler.md). These cases are requirements, not deployable examples, until their aggregate-cap, Buffer count-cap, and MCP provenance dependencies ship.
 
 To express interest in early access, open an issue on the [sigil-attestations](https://github.com/Sigil-Core/sigil-attestations/issues) repository with the label `conformance-suite`.
 
 ### Self-Assertion (Interim)
 
-Until the test suite ships, conformance is asserted by the signer operator. To self-assert:
+Until an automated runner and formal verification workflow ship, conformance is asserted by the signer operator. To self-assert:
 
 1. Implement every Core Conformance behavior in this document
 2. Verify interoperability against the reference implementation at `sign.sigilcore.com`
 3. Publish a conformance declaration at `/.well-known/sof-conformance.json` on your signer's domain (schema below)
 4. Open a registry issue on the sigil-open-framework repository with a link to your conformance declaration
 
-A self-asserted implementation is listed in the registry with a `self-asserted` flag. Once the test suite ships, self-asserted implementations are invited to undergo formal verification.
+A self-asserted implementation is listed in the registry with a `self-asserted` flag. Once the automated runner ships, self-asserted implementations are invited to undergo formal verification.
 
 ### Conformance Declaration Schema
 
@@ -222,11 +230,13 @@ Schema field notes:
 
 - `conformance_level` **MUST** be either `core` or `extended`.
 - `extended_capabilities` **MUST** be an array. Core-only signers use an empty array.
-- Valid extended capability identifiers are `class_2`, `class_3`, `capability_broker`, and `operator_oversight`.
+- Valid extended capability identifiers are `class_2`, `class_3`, `capability_broker`, `operator_oversight`, and `pqc_hybrid_attestations`.
+- `policy_schema_versions_supported` **MUST** list every `warranty.md` policy schema version the signer accepts.
 
 ```json
 {
   "spec_version": "sigil-attestations-v1",
+  "policy_schema_versions_supported": ["1.0.0", "2.0.0", "2.1.0"],
   "conformance_level": "extended",
   "extended_capabilities": ["class_2", "class_3"],
   "implementation_name": "Acme Signer",
@@ -245,7 +255,7 @@ Schema field notes:
 
 | Implementation             | Implementer | Level                                          | Self-Asserted | Notes                    |
 | -------------------------- | ----------- | ---------------------------------------------- | ------------- | ------------------------ |
-| Sigil Sign (OEE reference) | Sigil Core  | Extended (`class_2`, `class_3`, `operator_oversight`) | N/A           | Reference implementation |
+| Sigil Sign (OEE reference) | Sigil Core  | Extended (`class_2`, `class_3`, `operator_oversight`, `pqc_hybrid_attestations`) | N/A           | Reference implementation |
 
 Third-party implementations are added to this registry by opening a PR against this document, including a link to the implementation's conformance declaration.
 

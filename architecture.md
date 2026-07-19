@@ -26,7 +26,7 @@ Sigil is a composable protocol stack. Three layers — enforcement, legal govern
 │    APPROVED             PENDING              DENIED         │
 │  (attestation)      (consensus hold)     (hard block)       │
 └────────────────────────┬────────────────────────────────────┘
-                         │  Intent Attestation JWT (Ed25519)
+                         │  Intent Attestation JWT (Ed25519 + ML-DSA-65)
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
 │               Sigil RPC / Bundler Gateway                   │
@@ -104,14 +104,15 @@ The agent submits a structured JSON payload describing what it is about to do �
 
 **2. Policy Evaluation (Sigil Sign)**
 
-Sigil Sign reads the operator's `warranty.md` at runtime and evaluates the intent against five typed policy blocks:
+Sigil Sign reads the operator's `warranty.md` at runtime and evaluates the intent against six typed policy blocks:
 
 | Block | Type | Behavior on violation |
 |---|---|---|
 | `## evm` | Hard limits on transaction value, chain, and action type | `DENIED` |
 | `## tool_calls` | Blocked tools, blocked domains, blocked commands | `DENIED` |
+| `## mcp` | MCP server and tool allowlists, approval patterns, and shim provenance | `DENIED` or `PENDING` |
 | `## custom` | Operator-defined deny expressions | `DENIED` |
-| `## soft_limits` | Daily aggregate caps (ETH value, tool call count) | Informational |
+| `## soft_limits` | Version-gated aggregate count and USD-sum caps | Informational under 1.x; `DENIED` on breach under 2.0 |
 | `## execution_limits` | Hard runaway-loop ceilings for tool calls and adapter-reported model budget brakes | `DENIED` |
 
 **3. Authorization Decision**
@@ -146,19 +147,20 @@ Sigil Sign verifies the policy signature against this key at startup. If the pol
 
 ### Intent Attestation JWT
 
-An Intent Attestation is a short-lived (60-second TTL) Ed25519-signed JWT containing:
+An Intent Attestation is a short-lived (60-second TTL) Ed25519-signed JWT, carrying a parallel ML-DSA-65 post-quantum signature in its `pqc` claim, containing:
 
 - `agentId` — the agent that declared the intent
 - `txCommit` — SHA-256 of the transaction payload
 - `policyHash` — SHA-256 of the warranty.md content (excluding the signature block) at evaluation time
 - `chainId` — the target chain
 - `iat` / `exp` — issuance and expiry timestamps
+- `pqc` — hybrid ML-DSA-65 signature over the claim set, for post-quantum verification
 
 The `policyHash` is the cryptographic link between the attestation and the exact policy version that authorized it. If your policy changes between evaluations, the policyHash changes — every attestation in your audit log is verifiably tied to the policy in effect at the time.
 
 ### JWK Verification
 
-Intent Attestations can be verified independently against the issuing signer's published JWK set at `GET /.well-known/jwks.json`. The reference implementation publishes its keys at `https://sign.sigilcore.com/.well-known/jwks.json`; third-party conforming signers publish their own at their own domains.
+Intent Attestations can be verified independently against the issuing signer's published JWK set at `GET /.well-known/jwks.json`. The reference implementation publishes its keys at `https://sign.sigilcore.com/.well-known/jwks.json`; third-party conforming signers publish their own at their own domains. PQC-aware verifiers additionally fetch the ML-DSA-65 key set from `https://sign.sigilcore.com/v1/pqc-keys` to check the `pqc` claim.
 
 Verifiers must pair JWK validation with a trusted issuer set. Hosted Sigil uses `sigil-core` as the default issuer; federated deployments add approved issuer IDs explicitly and reject signatures from untrusted `iss` values.
 
@@ -184,7 +186,7 @@ Agent hooks are the client-side interception layer. Without hooks, OEE governs o
 
 ## Consensus Holds
 
-A consensus hold is a PENDING decision stored with a 24-hour TTL. It is triggered by configured approval gates such as EVM consensus thresholds or `email.require_approval`, not by informational `## soft_limits`.
+A consensus hold is a PENDING decision stored with a 24-hour TTL. It is triggered by configured approval gates such as EVM consensus thresholds or `email.require_approval`, not by `## soft_limits`. Under 1.x, soft limits remain informational. Under 2.0, an exceeded aggregate cap returns `DENIED`, never `PENDING`.
 
 The hold is not optional monitoring. The agent cannot execute the held action until a human resolves the hold. Resolution options are APPROVE (issue attestation) or REJECT (deny permanently). If the hold expires without resolution, it auto-rejects.
 
@@ -198,7 +200,7 @@ The reference SOF implementation is operated by Sigil Core as a hosted service a
 
 **Start free.** Register your email at [sigilcore.com/tools/keys](https://sigilcore.com/tools/keys) to receive a Developer tier key — 1,000 governed actions per month, no account required.
 
-**Scale on demand.** When you outgrow the free tier, upgrade to $25/month — includes 10,000 governed actions, $0.002 per action above that. → [sigilcore.com/tools/upgrade](https://sigilcore.com/tools/upgrade)
+**Scale on demand.** When you outgrow the free tier, upgrade to $49/month — includes 10,000 governed actions, $0.002 per action above that. → [sigilcore.com/tools/upgrade](https://sigilcore.com/tools/upgrade)
 
 **Enterprise and regulated deployments** with dedicated infrastructure, custom SLAs, and audit support are available through [Sigil Governance](https://sigilgovernance.com).
 

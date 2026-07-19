@@ -1,0 +1,25 @@
+{
+  "id": "sof-policy-2-http-boundary",
+  "policy": "version: 2.0.0\n\n## tool_calls\nallowed: http\nhttp.allowed_methods: POST, PATCH\nhttp.blocked_methods: DELETE\nhttp.allowed_hosts: api.example.com\n\n## custom\nallow_only[action=http].url starts_with: https://api.example.com\n",
+  "policy_hash": "computed-after-parse",
+  "intents": [
+    {
+      "name": "approved-post",
+      "intent": { "action": "http", "method": "POST", "url": "https://api.example.com/v1/posts" },
+      "expected_decision": "APPROVED",
+      "expected_error_code": null
+    },
+    {
+      "name": "denied-delete",
+      "intent": { "action": "http", "method": "DELETE", "url": "https://api.example.com/v1/posts" },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_TOOL_CALL_NOT_ALLOWED"
+    },
+    {
+      "name": "denied-host",
+      "intent": { "action": "http", "method": "POST", "url": "https://evil.example.net/v1/posts" },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_TOOL_CALL_NOT_ALLOWED"
+    }
+  ]
+}

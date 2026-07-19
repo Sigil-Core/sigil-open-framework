@@ -18,7 +18,7 @@ description: "Diagnosing policy violations, validation errors, startup failures,
 
     **Pricing:**
     - **Developer:** Free, 1,000 governed actions/month
-    - **Growth:** $25/month, 10,000 governed actions, $0.002 per action above
+    - **Growth:** $49/month, 10,000 governed actions, $0.002 per action above
     - **Enterprise:** Custom, dedicated infrastructure, SLAs, audit support via
       [Sigil Governance](https://sigilgovernance.com)
 
@@ -298,7 +298,11 @@ description: "Diagnosing policy violations, validation errors, startup failures,
 
   <Accordion title="How do I locally verify the Ed25519 signature?">
     Intent Attestations are standard Ed25519-signed JWTs. You can verify them
-    using the `jose` library and Sigil's public JWK endpoint.
+    using the `jose` library and Sigil's public JWK endpoint. Approved
+    attestations also carry a parallel ML-DSA-65 post-quantum signature in the
+    `pqc` claim; the classical verification below stays valid, and PQC-aware
+    clients can additionally verify `pqc.sig` against the key set at
+    `https://sign.sigilcore.com/v1/pqc-keys`.
 
     ```typescript
     import { createRemoteJWKSet, jwtVerify } from "jose";

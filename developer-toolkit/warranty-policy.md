@@ -20,7 +20,11 @@ Both paths produce an identical signed `warranty.md` that Sigil Sign accepts at 
 
 ## File Format
 
-`warranty.md` uses a plain-text, typed-block format. Blocks are defined by `##` headers. At least one of `## evm`, `## tool_calls`, or `## custom` is required.
+`warranty.md` uses a plain-text, typed-block format. Blocks are defined by `##` headers. A 1.x policy requires an enforceable EVM, tool-call, custom, or model-budget rule. A 2.0 policy may also consist of enforced `## soft_limits`.
+
+> **Policy format 2.0.0:** 1.x policies keep their existing semantics. New 2.0 syntax is opt-in through the version line and requires a Sign build that supports the field. Policy format 2.0 adds typed HTTP intents, allow-rule operators, enforced named caps, MCP-native actions, approval patterns, and provenance gates. Existing signed 1.x files remain unchanged.
+
+For a controlled upgrade, follow the [1.x to 2.0 migration guide](/developer-toolkit/migrating-1x-to-2). The guide includes the re-sign, rollback, and conformance-vector checks required before activation.
 
 ```markdown
 version: 1.0.0
@@ -93,6 +97,11 @@ Controls non-EVM agent tool execution.
 | `email.require_approval` | Hold all email.send for human approval |
 | `email.allowed_recipients` | Recipients permitted for email.send, using exact addresses or `*@domain` wildcards |
 | `email.blocked_recipients` | Recipients always denied for email.send, using the same entry forms |
+| `http.allowed_methods` | HTTP methods permitted for typed `http` intents |
+| `http.blocked_methods` | HTTP methods denied before the allowlist is evaluated |
+| `http.allowed_hosts` | Exact hosts, or `*.example.com` subdomain patterns, permitted for typed `http` intents |
+| `require_approval` | Generic action patterns that create a durable approval hold after the base profile allows the action |
+| `require_shim` | Require `provenance: shim`, derived from the API-key record, for actions governed by this block |
 
 **Recipient semantics:** `email.send` intents carry recipients in `intent.to` (string or array). Checks run in order: denylist, allowlist, approval hold. A blocked recipient is `DENIED` (`SIGIL_POLICY_VIOLATION_BLOCKED_RECIPIENT`) before any hold is created, and an off-allowlist recipient returns `SIGIL_POLICY_VIOLATION_RECIPIENT_NOT_ALLOWED`. Every recipient in an array must pass. A missing `to` while either list is declared is `DENIED` fail-closed. Each recipient list must contain at least one entry; empty recipient lists reject the policy. `*@domain` matches that exact domain only; subdomains do not match. Matching is case-insensitive.
 
@@ -108,14 +117,87 @@ deny_if.<field_path> <operator> <value>
 
 # Block any intent containing a string in any field
 deny_string: <literal>
+
+# Require shim-derived metadata for an affirmative allowlist.
+allow_only[action=mcp.buffer.create_post].metadata.arguments.channelId attested equals: linkedin-company
 ```
 
 Operators: `contains`, `starts_with`, `ends_with`, `equals`, `not_equals`, `matches` (regex)
 
-**Allowlist semantics:** `allow_only` is an affirmative allowlist with exact, case-sensitive matching (no operators). The rule applies to **every** intent the policy evaluates: if the field is missing, non-string, or its value is not listed, the intent is `DENIED` fail-closed with `SIGIL_POLICY_VIOLATION_NOT_ON_ALLOWLIST`. Each line must include at least one value; empty `allow_only` lists reject the policy. Repeat the line for the same field path to extend the value set (entries merge). **Deny rules win:** deny_if/deny_string are evaluated first, so a value matching both a deny rule and the allowlist is denied with the deny rule's code.
+**Allowlist semantics:** `allow_only` is an affirmative allowlist. In 1.x it keeps exact, case-sensitive matching; in 2.0 it accepts `equals` (the default), `starts_with`/`prefix`, `ends_with`, `contains`, and `matches` operators. A missing or non-matching field is `DENIED` fail-closed with `SIGIL_POLICY_VIOLATION_NOT_ON_ALLOWLIST`. Regex patterns are capped at 256 characters; invalid patterns deny without throwing. **Deny rules win:** deny_if/deny_string are evaluated first, so a value matching both a deny rule and the allowlist is denied with the deny rule's code.
+
+An `attested` allowlist rule must target `metadata.*` and fails closed unless
+the request arrived through a trusted shim. `require_shim: true` is a
+block-level gate. Sign stamps `provenance: agent` or `provenance: shim` from
+the API-key record; the request body cannot self-assert either value. Generic
+`require_approval` patterns can appear in any policy block and match exact
+actions or one trailing `*` prefix wildcard. `email.require_approval` remains
+syntax sugar for the same durable hold class.
+
+### `## mcp`
+
+MCP policy is deny-by-default unless this block exists. Sign dispatches on the
+`mcp.` action prefix and evaluates the trusted metadata values instead of
+splitting the action string.
+
+| Field | Description |
+|---|---|
+| `allowed_servers` | Exact server IDs or one trailing `*` prefix wildcard |
+| `allowed_tools` | Exact `serverId.toolName` identities, tool names, or trailing `*` prefix wildcards |
+| `blocked_tools` | MCP tool identities or tool names that always deny |
+| `require_approval` | MCP tool patterns that return `PENDING` with a durable 24-hour hold |
+| `require_shim` | Require `provenance: shim` for MCP actions governed by this block |
+
+```markdown
+## mcp
+allowed_servers: buffer, notion
+allowed_tools: buffer.create_post, notion.notion-create-pages
+blocked_tools: buffer.delete_*
+require_approval: buffer.create_post
+require_shim: true
+```
 
 ### `## soft_limits`
-Informational limits flagged for audit but never hard-enforced. Included so the `policyHash` reflects the operator's stated intent.
+`## soft_limits` is version-gated. Under 1.x, its legacy fields remain informational metadata and do not change an authorization decision. Under 2.0, declared limits are enforced after the engine approves the matching action type or namespace, and an exceeded cap returns `DENIED`. Existing signed 1.x policies keep their original behavior until an operator explicitly upgrades and re-signs them. A cap on a namespace the current engine does not approve cannot make that namespace executable.
+
+Policy format 2.0 supports legacy daily limits and named caps:
+
+```markdown
+## soft_limits
+daily_tool_calls: 500
+daily_evm_limit_eth: 20.0
+
+cap.linkedin_posts.max_count: 2
+cap.linkedin_posts.window: day
+cap.linkedin_posts.action: mcp.buffer.create_post
+cap.linkedin_posts.group_by: metadata.arguments.channelId
+
+cap.ad_spend.max_sum_usd: 500.00
+cap.ad_spend.window: day
+cap.ad_spend.action: mcp.google-ads.*
+cap.ad_spend.amount_field: metadata.arguments.budget_usd
+```
+
+<Note>
+  Named caps can target `mcp.*` actions. The cap applies after the MCP block and
+  base policy approve the call, and a denied or pending call does not consume
+  aggregate budget.
+</Note>
+
+| Field | Description |
+|---|---|
+| `cap.<name>.max_count` | Positive integer count ceiling. Mutually exclusive with `max_sum_usd` |
+| `cap.<name>.max_sum_usd` | Positive USD ceiling with up to six decimal places. Mutually exclusive with `max_count` |
+| `cap.<name>.window` | Counter window: `day`, `hour`, or `task` |
+| `cap.<name>.action` | Exact action or one trailing `*` prefix wildcard |
+| `cap.<name>.group_by` | Optional intent field path that creates an independent counter per value |
+| `cap.<name>.amount_field` | Required decimal-string intent field path for a USD sum cap |
+
+The counter key combines the API key, cap name, group value, and window bucket. Sign increments counters only after the base policy approves the intent. Base-policy `DENIED` and `PENDING` decisions do not consume aggregate budget. A missing or non-string `amount_field` value fails closed with `SIGIL_AGGREGATE_FIELD_MISSING`. Counter-store failure fails closed with `SIGIL_LIMIT_STORE_UNAVAILABLE`.
+
+<Warning>
+  `day` and `hour` use UTC calendar buckets, not rolling windows or the operator's local timezone. The reserved `window_days`, `window_hours`, and `timezone` keys are not supported yet and cause a parse error.
+</Warning>
 
 ### `## execution_limits`
 Hard ceilings that stop runaway tool loops before the next tool executes.
@@ -124,6 +206,8 @@ Hard ceilings that stop runaway tool loops before the next tool executes.
 |---|---|
 | `max_tool_calls_per_task` | Maximum tool calls for one `intent.task_id`; the next call is `DENIED` |
 | `max_tool_calls_per_hour` | Maximum tool calls per API key in the current UTC clock-hour bucket |
+| `max_model_spend_usd_per_task` | Maximum adapter-reported model spend for one `intent.task_id` |
+| `max_model_tokens_per_task` | Maximum adapter-reported model tokens for one `intent.task_id` |
 
 Execution limits are hard denials, not soft caps. A ceiling breach returns `SIGIL_LOOP_LIMIT_EXCEEDED`; if the counter store is unavailable, Sigil Sign fails closed with `SIGIL_LIMIT_STORE_UNAVAILABLE`. The per-task ceiling applies only when the request includes `intent.task_id`; the hourly ceiling applies per API key.
 

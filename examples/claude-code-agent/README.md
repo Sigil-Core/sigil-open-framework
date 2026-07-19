@@ -1,1 +1,3 @@
-This agent runs Claude Code unsupervised to write, test, and ship code. Without policy, it could `rm -rf /`, push untested code to main, exfiltrate credentials from your environment, or email work output to the wrong recipient. This warranty.md blocks destructive commands, restricts file writes to the working directory, bounds outbound email recipients, and requires an allowlisted job type on every governed intent.
+# Protect Your Repository
+
+This sample governs a coding agent that writes, tests, and ships code. Without policy, it could run destructive shell commands, rewrite Git history, expose credentials, or write to sensitive system paths. Adjust recipients, paths, job types, and limits before signing.
