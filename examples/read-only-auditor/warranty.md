@@ -1,9 +1,9 @@
 ---
 title: "Read-Only Auditor Agent"
-description: "Warranty policy for an audit agent that is read-only at the transport layer: only GET and HEAD requests are authorized (fail-closed), requests are pinned to the listed audited hosts (placeholders to replace with your audited surfaces), listed private-network hostnames are denied, and every intent requires a declared job type. GET endpoints with side effects remain the operator's residual risk."
+description: "Warrant policy for an audit agent that is read-only at the transport layer: only GET and HEAD requests are authorized (fail-closed), requests are pinned to the listed audited hosts (placeholders to replace with your audited surfaces), listed private-network hostnames are denied, and every intent requires a declared job type. GET endpoints with side effects remain the operator's residual risk."
 ---
 
-# Warranty Policy - Read-Only Auditor Agent
+# Warrant Policy - Read-Only Auditor Agent
 
 Copy the policy body below into Sigil Warrant, sign it, and deploy it with the API key used by this agent.
 
