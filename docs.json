@@ -91,6 +91,7 @@
               "examples/api-agent/warranty",
               "examples/mcp-server-agent/warranty",
               "examples/customer-support-agent/warranty",
+              "examples/outbound-email-agent/warranty",
               "examples/data-etl-agent/warranty",
               "examples/read-only-auditor/warranty",
               "examples/stablecoin-treasury-agent/warranty",

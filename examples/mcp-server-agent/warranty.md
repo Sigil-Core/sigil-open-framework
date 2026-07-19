@@ -1,44 +1,45 @@
 ---
 title: "MCP Server Agent"
-description: "Warranty policy for an agent that calls external tools through MCP servers: blocks destructive shell, blocks SSRF, bounds email recipients, and requires allowlisted job types."
+description: "Warranty policy for an agent that calls external tools through MCP servers: allowlists MCP servers and tools, blocks destructive tool patterns, holds email for approval, and requires a declared job type."
 ---
 
 # Warranty Policy - MCP Server Agent
 
 Copy the policy body below into Sigil Warrant, sign it, and deploy it with the API key used by this agent.
 
+MCP intents are matched on trusted `metadata.serverId` and `metadata.toolName`, which fail closed when absent. Tool patterns match the tool name or `server.tool` form, with trailing-`*` wildcard support.
+
 ```markdown
-version: 1.0.0
+version: 2.0.0
+
+## mcp
+# Replace these placeholders with the real MCP servers this agent connects to.
+allowed_servers: github, slack, postgres-readonly
+# Enumerate the real tools your deployment uses; a tool not on this list is
+# denied. `github.*` allows every tool on the github server except those
+# blocked below (blocked_tools is checked first).
+allowed_tools: github.*, slack.send_message, postgres-readonly.query
+# Denies the listed destructive tools. `delete_*` matches any tool whose name
+# starts with "delete_" on any allowed server.
+blocked_tools: github.delete_repository, github.force_push, delete_*
 
 ## tool_calls
-allowed: bash, web_fetch, email.send
-bash.blocked_commands: rm -rf, rm -r /, mkfs, dd if=, shutdown, reboot, curl -X DELETE
-web_fetch.blocked_domains: localhost, 127.0.0.1, 0.0.0.0, 169.254.169.254, metadata.google.internal
+# An MCP gateway agent does not need a raw shell, and every governed channel
+# it does need is typed above — so only email.send remains here.
+allowed: email.send
 email.require_approval: true
 email.allowed_recipients: *@sigilcore.com, partner@example.com
 email.blocked_recipients: noreply@sigilcore.com
 
 ## custom
-# Require every governed intent to declare an approved job type.
+# Every governed intent must declare an approved job type. Fails closed on a
+# missing job_type; the value is agent-declared unless intents arrive through
+# a trusted shim.
 allow_only.intent.metadata.job_type: tool_call, data_sync, notify
 deny_if.intent.metadata.job_type contains test
 
-# Block requests to internal/private networks (SSRF)
-deny_if.intent.url contains "localhost"
-deny_if.intent.url contains "127.0.0.1"
-deny_if.intent.url contains "192.168."
-deny_if.intent.url contains "10.0."
-deny_if.intent.url starts_with "http://"
-
-# Block SSRF attempts via cloud metadata endpoints
-deny_if.intent.url contains "169.254.169.254"
-deny_if.intent.url contains "metadata.google.internal"
-
-# Block destructive shell passed through an MCP tool
-deny_if.intent.command contains "rm -rf"
-deny_if.intent.command contains "DROP TABLE"
-
-# Block credential leakage in request bodies
+# Denies listed credential strings anywhere in the intent. Case-sensitive
+# substring matching: defense in depth, not a secrets control.
 deny_string: "OPENAI_API_KEY"
 deny_string: "ANTHROPIC_API_KEY"
 deny_string: "AWS_SECRET_ACCESS_KEY"
