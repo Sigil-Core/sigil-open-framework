@@ -18,7 +18,7 @@ Policy formats 2.0 and 2.1 keep the 1.x EVM, tool-call, custom, and execution-li
 
 For destructive repository, Git, provider, or production database actions, choose Policy 2.1. Configure the repository and resource profiles, then use an adapter that attests the complete effect manifest and owns the final mutation. A preflight-only hook must fail closed and must not be described as final mutation enforcement.
 
-Sigil Warrant's Builder can load an existing warranty and prepare the 2.0 form. It does not carry the old signature into the new file.
+Sigil Warrant's Builder can load an existing warranty and prepare the 2.0 form, and it can load a signed Policy 2.1 repository profile without changing its values. Policies that use the `## filesystem`, `## git`, or `## database` profiles are authored outside the Builder; the Builder and Manual Warrant reject those imports without changing any field. The Builder does not carry the old signature into the new file.
 
 ## Field mapping
 
