@@ -35,11 +35,20 @@
             ]
           },
           {
+            "group": "Pending Policy Corpus",
+            "pages": [
+              "conformance/pending/google-ads-bid-manager",
+              "conformance/pending/meta-ads-budget-operator",
+              "conformance/pending/buffer-social-scheduler"
+            ]
+          },
+          {
             "group": "Developer Toolkit",
             "pages": [
               "developer-toolkit/quick-start",
               "developer-toolkit/mock-engine",
               "developer-toolkit/warranty-policy",
+              "developer-toolkit/migrating-1x-to-2",
               "developer-toolkit/testing"
             ]
           },
@@ -51,6 +60,7 @@
               "agent-hooks/codex",
               "agent-hooks/openrouter",
               "agent-hooks/hermes",
+              "agent-hooks/openclaw",
               "agent-hooks/eliza",
               "agent-hooks/langchain",
               "agent-hooks/rust",
@@ -75,6 +85,7 @@
           {
             "group": "Examples",
             "pages": [
+              "examples/cms-publisher-agent/warranty",
               "examples/defi-agent/warranty",
               "examples/claude-code-agent/warranty",
               "examples/api-agent/warranty",

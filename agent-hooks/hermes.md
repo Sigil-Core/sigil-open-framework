@@ -21,6 +21,8 @@ surface: a single hook governs `terminal`, `write_file`, `patch`, `web_search`,
 tool names to Sigil actions, resolves task ids, and returns Hermes' block shape
 consistently.
 
+HTTP note: the adapter promotes a web call to typed `http` only when its input explicitly contains a valid method. It does not infer `GET`; otherwise the call remains `web_fetch`.
+
 ## Prerequisites
 
 You need a Sigil API key and a signed `warranty.md` policy file deployed to Sigil Sign.

@@ -93,6 +93,32 @@ CLI flags > environment variables > config file > defaults.
   name (stdio) or the full URL (HTTP) when not set explicitly.
 - **`serverName`** is a display label for logs only and defaults to `serverId`.
 
+### Action taxonomy and enrichment
+
+Each governed call uses the action `mcp.<serverId>.<toolName>`. The proxy keeps
+the binding identity in `metadata.serverId`, the tool name in
+`metadata.toolName`, and the complete tool arguments in `metadata.arguments`.
+Sign matches MCP policy against those exact metadata values. It does not split
+the action string because server IDs may contain dots, slashes, URLs, or scoped
+package names.
+
+The `## mcp` block supports exact values and trailing `*` prefix wildcards:
+
+```markdown
+version: 2.0.0
+
+## mcp
+allowed_servers: buffer
+allowed_tools: buffer.create_post
+blocked_tools: buffer.delete_*
+require_approval: buffer.create_post
+```
+
+Without a `## mcp` block, all `mcp.*` actions are denied. Extractors may copy
+bounded tool arguments into policy fields, but those fields remain agent
+provenance unless the proxy runs behind a dedicated credential that the governed
+agent cannot read.
+
 ## Fail-Closed by Default
 
 The proxy is fail-closed: when Sigil Sign is unreachable, tool calls are blocked.
@@ -106,6 +132,10 @@ npx @sigilcore/mcp-proxy --unsafe-bypass -- npx @some/mcp-server
 
 Every bypassed call emits an `ungoverned_tool_call` error-level log. Authentication
 failures (401) are never bypassed.
+
+The proxy sets `@sigilcore/agent-hooks` `failMode: "closed"` explicitly. It
+handles the structured `SIGIL_UNREACHABLE` and `failOpen` result fields, so an
+English response message cannot turn an outage into an accidental approval.
 
 ## HTTP/SSE Transport
 

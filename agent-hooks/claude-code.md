@@ -16,6 +16,8 @@ Claude Code and the Anthropic SDK already have a dedicated package export:
 `recordModelUsage` and `checkModelBudget` around Anthropic SDK responses when
 the host owns the model loop and can read response usage.
 
+HTTP note: emit a typed `http` intent only when the intercepted tool input explicitly contains a valid method. Otherwise retain `web_fetch`; never infer `GET`.
+
 ## Usage
 
 ```typescript

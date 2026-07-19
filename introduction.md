@@ -161,11 +161,11 @@ Without agent-hooks, SOF governs EVM transactions. With agent-hooks, SOF governs
 
 The entire framework relies on a single cryptographic primitive: the **Intent Attestation**.
 
-Before an agent can execute a transaction on-chain, it must evaluate its intent against the deterministic constraints defined in its policy. If the intent is compliant, a conforming signer issues a short-lived, Ed25519-signed JWT. The EVM gateway physically rejects any write operation that does not include this valid attestation.
+Before an agent can execute a transaction on-chain, it must evaluate its intent against the deterministic constraints defined in its policy. If the intent is compliant, a conforming signer issues a short-lived, Ed25519-signed JWT; the hosted reference signer adds a parallel ML-DSA-65 post-quantum signature in the `pqc` claim. The EVM gateway physically rejects any write operation that does not include this valid attestation.
 
 <Card title="Read the Attestation Specification" icon="file-signature" href="/sigil-attestations">
   Explore the canonical specification for generating, binding, and verifying
-  Ed25519 Intent Attestations.
+  Intent Attestations, including the hybrid post-quantum signature layer.
 </Card>
 
 ---

@@ -16,6 +16,8 @@ Scope today: `agent-hooks-rs` covers generic Rust authorization and the native
 IronClaw tool-call hook. It does not cover Hermes, Codex, OpenRouter, AgentPay,
 or other JavaScript host integrations. Those use the TypeScript package today.
 
+HTTP note: Rust hosts emit typed `http` only when the intercepted input explicitly provides a valid method. Missing methods remain `web_fetch`; no `GET` inference is permitted.
+
 ## Installation
 
 ```toml

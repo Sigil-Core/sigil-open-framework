@@ -92,11 +92,24 @@ calls, then let the IronClaw hook continue to gate tool execution.
 |---|---|
 | `bash` | Shell command execution |
 | `web_fetch` | Outbound HTTP requests |
+| `http` | Typed outbound HTTP requests with an explicit method; Sign derives host/path/query from the URL |
 | `file_write` | Filesystem writes |
 | `wallet_sign` | EVM wallet signing |
 | `email.send` | Outbound email |
 | `wallet.transfer` | EVM token transfers |
 | `contract.call` | EVM contract calls |
+| `mcp.<serverId>.<toolName>` | MCP tool calls submitted by the transport proxy |
+
+HTTP adapter rule: emit `http` only when the intercepted tool input explicitly contains a valid method. Never infer `GET`; when the method is absent, keep the legacy `web_fetch` action. `web_fetch` has an unknown method and cannot satisfy a non-empty HTTP method allowlist.
+
+MCP calls use the transport proxy's namespaced action and carry the exact
+`metadata.serverId`, `metadata.toolName`, and `metadata.arguments` values that
+the proxy observed. The action string is a routing identifier. Sign never
+splits it to recover policy identity. A normal client-side proxy key has
+`agent` provenance because the governed agent can reuse that bearer key. Only a
+controlled proxy deployment with a dedicated inaccessible credential receives
+`shim` provenance and can satisfy `require_shim: true` or an `attested`
+allowlist rule.
 
 ## Prerequisites
 

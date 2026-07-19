@@ -62,7 +62,7 @@ The `sigil-attestations` specification is the conformance target for the entire 
 
 The specification defines:
 
-- The structure and claim set of short-lived, Ed25519-signed JWTs (**Intent Attestations**)
+- The structure and claim set of short-lived, Ed25519-signed JWTs (**Intent Attestations**), including the OPTIONAL hybrid ML-DSA-65 post-quantum signature claim
 - JWKS publication requirements for conforming signers
 - Trusted issuer validation rules for federated signers
 - Chain binding and commit binding semantics
@@ -130,13 +130,9 @@ A conforming signer MAY:
 
 ### Conformance Verification
 
-The **SOF Conformance Test Suite** is in development and will provide:
+The **SOF Conformance Test Suite** begins with the portable Policy 2.0 and Policy 2.1 vector corpus in [`conformance/vectors/`](conformance/vectors/). Implementations should run those fixtures through their parser, evaluator, counter store, and audit projection, then publish the resulting policy hash and decision evidence with their conformance declaration. Policy 2.1 vectors require a structured execution boundary, trusted effect metadata, and a one-time execution grant.
 
-- A vector-based test harness covering required attestation semantics
-- An interoperability checklist for integration with gated execution layers
-- A public registry of certified conforming implementations
-
-Until the test suite ships, conformance is asserted by the signer operator and verified through direct integration testing with the reference implementation at sign.sigilcore.com. To express interest in early access, open an issue on the [sigil-attestations](https://github.com/Sigil-Core/sigil-attestations) repository.
+For the cryptographic conformance declaration, publish `/.well-known/sof-conformance.json` using the schema in [`conformance.md`](conformance.md). The declaration keeps the attestation contract version (`sigil-attestations-v1`) separate from the supported `warranty.md` policy schema versions.
 
 ### Why Build a Conforming Signer
 
@@ -173,6 +169,7 @@ sof-warranty:
   enforcement_layer: "sigil-lex"          # any conforming signer identifier
   policy_uri: "ipfs://QmYourWarrantyPolicyHashHere"
   attestation_standard: "sigil-attestations-v1"
+  policy_schema_versions_supported: ["1.0.0", "2.0.0", "2.1.0"]
   warranty_blocks:
     evm:
       max_transaction_eth: 5.0
@@ -203,7 +200,7 @@ The pattern originates in the Policy Enforcement Point (PEP) and Policy Decision
 
 The same control concept is in broad, independent use across the AI agent governance field, including work from [Microsoft](https://techcommunity.microsoft.com/blog/microsoft-security-blog/authorization-and-governance-for-ai-agents-runtime-authorization-beyond-identity/4509161) and Oracle on runtime authorization for agents, and a growing body of published research on pre-action and pre-execution authorization for autonomous systems. Regulatory frameworks such as the EU AI Act and the NIST AI Risk Management Framework increasingly expect governance to be enforced at the point of execution rather than reconstructed after the fact.
 
-SOF does not claim to have originated this primitive. SOF's contribution is a specific implementation of it for AI agents: a cryptographically signed Sigil Warrant, Ed25519 intent attestations, deterministic deny, allow, and hold decisions enforced at the agent's PreToolUse boundary, and a tamper-evident evidence trail suitable for audit. SOF uses the field's established, descriptive terminology by design, so operators can map it to the access-control and compliance concepts they already know.
+SOF does not claim to have originated this primitive. SOF's contribution is a specific implementation of it for AI agents: a cryptographically signed Sigil Warrant, hybrid Ed25519 + ML-DSA-65 intent attestations, deterministic deny, allow, and hold decisions enforced at the agent's PreToolUse boundary, and a tamper-evident evidence trail suitable for audit. SOF uses the field's established, descriptive terminology by design, so operators can map it to the access-control and compliance concepts they already know.
 
 ---
 
@@ -242,7 +239,7 @@ If you are an audit firm, custody provider, or enterprise security team building
 
 → [**Read the Sigil Attestations Specification**](https://github.com/Sigil-Core/sigil-attestations)
 
-The SOF Conformance Test Suite is in development. To express interest in early access or coordinate on conformance verification, open an issue on the Attestations repository.
+The SOF Conformance Test Suite begins with the portable Policy 2.0 vector corpus in [`conformance/vectors/`](conformance/vectors/). Implementations should run those fixtures through their parser, evaluator, counter store, and audit projection, then publish the resulting policy hash and decision evidence with their conformance declaration.
 
 ---
 
