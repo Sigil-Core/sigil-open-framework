@@ -26,7 +26,7 @@ Sigil is a composable protocol stack. Three layers — enforcement, legal govern
 │    APPROVED             PENDING              DENIED         │
 │  (attestation)      (consensus hold)     (hard block)       │
 └────────────────────────┬────────────────────────────────────┘
-                         │  Intent Attestation JWT (Ed25519)
+                         │  Intent Attestation JWT (Ed25519 + ML-DSA-65)
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
 │               Sigil RPC / Bundler Gateway                   │
@@ -147,19 +147,20 @@ Sigil Sign verifies the policy signature against this key at startup. If the pol
 
 ### Intent Attestation JWT
 
-An Intent Attestation is a short-lived (60-second TTL) Ed25519-signed JWT containing:
+An Intent Attestation is a short-lived (60-second TTL) Ed25519-signed JWT, carrying a parallel ML-DSA-65 post-quantum signature in its `pqc` claim, containing:
 
 - `agentId` — the agent that declared the intent
 - `txCommit` — SHA-256 of the transaction payload
 - `policyHash` — SHA-256 of the warranty.md content (excluding the signature block) at evaluation time
 - `chainId` — the target chain
 - `iat` / `exp` — issuance and expiry timestamps
+- `pqc` — hybrid ML-DSA-65 signature over the claim set, for post-quantum verification
 
 The `policyHash` is the cryptographic link between the attestation and the exact policy version that authorized it. If your policy changes between evaluations, the policyHash changes — every attestation in your audit log is verifiably tied to the policy in effect at the time.
 
 ### JWK Verification
 
-Intent Attestations can be verified independently against the issuing signer's published JWK set at `GET /.well-known/jwks.json`. The reference implementation publishes its keys at `https://sign.sigilcore.com/.well-known/jwks.json`; third-party conforming signers publish their own at their own domains.
+Intent Attestations can be verified independently against the issuing signer's published JWK set at `GET /.well-known/jwks.json`. The reference implementation publishes its keys at `https://sign.sigilcore.com/.well-known/jwks.json`; third-party conforming signers publish their own at their own domains. PQC-aware verifiers additionally fetch the ML-DSA-65 key set from `https://sign.sigilcore.com/v1/pqc-keys` to check the `pqc` claim.
 
 Verifiers must pair JWK validation with a trusted issuer set. Hosted Sigil uses `sigil-core` as the default issuer; federated deployments add approved issuer IDs explicitly and reject signatures from untrusted `iss` values.
 
