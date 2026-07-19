@@ -1,0 +1,31 @@
+{
+  "id": "sof-policy-2-email-recipient-required",
+  "policy": "version: 2.0.0\n\n## tool_calls\nallowed: email.send\nemail.require_approval: true\nemail.blocked_recipients: all-staff@yourcompany.example.com, everyone@yourcompany.example.com, *@internal.yourcompany.example.com\n",
+  "policy_hash": "computed-after-parse",
+  "intents": [
+    {
+      "name": "missing-recipient-denied-fail-closed",
+      "intent": { "action": "email.send", "metadata": { "subject": "intro" } },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_TOOL_CALL_RECIPIENT_NOT_ALLOWED"
+    },
+    {
+      "name": "blocked-broadcast-list-denied",
+      "intent": { "action": "email.send", "to": "all-staff@yourcompany.example.com" },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_TOOL_CALL_BLOCKED_RECIPIENT"
+    },
+    {
+      "name": "blocked-internal-wildcard-denied",
+      "intent": { "action": "email.send", "to": "ops@internal.yourcompany.example.com" },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_TOOL_CALL_BLOCKED_RECIPIENT"
+    },
+    {
+      "name": "prospect-send-held-for-approval",
+      "intent": { "action": "email.send", "to": "prospect@example.net" },
+      "expected_decision": "PENDING",
+      "expected_error_code": "LEX_TOOL_CALL_REQUIRES_APPROVAL"
+    }
+  ]
+}
