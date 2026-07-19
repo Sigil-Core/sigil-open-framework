@@ -1,0 +1,32 @@
+{
+  "id": "sign-evm-calldata-legacy-passthrough-v2",
+  "description": "A legacy policy without the calldata-enrichment keys preserves current behavior: a contract.call with raw calldata and an explicit zero amount approves under the ETH caps, and token caps continue to bind only token-declared intents. This is the documented residual the template-side allow_only amount rules and enrichment close.",
+  "policy": "version: 2.0.0\n\n## evm\nmax_transaction_eth: 2.0\nallowed_actions: contract.call\nallowed_chains: 1\ntoken.USDC.max_transaction: 10000\ntoken.USDC.decimals: 6\ntoken.USDC.addresses: 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\n",
+  "policy_hash": "computed-after-parse",
+  "intents": [
+    {
+      "name": "raw-calldata-zero-amount-preserves-current-behavior",
+      "intent": {
+        "action": "contract.call",
+        "chainId": 1,
+        "amount": "0",
+        "targetAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        "calldata": "0xa9059cbb0000000000000000000000004444444444444444444444444444444444444444000000000000000000000000000000000000000000000000000000174876e800"
+      },
+      "expected_decision": "APPROVED",
+      "expected_error_code": null
+    },
+    {
+      "name": "token-declared-intent-still-capped",
+      "intent": {
+        "action": "contract.call",
+        "chainId": 1,
+        "amount": "50000000000",
+        "token": "USDC",
+        "targetAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+      },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_AMOUNT_EXCEEDS_TOKEN_LIMIT"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "id": "sign-evm-amount-required-engine-v2-1",
+  "description": "Policy 2.1 closes the lenient legacy ETH path: a wallet.transfer or contract.call intent without an explicit amount denies when the ## evm block declares max_transaction_eth / consensus_threshold_eth. amount: \"0\" is the adapter contract for zero-value calls.",
+  "policy": "version: 2.1.0\n\n## evm\nmax_transaction_eth: 2.0\nallowed_actions: wallet.transfer, contract.call\nallowed_chains: 1\nconsensus_threshold_eth: 1.0\nconsensus_require_hold: true\n",
+  "policy_hash": "computed-after-parse",
+  "intents": [
+    {
+      "name": "missing-amount-transfer-denied",
+      "intent": { "action": "wallet.transfer", "chainId": 1, "targetAddress": "0x1111111111111111111111111111111111111111" },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_AMOUNT_REQUIRED"
+    },
+    {
+      "name": "missing-amount-contract-call-denied",
+      "intent": { "action": "contract.call", "chainId": 1, "targetAddress": "0x2222222222222222222222222222222222222222" },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_AMOUNT_REQUIRED"
+    },
+    {
+      "name": "explicit-zero-amount-approved",
+      "intent": { "action": "contract.call", "chainId": 1, "amount": "0", "targetAddress": "0x2222222222222222222222222222222222222222" },
+      "expected_decision": "APPROVED",
+      "expected_error_code": null
+    },
+    {
+      "name": "amount-under-caps-approved",
+      "intent": { "action": "wallet.transfer", "chainId": 1, "amount": "0.5", "targetAddress": "0x1111111111111111111111111111111111111111" },
+      "expected_decision": "APPROVED",
+      "expected_error_code": null
+    },
+    {
+      "name": "amount-above-consensus-threshold-held",
+      "intent": { "action": "wallet.transfer", "chainId": 1, "amount": "1.5", "targetAddress": "0x1111111111111111111111111111111111111111" },
+      "expected_decision": "PENDING",
+      "expected_error_code": "LEX_CONSENSUS_HOLD_REQUIRED"
+    }
+  ]
+}

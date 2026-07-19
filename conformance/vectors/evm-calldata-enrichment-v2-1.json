@@ -1,0 +1,111 @@
+{
+  "id": "sign-evm-calldata-enrichment-v2-1",
+  "description": "Policy 2.1 EVM calldata enrichment: with require_calldata_enrichment set, a contract.call without shim-attested decoded-calldata metadata (metadata.evm) denies; decoded ERC-20 intents are evaluated against the pinned token rules using the decoded values; the max-uint256 approval sentinel denies as unbounded; unknown selectors deny under calldata_unknown_selector: deny.",
+  "policy": "version: 2.1.0\n\n## evm\nmax_transaction_eth: 2.0\nallowed_actions: contract.call\nallowed_chains: 1\nrequire_calldata_enrichment: true\ncalldata_unknown_selector: deny\ntoken.USDC.max_transaction: 10000\ntoken.USDC.decimals: 6\ntoken.USDC.addresses: 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\n",
+  "policy_hash": "computed-after-parse",
+  "intents": [
+    {
+      "name": "raw-transfer-over-usdc-cap-denied",
+      "intent": {
+        "action": "contract.call",
+        "chainId": 1,
+        "amount": "0",
+        "targetAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        "provenance": "shim",
+        "metadata": {
+          "evm": {
+            "selector": "0xa9059cbb",
+            "token_target": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "token_amount": "50000000000"
+          }
+        }
+      },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_AMOUNT_EXCEEDS_TOKEN_LIMIT"
+    },
+    {
+      "name": "missing-enrichment-metadata-denied",
+      "intent": {
+        "action": "contract.call",
+        "chainId": 1,
+        "amount": "0",
+        "targetAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        "provenance": "shim"
+      },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_CALLDATA_ENRICHMENT_REQUIRED"
+    },
+    {
+      "name": "agent-provenance-enrichment-untrusted-denied",
+      "intent": {
+        "action": "contract.call",
+        "chainId": 1,
+        "amount": "0",
+        "targetAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        "provenance": "agent",
+        "metadata": {
+          "evm": {
+            "selector": "0xa9059cbb",
+            "token_target": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "token_amount": "5000000"
+          }
+        }
+      },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_CALLDATA_ENRICHMENT_REQUIRED"
+    },
+    {
+      "name": "unknown-selector-strict-denied",
+      "intent": {
+        "action": "contract.call",
+        "chainId": 1,
+        "amount": "0",
+        "targetAddress": "0x3333333333333333333333333333333333333333",
+        "provenance": "shim",
+        "metadata": { "evm": { "selector": "0xdeadbeef" } }
+      },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_CALLDATA_ENRICHMENT_REQUIRED"
+    },
+    {
+      "name": "unbounded-approve-sentinel-denied",
+      "intent": {
+        "action": "contract.call",
+        "chainId": 1,
+        "amount": "0",
+        "targetAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        "provenance": "shim",
+        "metadata": {
+          "evm": {
+            "selector": "0x095ea7b3",
+            "token_target": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "spender": "0x4444444444444444444444444444444444444444",
+            "token_amount": "115792089237316195423570985008687907853269984665640564039457584007913129639935"
+          }
+        }
+      },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_AMOUNT_EXCEEDS_TOKEN_LIMIT",
+      "expected_violated_rule": "evm.calldata.unbounded_approval"
+    },
+    {
+      "name": "decoded-transfer-under-cap-approved",
+      "intent": {
+        "action": "contract.call",
+        "chainId": 1,
+        "amount": "0",
+        "targetAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        "provenance": "shim",
+        "metadata": {
+          "evm": {
+            "selector": "0xa9059cbb",
+            "token_target": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "token_amount": "5000000"
+          }
+        }
+      },
+      "expected_decision": "APPROVED",
+      "expected_error_code": null
+    }
+  ]
+}
