@@ -1,0 +1,31 @@
+{
+  "id": "sof-policy-2-custom-case-sensitivity",
+  "policy": "version: 2.0.0\n\n## tool_calls\nallowed: bash\n\n## custom\ndeny_if.intent.command contains \"DROP TABLE\"\ndeny_if.intent.command contains \"drop table\"\ndeny_if.intent.command contains \"SELECT * FROM\"\ndeny_if.intent.command contains \"select * from\"\n",
+  "policy_hash": "computed-after-parse",
+  "intents": [
+    {
+      "name": "uppercase-sql-denied",
+      "intent": { "action": "bash", "command": "psql -c 'DROP TABLE users'" },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_CUSTOM_RULE_VIOLATION"
+    },
+    {
+      "name": "lowercase-sql-denied",
+      "intent": { "action": "bash", "command": "psql -c 'drop table users'" },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_CUSTOM_RULE_VIOLATION"
+    },
+    {
+      "name": "lowercase-select-star-denied",
+      "intent": { "action": "bash", "command": "psql -c 'select * from customers'" },
+      "expected_decision": "DENIED",
+      "expected_error_code": "LEX_CUSTOM_RULE_VIOLATION"
+    },
+    {
+      "name": "mixed-case-slides-through-substring-denylist",
+      "intent": { "action": "bash", "command": "psql -c 'Drop Table users'" },
+      "expected_decision": "APPROVED",
+      "expected_error_code": null
+    }
+  ]
+}
