@@ -169,7 +169,7 @@ sof-warranty:
   enforcement_layer: "sigil-lex"          # any conforming signer identifier
   policy_uri: "ipfs://QmYourWarrantyPolicyHashHere"
   attestation_standard: "sigil-attestations-v1"
-      policy_schema_versions_supported: ["1.0.0", "2.0.0", "2.1.0"]
+  policy_schema_versions_supported: ["1.0.0", "2.0.0", "2.1.0"]
   warranty_blocks:
     evm:
       max_transaction_eth: 5.0
