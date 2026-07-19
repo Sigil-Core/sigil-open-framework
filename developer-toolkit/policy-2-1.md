@@ -33,6 +33,14 @@ Bare `*` is not a valid protected database resource. Database adapters must fail
 
 The reference provider taxonomy covers `generic`, `github`, `gitlab`, and `bitbucket`. The initial hosted-operation mappings include repository deletion, branch and tag deletion, protection changes, deploy-key changes, credential changes, permission changes, and ownership transfer. Unknown provider operations remain denied.
 
+## Authoring surfaces
+
+Warrant Builder supports Policy 2.1 through the `## repository` profile only: exactly one repository root, `git_providers` limited to `generic` and `github`, and the trusted execution shim required. A signed 2.1 policy with a supported repository profile loads losslessly. An import containing `## filesystem`, `## git`, or `## database` blocks is rejected without changing any field.
+
+Manual Warrant applies the same import contract. Its repository section exposes outside-write protection, Git-history protection, and sensitive-file protection, and it rejects imports containing `## filesystem`, `## git`, or `## database` blocks.
+
+The full resource profiles exercised by the [corpus vectors](../conformance/vectors/) are authored by hand or compiled from existing compliance documents with Sigil GRC, then signed. The authoring surfaces fail closed on these blocks instead of round-tripping them lossily.
+
 ## Migration
 
 Start with the [1.x to 2.x migration guide](migrating-1x-to-2.md), add the Policy 2.1 profiles only after the adapter contract is available, run the [corpus vectors](../conformance/vectors/), sign the full policy again, and verify the deployed policy hash.
