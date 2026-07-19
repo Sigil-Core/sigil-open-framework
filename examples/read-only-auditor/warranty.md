@@ -1,6 +1,6 @@
 ---
 title: "Read-Only Auditor Agent"
-description: "Warranty policy for a strictly read-only agent: web_fetch only, no shell or file writes, blocks any write or mutate intent, blocks SSRF, and requires allowlisted job types."
+description: "Warranty policy for an audit agent that is read-only at the transport layer: only GET and HEAD requests are authorized (fail-closed), listed private-network hostnames are denied, and every intent requires a declared job type. GET endpoints with side effects remain the operator's residual risk."
 ---
 
 # Warranty Policy - Read-Only Auditor Agent
@@ -8,33 +8,33 @@ description: "Warranty policy for a strictly read-only agent: web_fetch only, no
 Copy the policy body below into Sigil Warrant, sign it, and deploy it with the API key used by this agent.
 
 ```markdown
-version: 1.0.0
+version: 2.0.0
 
 ## tool_calls
-allowed: web_fetch
+allowed: http
+# Read-only at the transport layer: only GET and HEAD are authorized, and the
+# method check fails closed. RESIDUAL RISK: a GET endpoint that performs a
+# write on the server side is not detectable at this layer; keeping audited
+# surfaces free of side-effectful GETs is the operator's concern.
+http.allowed_methods: GET, HEAD
+# Denies listed hostnames (hostname-parsed, subdomains included).
 web_fetch.blocked_domains: localhost, 127.0.0.1, 0.0.0.0, 169.254.169.254, metadata.google.internal
+# Optional hardening: pin the audited surfaces so every other host is denied.
+# http.allowed_hosts: api.audited.example.com, reports.audited.example.com
 
 ## custom
-# Require every governed intent to declare an approved read-only job type.
+# Every governed intent must declare an approved read-only job type. Fails
+# closed on a missing job_type; the value is agent-declared unless intents
+# arrive through a trusted shim.
 allow_only.intent.metadata.job_type: audit, report, scan
 deny_if.intent.metadata.job_type contains test
 
-# Deny any write or mutate operation
-deny_if.intent.command contains "DROP"
-deny_if.intent.command contains "INSERT"
-deny_if.intent.command contains "UPDATE"
-deny_if.intent.command contains "DELETE"
-deny_if.intent.command contains "TRUNCATE"
-deny_if.intent.command contains "rm "
-
-# Block requests to internal/private networks (SSRF)
-deny_if.intent.url contains "169.254.169.254"
-deny_if.intent.url contains "metadata.google.internal"
-deny_if.intent.url contains "localhost"
-deny_if.intent.url contains "127.0.0.1"
+# Denies intent URLs that start with the literal lowercase "http://",
+# steering traffic to https. Case-sensitive prefix match.
 deny_if.intent.url starts_with "http://"
 
-# Block secret exfiltration
+# Denies listed credential strings anywhere in the intent. Case-sensitive
+# substring matching: defense in depth, not a secrets control.
 deny_string: "AWS_SECRET_ACCESS_KEY"
 deny_string: "DATABASE_URL"
 deny_string: "OPENAI_API_KEY"

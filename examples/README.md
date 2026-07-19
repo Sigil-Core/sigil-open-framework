@@ -7,15 +7,16 @@ To deploy any of these, copy the policy body from the example's `warranty.md` in
 ## Available examples
 
 - **cms-publisher-agent**: A policy-format 2.0 publisher for a Supabase-backed CMS. Allows typed HTTP `POST`/`PATCH` requests to post rows and category-scoped cover objects, blocks `DELETE`, and keeps adjacent administrative paths out of scope.
-- **api-agent**: An autonomous API agent for LangChain or ELIZA pipelines. Blocks SSRF and credential leakage, bounds email recipients, and requires an allowlisted job type.
-- **defi-agent**: An autonomous DeFi yield agent. Caps ETH and USDC per transaction, allowlists chains, requires human countersignature above a threshold, and blocks sanctioned addresses.
+- **api-agent**: An autonomous API agent for LangChain or ELIZA pipelines. Restricts requests to allowlisted hosts and methods (fail-closed), denies listed private-network hostnames and credential strings as defense in depth, bounds email recipients, and requires a declared job type.
+- **defi-agent**: An autonomous DeFi yield agent. Caps ETH and USDC per transaction on pinned addresses, allowlists chains, requires a parseable amount on every EVM intent, requires human countersignature above a threshold, and denies listed sanctioned address forms.
 - **claude-code-agent**: Protect Your Repository. A coding agent policy that blocks destructive shell and Git commands, denies writes to named sensitive paths, and rejects known credential strings.
-- **mcp-server-agent**: An agent that calls external tools through MCP servers. Blocks destructive shell and SSRF, bounds email recipients, denies credential leakage, and requires an allowlisted job type.
-- **customer-support-agent**: An agent that answers tickets, fetches knowledge-base pages, and sends email. Holds email for approval, bounds recipients, blocks refunds and PII exfiltration, and blocks mass-send.
-- **data-etl-agent**: A high-volume batch data pipeline agent. Blocks destructive SQL and shell, restricts file writes to safe paths, blocks SSRF and mass exfiltration, and requires an allowlisted pipeline stage.
-- **read-only-auditor**: A strictly read-only audit agent. Permits web fetch only, denies any write or mutate intent, blocks SSRF, and sets very low execution limits. The most locked-down example.
-- **stablecoin-treasury-agent**: An autonomous treasury agent managing stablecoin reserves across USDC, PYUSD, and USDT. Pins issuer addresses, caps per-token amounts, requires countersignature above a threshold, and blocks sanctioned addresses.
-- **rwa-rebalancing-agent**: An agent rebalancing a tokenized real-world-asset portfolio (BUIDL, BENJI, USDY). Contract calls only, per-issuer caps, a jurisdictional allowlist on every rebalance, and countersignature above a threshold.
+- **mcp-server-agent**: An agent that calls external tools through MCP servers. Allowlists MCP servers and tools, blocks destructive tool patterns, holds email for approval, and requires a declared job type.
+- **customer-support-agent**: An agent that answers tickets, fetches knowledge-base pages, and sends email. Holds every outbound reply for human approval, restricts recipients to customer and support domains (fail-closed), denies listed PII marker strings as defense in depth, and routes refunds to humans via the approval hold.
+- **outbound-email-agent**: An SDR-style outreach agent sending through a provider API. Holds every send for human approval, forces a recipient on every send intent, denies internal broadcast lists, requires a declared campaign and job type, and caps daily send volume per campaign.
+- **data-etl-agent**: A high-volume batch data pipeline agent. Denies listed destructive SQL and shell strings (case-sensitive substrings), denies file writes to listed sensitive paths, denies listed private-network hostnames, and requires a declared pipeline stage.
+- **read-only-auditor**: An audit agent that is read-only at the transport layer: only GET and HEAD are authorized (fail-closed), listed private-network hostnames are denied, and execution limits are very low. The most locked-down example.
+- **stablecoin-treasury-agent**: An autonomous treasury agent managing stablecoin reserves across USDC, PYUSD, and USDT. Pins issuer addresses, caps per-token amounts on token-declared intents, requires a parseable amount on every EVM intent, requires countersignature above a threshold, and denies listed sanctioned address forms.
+- **rwa-rebalancing-agent**: An agent rebalancing a tokenized real-world-asset portfolio (BENJI, USDY, and BUIDL once pinned). Contract calls only, per-issuer caps on pinned addresses, a required parseable amount on every EVM intent, a declared jurisdiction on every rebalance, and countersignature above a threshold.
 
 ## Pending policy corpus cases
 
