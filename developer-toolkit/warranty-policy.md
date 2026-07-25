@@ -20,14 +20,14 @@ Both paths produce an identical signed `warranty.md` that Sigil Sign accepts at 
 
 ## File Format
 
-`warranty.md` uses a plain-text, typed-block format. Blocks are defined by `##` headers. A 1.x policy requires an enforceable EVM, tool-call, custom, or model-budget rule. A 2.0 policy may also consist of enforced `## soft_limits`.
+`warranty.md` uses a plain-text, typed-block format. Blocks are defined by `##` headers. A 1.x policy requires an enforceable EVM, tool-call, custom, or model-budget rule. A 2.0 or profileless 2.1 policy may also consist of enforced `## soft_limits`. A 2.1 resource profile adds a trusted execution-shim boundary only when the policy declares one of the resource-profile blocks.
 
 > **Policy format 2.0.0:** 1.x policies keep their existing semantics. New 2.0 syntax is opt-in through the version line and requires a Sign build that supports the field. Policy format 2.0 adds typed HTTP intents, allow-rule operators, enforced named caps, MCP-native actions, approval patterns, and provenance gates. Existing signed 1.x files remain unchanged.
 
 For a controlled upgrade, follow the [1.x to 2.0 migration guide](/developer-toolkit/migrating-1x-to-2). The guide includes the re-sign, rollback, and conformance-vector checks required before activation.
 
 ```markdown
-version: 1.0.0
+version: 2.1.0
 
 ## evm
 max_transaction_eth: 5.0
@@ -65,6 +65,8 @@ max_tool_calls_per_task: 50
 ## signature
 sigil-sig: <base64url>
 ```
+
+This current reference uses profileless Policy 2.1. It keeps the EVM and tool-call fields shown here without asserting a repository, filesystem, Git, or database execution boundary.
 
 ## Policy Sections
 

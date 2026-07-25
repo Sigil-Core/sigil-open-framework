@@ -1,14 +1,22 @@
 ---
 title: "Protect Your Repository"
-description: "Deny listed shell strings and named sensitive path patterns at the governed intent boundary."
+description: "Policy 2.1 repository profile that blocks unsafe writes and Git history changes, with legacy command and credential denials retained as defense in depth."
 ---
 
 # Warranty Policy - Protect Your Repository
 
-This warranty.md governs a coding agent that writes, tests, and ships code. It denies the listed command strings and path patterns, holds outbound email for approval, and requires a known job type. It does not by itself attest child-process effects, Git topology, filesystem race safety, or network activity.
+This warranty.md governs a coding agent that writes, tests, and ships code. Its Policy 2.1 repository profile requires a trusted execution shim and blocks writes outside the project root, Git-history changes, and sensitive-file effects. It retains the listed command strings and path patterns as defense in depth, holds outbound email for approval, and requires a known job type. It does not by itself attest child-process effects, filesystem race safety, or network activity.
 
 ```markdown
-version: 1.0.0
+version: 2.1.0
+
+## repository
+roots: .
+block_outside_writes: true
+protect_git_history: true
+protect_sensitive_files: true
+git_providers: generic, github
+require_shim: true
 
 ## tool_calls
 allowed: bash, web_fetch, file_write, email.send
@@ -49,6 +57,8 @@ deny_if.intent.path contains ".ssh"
 deny_if.intent.path contains ".env"
 
 ## soft_limits
+# Enforced across all governed tool calls: exceeding this limit returns DENIED;
+# the day bucket resets at 00:00 UTC.
 daily_tool_calls: 1000
 
 ## execution_limits

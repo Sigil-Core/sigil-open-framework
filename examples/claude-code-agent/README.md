@@ -1,3 +1,3 @@
 # Protect Your Repository
 
-This sample governs a coding agent that writes, tests, and ships code. Without policy, it could run destructive shell commands, rewrite Git history, expose credentials, or write to sensitive system paths. Adjust recipients, paths, job types, and limits before signing.
+This Policy 2.1 sample governs a coding agent that writes, tests, and ships code. Its repository profile requires a trusted execution shim and protects covered adapter effects against writes outside the project root, Git-history changes, and sensitive-file access. Git, filesystem, and child-process coverage depends on the selected adapter and its coverage review; independently enforced paths may remain outside the policy boundary. It retains command and credential denials as defense in depth. Adjust recipients, paths, job types, and limits before signing.
