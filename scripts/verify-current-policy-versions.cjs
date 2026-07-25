@@ -34,9 +34,8 @@ for (const relativePath of currentDocs) {
 }
 
 if (failures.length > 0) {
-  console.error("Current policy-version verification failed:");
-  for (const failure of failures) console.error(`- ${failure}`);
+  process.stderr.write(`Current policy-version verification failed:\n${failures.map((failure) => `- ${failure}`).join("\n")}\n`);
   process.exitCode = 1;
 } else {
-  console.log("Verified canonical examples are off Policy 1.x and current documentation snippets use Policy 2.1.0.");
+  process.stdout.write("Verified canonical examples are off Policy 1.x and current documentation snippets use Policy 2.1.0.\n");
 }
