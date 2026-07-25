@@ -4,8 +4,12 @@ description: "A position paper on pre-execution enforcement as the missing contr
 ---
 
 Vernon Wharff<br />
-Sigil Core<br />
-May 2026 — v1.2
+Sigil Open Framework<br />
+July 2026 - v1.3
+
+[Download the v1.3 PDF](https://www.sigilgovernance.com/The_Pre-Execution_Enforcement_Gap_-_Sigil_Open_Framework.pdf)
+
+**Version 1.3 correction.** Sections 7 and 8 now distinguish a pre-tool authorization checkpoint from the final mutation boundary required by Policy 2.1. An approval or hold resolution does not itself prove execution. A Policy 2.1 destructive-resource claim requires a trusted, fail-closed adapter that owns the final mutation, validates structured execution metadata, and consumes a one-time execution grant.
 
 ## Summary
 
@@ -335,7 +339,9 @@ npm test
 }
 ```
 
-The hook returns `permissionDecision: allow`, and the bash runtime executes the command. The event log now shows declared intent, signed authorization, and observed execution. The same control surface that denies destructive actions issues short-lived proof for permitted actions.
+The hook returns `permissionDecision: allow`, so the runtime may continue to the next step. That result is authorization evidence. It is not, by itself, evidence that `npm test` executed, and a PreToolUse hook is not a final mutation boundary.
+
+Policy 2.1 makes the boundary explicit for destructive-resource actions. A trusted adapter in the `2.1.x` family must own the final mutation path, submit structured target and effect metadata, fail closed, and validate a one-time execution grant bound to the policy hash, effect-manifest hash, adapter identity, and, where applicable, repository identity. The adapter consumes that grant before it performs the action. Only the final-boundary adapter can emit evidence of observed execution. A pre-tool approval remains useful as a checkpoint, but it must not be represented as final-mutation enforcement.
 
 ### 8. What changes when human approval is required
 
@@ -369,7 +375,9 @@ The warrant can require approval for `email.send`. In that case, Sigil returns `
 }
 ```
 
-The hook does not let the message proceed. Command becomes the review surface. The human operator approves or rejects the hold. Only an approved hold can release execution proof. This is the runtime form of Berkeley GPAI Profile v1.2's human oversight and structured-access logic, and Berkeley Agentic AI Profile's real-time permission request and oversight-checkpoint guidance.
+The hook does not let the message proceed. Command becomes the review surface. The human operator approves or rejects the hold. An approved hold changes the authorization state. It does not itself send the message or prove that a message was sent.
+
+For an action that claims Policy 2.1 destructive-resource enforcement, the final-boundary adapter must bind the approved resolution to the original intent and validate the single-use execution grant before it performs the mutation. It must reject a stale, replayed, mismatched, or unavailable grant. This preserves the hold as a real runtime gate: the review decision cannot be replayed for another action, and neither a hook nor Command can be described as the final mutation boundary unless it owns that boundary. This is the runtime form of Berkeley GPAI Profile v1.2's human oversight and structured-access logic, and Berkeley Agentic AI Profile's real-time permission request and oversight-checkpoint guidance.
 
 ### 9. What the example does not prove
 
