@@ -172,7 +172,7 @@ The scenario is intentionally narrow. An autonomous coding agent attempts to exe
 Before any governed agent runs, the operator authors a Sigil Warrant in `warranty.md` and signs it with the operator's Ed25519 key. The signed policy is the authority the enforcement layer recognizes.
 
 ```markdown
-version: 1.0.0
+version: 2.1.0
 
 ## tool_calls
 allowed: bash, web_fetch, file_write, wallet_sign, email.send
@@ -188,6 +188,8 @@ deny_string: "DROP TABLE"
 ## signature
 sigil-sig: <base64url-ed25519-signature>
 ```
+
+This reference uses profileless Policy 2.1. It keeps the same tool-call policy surface and does not claim a repository, filesystem, Git, or database execution boundary.
 
 The warrant expresses operator intent as a small, reviewable artifact. A human can read it. A machine can evaluate it. The signature binds the policy to the operator identity. The policy hash later binds an authorization decision to the exact policy version in force at evaluation time.
 

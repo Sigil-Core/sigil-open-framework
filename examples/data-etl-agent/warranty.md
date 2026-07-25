@@ -8,7 +8,7 @@ description: "Warranty policy for a data pipeline agent: denies listed destructi
 Copy the policy body below into Sigil Warrant, sign it, and deploy it with the API key used by this agent.
 
 ```markdown
-version: 1.0.0
+version: 2.1.0
 
 ## tool_calls
 # bash commands are governed only by the listed blocked substrings below;
@@ -66,6 +66,8 @@ deny_string: "OPENAI_API_KEY"
 deny_string: "BEGIN RSA PRIVATE KEY"
 
 ## soft_limits
+# Enforced across all governed tool calls: exceeding this limit returns DENIED;
+# the day bucket resets at 00:00 UTC.
 daily_tool_calls: 5000
 
 ## execution_limits

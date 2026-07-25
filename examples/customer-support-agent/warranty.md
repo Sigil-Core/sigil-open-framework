@@ -8,7 +8,7 @@ description: "Warranty policy for an agent that answers tickets: holds every out
 Copy the policy body below into Sigil Warrant, sign it, and deploy it with the API key used by this agent.
 
 ```markdown
-version: 1.0.0
+version: 2.1.0
 
 ## tool_calls
 allowed: web_fetch, email.send
@@ -50,6 +50,8 @@ deny_string: "select * from accounts"
 deny_if.intent.metadata.broadcast equals "true"
 
 ## soft_limits
+# Enforced across all governed tool calls: exceeding this limit returns DENIED;
+# the day bucket resets at 00:00 UTC.
 daily_tool_calls: 300
 
 ## execution_limits
