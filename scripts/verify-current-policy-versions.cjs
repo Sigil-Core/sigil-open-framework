@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 
-import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+const { existsSync, readFileSync, readdirSync } = require("node:fs");
+const { dirname, join } = require("node:path");
 
-const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
+const repoRoot = dirname(__dirname);
 const examplesRoot = join(repoRoot, "examples");
 const currentDocs = [
   "developer-toolkit/warranty-policy.md",
