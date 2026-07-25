@@ -14,9 +14,13 @@ Sigil Sign evaluates every agent intent against this file before allowing any ac
 Use **Sigil Warrant** at [sigilcore.com/tools/warrant](https://sigilcore.com/tools/warrant) to generate, sign, and download your `warranty.md`. Two paths are available:
 
 - **Warrant Builder:** guided step-by-step flow. No policy syntax required. Recommended for first-time operators.
-- **Manual Warrant:** write your policy directly in the `warranty.md` format. Full control over every field. For developers familiar with the warranty.md schema.
+- **Manual Warrant:** write your policy directly in the `warranty.md` format, for developers familiar with the warranty.md schema. Manual Warrant covers the authoring surface listed in the note below.
 
 Both paths produce an identical signed `warranty.md` that Sigil Sign accepts at boot.
+
+<Note>
+  **Authoring coverage (interim).** The Warrant tools currently author the profileless policy surface documented on this page — `## evm`, `## tool_calls`, `## mcp`, `## custom`, `## soft_limits`, `## execution_limits` — plus a single-root `## repository` profile with `git_providers: generic, github`. The deployed Sigil Sign engine additionally enforces Policy 2.1 controls that the Warrant tools cannot author yet: the `## filesystem`, `## git`, and `## database` resource profiles, per-method HTTP rules (`http.method_rules.<METHOD>.require_query_matches` / `.deny`), and the EVM calldata-enrichment keys (`require_calldata_enrichment`, `calldata_unknown_selector`). Warrant rejects a policy containing these fields fail-closed with a named error — it never silently drops or rewrites a control. Full authoring parity is in progress; this page documents each control as the official authoring path gains it.
+</Note>
 
 ## File Format
 
@@ -71,10 +75,11 @@ This current reference uses profileless Policy 2.1. It keeps the EVM and tool-ca
 ## Policy Sections
 
 ### `## evm`
+
 Controls EVM transaction execution, including spend limits, allowed chains, allowed actions, and consensus hold thresholds.
 
 | Field | Description |
-|---|---|
+| --- | --- |
 | `max_transaction_eth` | Maximum ETH value per transaction |
 | `allowed_chains` | Comma-separated chain IDs |
 | `allowed_actions` | Permitted EVM actions |
@@ -88,10 +93,11 @@ Controls EVM transaction execution, including spend limits, allowed chains, allo
 **Token semantics:** an intent carrying `token` is governed only by the matching `token.<SYM>.*` rule. `max_transaction_eth` and `consensus_threshold_eth` are ETH-denominated and never apply to token amounts. A token intent with no matching rule, including a policy with no token rules at all, is `DENIED` fail-closed with `SIGIL_POLICY_VIOLATION_TOKEN_NOT_ALLOWED`. Symbols match case-insensitively; address-form intents match only pinned `addresses`. **When a rule pins `addresses`, the intent's `targetAddress` must be one of them.** An ERC-20 transfer's transaction target is the token contract, and this binding prevents a native ETH transfer labelled with a token symbol from skipping the ETH limit. Pinning addresses is strongly recommended; rules without them accept the declared symbol at face value. Amount comparisons are exact: all-digit amounts are base units compared via BigInt at the rule's `decimals`, decimal amounts are scaled exactly via string math with no float rounding, and the limit itself is kept as the decimal string you wrote. A token intent whose `amount` is missing or unparseable is `DENIED` fail-closed with `SIGIL_POLICY_VIOLATION_TOKEN_AMOUNT_INVALID`.
 
 ### `## tool_calls`
+
 Controls non-EVM agent tool execution.
 
 | Field | Description |
-|---|---|
+| --- | --- |
 | `allowed` | Permitted tool types |
 | `bash.blocked_commands` | Substrings that trigger denial in bash |
 | `web_fetch.blocked_domains` | Hostnames blocked for web requests |
@@ -108,9 +114,10 @@ Controls non-EVM agent tool execution.
 **Recipient semantics:** `email.send` intents carry recipients in `intent.to` (string or array). Checks run in order: denylist, allowlist, approval hold. A blocked recipient is `DENIED` (`SIGIL_POLICY_VIOLATION_BLOCKED_RECIPIENT`) before any hold is created, and an off-allowlist recipient returns `SIGIL_POLICY_VIOLATION_RECIPIENT_NOT_ALLOWED`. Every recipient in an array must pass. A missing `to` while either list is declared is `DENIED` fail-closed. Each recipient list must contain at least one entry; empty recipient lists reject the policy. `*@domain` matches that exact domain only; subdomains do not match. Matching is case-insensitive.
 
 ### `## custom`
+
 Operator-defined rules evaluated before all other checks. Three rule types:
 
-```
+```text
 # Allow ONLY these values for a field. Anything else, or a missing field, is denied.
 allow_only.<field_path>: <value>, <value>, ...
 
@@ -126,24 +133,16 @@ allow_only[action=mcp.buffer.create_post].metadata.arguments.channelId attested 
 
 Operators: `contains`, `starts_with`, `ends_with`, `equals`, `not_equals`, `matches` (regex)
 
-**Allowlist semantics:** `allow_only` is an affirmative allowlist. In 1.x it keeps exact, case-sensitive matching; in 2.0 it accepts `equals` (the default), `starts_with`/`prefix`, `ends_with`, `contains`, and `matches` operators. A missing or non-matching field is `DENIED` fail-closed with `SIGIL_POLICY_VIOLATION_NOT_ON_ALLOWLIST`. Regex patterns are capped at 256 characters; invalid patterns deny without throwing. **Deny rules win:** deny_if/deny_string are evaluated first, so a value matching both a deny rule and the allowlist is denied with the deny rule's code.
+**Allowlist semantics:** `allow_only` is an affirmative allowlist. In 1.x it keeps exact, case-sensitive matching; in 2.0 it accepts `equals` (the default), `starts_with`/`prefix`, `ends_with`, `contains`, and `matches` operators. A missing or non-matching field is `DENIED` fail-closed with `SIGIL_POLICY_VIOLATION_NOT_ON_ALLOWLIST`. Regex patterns are capped at 256 characters; invalid patterns deny without throwing. **Deny rules win:** deny\_if/deny\_string are evaluated first, so a value matching both a deny rule and the allowlist is denied with the deny rule's code.
 
-An `attested` allowlist rule must target `metadata.*` and fails closed unless
-the request arrived through a trusted shim. `require_shim: true` is a
-block-level gate. Sign stamps `provenance: agent` or `provenance: shim` from
-the API-key record; the request body cannot self-assert either value. Generic
-`require_approval` patterns can appear in any policy block and match exact
-actions or one trailing `*` prefix wildcard. `email.require_approval` remains
-syntax sugar for the same durable hold class.
+An `attested` allowlist rule must target `metadata.*` and fails closed unless the request arrived through a trusted shim. `require_shim: true` is a block-level gate. Sign stamps `provenance: agent` or `provenance: shim` from the API-key record; the request body cannot self-assert either value. Generic `require_approval` patterns can appear in any policy block and match exact actions or one trailing `*` prefix wildcard. `email.require_approval` remains syntax sugar for the same durable hold class.
 
 ### `## mcp`
 
-MCP policy is deny-by-default unless this block exists. Sign dispatches on the
-`mcp.` action prefix and evaluates the trusted metadata values instead of
-splitting the action string.
+MCP policy is deny-by-default unless this block exists. Sign dispatches on the `mcp.` action prefix and evaluates the trusted metadata values instead of splitting the action string.
 
 | Field | Description |
-|---|---|
+| --- | --- |
 | `allowed_servers` | Exact server IDs or one trailing `*` prefix wildcard |
 | `allowed_tools` | Exact `serverId.toolName` identities, tool names, or trailing `*` prefix wildcards |
 | `blocked_tools` | MCP tool identities or tool names that always deny |
@@ -160,6 +159,7 @@ require_shim: true
 ```
 
 ### `## soft_limits`
+
 `## soft_limits` is version-gated. Under 1.x, its legacy fields remain informational metadata and do not change an authorization decision. Under 2.0, declared limits are enforced after the engine approves the matching action type or namespace, and an exceeded cap returns `DENIED`. Existing signed 1.x policies keep their original behavior until an operator explicitly upgrades and re-signs them. A cap on a namespace the current engine does not approve cannot make that namespace executable.
 
 Policy format 2.0 supports legacy daily limits and named caps:
@@ -181,13 +181,11 @@ cap.ad_spend.amount_field: metadata.arguments.budget_usd
 ```
 
 <Note>
-  Named caps can target `mcp.*` actions. The cap applies after the MCP block and
-  base policy approve the call, and a denied or pending call does not consume
-  aggregate budget.
+  Named caps can target `mcp.*` actions. The cap applies after the MCP block and base policy approve the call, and a denied or pending call does not consume aggregate budget.
 </Note>
 
 | Field | Description |
-|---|---|
+| --- | --- |
 | `cap.<name>.max_count` | Positive integer count ceiling. Mutually exclusive with `max_sum_usd` |
 | `cap.<name>.max_sum_usd` | Positive USD ceiling with up to six decimal places. Mutually exclusive with `max_count` |
 | `cap.<name>.window` | Counter window: `day`, `hour`, or `task` |
@@ -202,10 +200,11 @@ The counter key combines the API key, cap name, group value, and window bucket. 
 </Warning>
 
 ### `## execution_limits`
+
 Hard ceilings that stop runaway tool loops before the next tool executes.
 
 | Field | Description |
-|---|---|
+| --- | --- |
 | `max_tool_calls_per_task` | Maximum tool calls for one `intent.task_id`; the next call is `DENIED` |
 | `max_tool_calls_per_hour` | Maximum tool calls per API key in the current UTC clock-hour bucket |
 | `max_model_spend_usd_per_task` | Maximum adapter-reported model spend for one `intent.task_id` |
@@ -214,6 +213,7 @@ Hard ceilings that stop runaway tool loops before the next tool executes.
 Execution limits are hard denials, not soft caps. A ceiling breach returns `SIGIL_LOOP_LIMIT_EXCEEDED`; if the counter store is unavailable, Sigil Sign fails closed with `SIGIL_LIMIT_STORE_UNAVAILABLE`. The per-task ceiling applies only when the request includes `intent.task_id`; the hourly ceiling applies per API key.
 
 ### `## signature`
+
 Ed25519 signature over all content above this block. Generated by Sigil Warrant. A missing or invalid signature causes Sigil Sign to reject the policy unconditionally at startup.
 
 ## Deployment
