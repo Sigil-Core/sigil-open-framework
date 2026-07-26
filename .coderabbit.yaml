@@ -1,8 +1,15 @@
 # .coderabbit.yaml — sigil-open-framework (documentation/specification repo)
+#
+# Auto-review is OFF (Vernon, July 21, 2026): code review happens locally
+# and passes BEFORE a PR is opened; automated PR reviewers are duplicative
+# and delay deployment. CodeRabbit remains available on-demand via
+# `@coderabbitai review` in a PR comment. No automated reviewer is a
+# required status check on this repository's default branch, for the same
+# reason. The path instructions below still apply to on-demand reviews.
 
 reviews:
   auto_review:
-    enabled: true
+    enabled: false
 
   path_instructions:
     - path: "architecture.md"
