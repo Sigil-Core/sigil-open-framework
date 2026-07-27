@@ -52,8 +52,8 @@ The production audience is
 `https://sign.sigilcore.com/v1/warranty/deploy`. The test audience is
 `https://sign-test.sigilcore.com/v1/warranty/deploy`.
 
-Capabilities are `policy.repository`, `policy.filesystem`, `policy.git`,
-`policy.database`, and `policy.execution_limits`.
+Capabilities are `profile.repository`, `profile.filesystem`, `profile.git`,
+`profile.database`, and `profile.execution_limits`.
 
 ## Trust and versions
 
