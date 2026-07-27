@@ -18,7 +18,11 @@ Policy formats 2.0 and 2.1 keep the 1.x EVM, tool-call, custom, and execution-li
 
 For destructive repository, Git, provider, or production database actions, choose Policy 2.1. Configure the repository and resource profiles, then use an adapter that attests the complete effect manifest and owns the final mutation. A preflight-only hook must fail closed and must not be described as final mutation enforcement.
 
-Sigil Warrant's Builder can load an existing warranty and prepare the 2.0 form, and it can load a signed Policy 2.1 repository profile without changing its values. Policies that use the `## filesystem`, `## git`, or `## database` profiles are authored outside the Builder; the Builder and Manual Warrant reject those imports without changing any field. The Builder does not carry the old signature into the new file.
+Manual Warrant Advanced Mode can import, validate, preserve, and deploy every Policy 2.1 field that Sign accepts. Use it for filesystem profiles, per-method HTTP rules, EVM calldata enrichment, or any policy that exceeds the structured Form or Builder matrix. It keeps the source bytes intact until you edit them. Any edit detaches the old signature, so sign the complete policy again before deployment.
+
+Warrant Builder supports the repository profile, Git controls, and the 28 supported database operations through its guided controls. It rejects filesystem profiles, per-method HTTP rules, EVM calldata enrichment, and other unsupported fields before changing any Builder state. The structured Manual Form follows its own limits. Check the [generated capability matrix](/developer-toolkit/policy-2-1) before choosing a guided surface.
+
+Manual Warrant's Migration flow uses a strict Version 1 rollback bundle when preparing a migration or rollback. It validates the bundle before use. The bundle contains policy material, not a deployment receipt, and does not prove that either policy was deployed.
 
 ## Field mapping
 
