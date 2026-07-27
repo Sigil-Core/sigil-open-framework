@@ -14,12 +14,12 @@ Sigil Sign evaluates every agent intent against this file before allowing any ac
 Use **Sigil Warrant** at [sigilcore.com/tools/warrant](https://sigilcore.com/tools/warrant) to generate, sign, and download your `warranty.md`. Two paths are available:
 
 - **Warrant Builder:** guided step-by-step flow. No policy syntax required. Recommended for first-time operators.
-- **Manual Warrant:** write your policy directly in the `warranty.md` format, for developers familiar with the warranty.md schema. Manual Warrant covers the authoring surface listed in the note below.
+- **Manual Warrant:** choose the structured Form for common policies or Advanced Mode to edit the complete `warranty.md` source. Advanced Mode validates, signs, downloads, re-imports, and deploys the exact policy bytes.
 
 Both paths produce an identical signed `warranty.md` that Sigil Sign accepts at boot.
 
 <Note>
-  **Authoring coverage (interim).** The Warrant tools currently author the profileless policy surface documented on this page — `## evm`, `## tool_calls`, `## mcp`, `## custom`, `## soft_limits`, `## execution_limits` — plus a single-root `## repository` profile with `git_providers: generic, github`. The deployed Sigil Sign engine additionally enforces Policy 2.1 controls that the Warrant tools cannot author yet: the `## filesystem`, `## git`, and `## database` resource profiles, per-method HTTP rules (`http.method_rules.<METHOD>.require_query_matches` / `.deny`), and the EVM calldata-enrichment keys (`require_calldata_enrichment`, `calldata_unknown_selector`). Warrant rejects a policy containing these fields fail-closed with a named error — it never silently drops or rewrites a control. Full authoring parity is in progress; this page documents each control as the official authoring path gains it.
+  **Policy 2.1 authoring contract.** `@sigilcore/warrant-core@0.2.1` is the shared parser, canonicalizer, signer-envelope validator, and authoring-capability source. Manual Advanced covers every field that the deployed Sign contract accepts. Manual Form and Warrant Builder expose their supported subsets and route unsupported fields to Advanced Mode or reject them before changing policy state. See [Policy 2.1 authoring capabilities](/developer-toolkit/policy-2-1) for the generated field matrix.
 </Note>
 
 ## File Format

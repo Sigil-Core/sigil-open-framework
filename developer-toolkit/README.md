@@ -18,9 +18,11 @@ The execution engine requires a signed `warranty.md` file to enforce boundaries.
 
 1. Go to [sigilcore.com/tools/warrant](https://sigilcore.com/tools/warrant) and choose your path:
    - **Warrant Builder** — guided step-by-step form, no policy syntax required
-   - **Manual Warrant** — write your policy directly in the `warranty.md` format
+   - **Manual Warrant** — use Form mode for common controls or Advanced Mode for the complete Policy 2.1 source format
 
 2. Generate your Ed25519 keypair, define your policy rules, sign, and download `warranty.md`.
+
+   Check the [Policy 2.1 authoring capability matrix](policy-2-1.md) before choosing Form, Advanced Mode, or Builder. The matrix is generated from the exact `@sigilcore/warrant-core` contract shared with Sigil Sign.
 
 3. Deploy the signed file to your server and set `WARRANTY_PATH` to its location. Set `SIGIL_OPERATOR_PUBLIC_KEY` to the public key value Sigil Warrant provides.
 
