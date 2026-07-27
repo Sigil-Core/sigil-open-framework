@@ -70,7 +70,7 @@ Legend: A = author, I = import, P = preserve without loss, D = deploy. `none` me
 | `execution_limits.require_shim` | `A/I/P/D`: `execution_limits.require_shim` | `A/I/P/D`: `execution_limits.require_shim` | `A/I/P/D`: `execution_limits.require_shim` |
 {/* END GENERATED POLICY 2.1 CAPABILITY MATRIX */}
 
-Regenerate the matrix only from the released package: `node scripts/generate-policy-2-1-capabilities.mjs --write`. CI and local verification use `--check` to detect stale capability claims.
+Regenerate the matrix only from the released package: `node scripts/generate-policy-2-1-capabilities.cjs --write`. CI and local verification use `--check` to detect stale capability claims.
 
 The [corpus vectors](../conformance/vectors/) cover the resource profiles and advanced controls. Run the vectors against the selected adapter before relying on an enforcement boundary.
 
