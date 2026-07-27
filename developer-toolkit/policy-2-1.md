@@ -23,6 +23,12 @@ Repository-scoped filesystem and Git grants MUST include the canonical repositor
 
 The stable public denial codes include `SIGIL_POLICY_VIOLATION_FILE_TARGET_UNTRUSTED`, `SIGIL_POLICY_VIOLATION_FILE_OUTSIDE_ROOT`, `SIGIL_POLICY_VIOLATION_SENSITIVE_FILE`, `SIGIL_POLICY_VIOLATION_GIT_OPERATION_BLOCKED`, `SIGIL_POLICY_VIOLATION_PROVIDER_OPERATION_BLOCKED`, `SIGIL_POLICY_VIOLATION_DATABASE_OPERATION_NOT_ALLOWED`, `SIGIL_POLICY_VIOLATION_DATABASE_CAPABILITY_UNTRUSTED`, and `SIGIL_POLICY_VIOLATION_EXECUTION_GRANT_INVALID`.
 
+Hosted activation has a separate fail-closed boundary. A destructive Policy
+2.1 Warrant must set `require_shim: true` and supply a short-lived,
+policy-bound trusted-shim JWT. See [Trusted-shim
+activation](/developer-toolkit/trusted-shim-activation). This activation check
+does not replace the runtime denials described here.
+
 ## Profiles
 
 `## repository` sets the trusted roots, Git provider catalog, sensitive-file protection, and shim requirement. `## filesystem` declares write and read roots, explicit effects, blocked paths, protected classes, and impact limits. `## git` declares provider and remote-scheme allowlists, operation taxonomy, protected refs, ref-change limits, and approval requirements. `## database` declares protected environments, explicit SQL effects, resource patterns, routine catalog, read-only requirements, indirect-effect policy, and statement or lock timeouts.
