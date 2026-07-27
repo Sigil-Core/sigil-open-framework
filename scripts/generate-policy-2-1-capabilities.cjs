@@ -13,7 +13,7 @@ const END = "{/* END GENERATED POLICY 2.1 CAPABILITY MATRIX */}";
 const repoRoot = dirname(__dirname);
 const targetPath = join(repoRoot, "developer-toolkit", "policy-2-1.md");
 
-const status = (capability) => {
+const capabilityStatus = (capability) => {
   const dimensions = [
     ["A", capability.author],
     ["I", capability.import],
@@ -26,7 +26,7 @@ const status = (capability) => {
 const renderSurface = (entries, surface) => {
   const grouped = new Map();
   for (const [path, capability] of entries) {
-    const label = status(capability.surfaces[surface]);
+    const label = capabilityStatus(capability.surfaces[surface]);
     grouped.set(label, [...(grouped.get(label) ?? []), path]);
   }
   return [...grouped.entries()]
@@ -47,21 +47,24 @@ const loadManifest = async () => {
   }
 };
 
-const main = async () => {
-  const packageModule = await loadManifest();
+const groupCapabilitiesByFeature = (packageModule) => {
   const byFeature = new Map();
   for (const [path, capability] of Object.entries(packageModule.AUTHORING_CAPABILITY_MANIFEST)) {
     const entries = byFeature.get(capability.deploy_feature_key) ?? [];
     entries.push([path, capability]);
     byFeature.set(capability.deploy_feature_key, entries);
   }
+  return byFeature;
+};
 
+const generateMatrix = (packageModule) => {
+  const byFeature = groupCapabilitiesByFeature(packageModule);
   const rows = packageModule.DEPLOY_FEATURE_KEYS.map((feature) => {
     const entries = byFeature.get(feature) ?? [];
     return `| \`${feature}\` | ${renderSurface(entries, "manual-form")} | ${renderSurface(entries, "manual-advanced")} | ${renderSurface(entries, "builder")} |`;
   });
 
-  const generated = [
+  return [
     START,
     `Source: \`${PACKAGE}@${VERSION}\`, \`AUTHORING_CAPABILITY_MANIFEST\` (capability schema v${packageModule.SIGN_CAPABILITIES_SCHEMA_VERSION}).`,
     "",
@@ -72,33 +75,52 @@ const main = async () => {
     ...rows,
     END,
   ].join("\n");
+};
 
-  if (process.argv.includes("--print")) {
-    process.stdout.write(`${generated}\n`);
-    return;
-  }
-
+const currentMatrix = () => {
   const source = readFileSync(targetPath, "utf8");
   const start = source.indexOf(START);
   const end = source.indexOf(END);
   if (start === -1 || end === -1 || end < start) {
     throw new Error(`Missing generated-matrix markers in ${targetPath}`);
   }
-  const current = source.slice(start, end + END.length);
-  if (process.argv.includes("--check")) {
-    if (current !== generated) {
-      process.stderr.write("Policy 2.1 capability matrix is stale. Run: node scripts/generate-policy-2-1-capabilities.cjs --write\n");
-      process.exitCode = 1;
-    } else {
-      process.stdout.write(`Policy 2.1 capability matrix matches ${PACKAGE}@${VERSION}.\n`);
-    }
-  } else if (process.argv.includes("--write")) {
-    writeFileSync(targetPath, `${source.slice(0, start)}${generated}${source.slice(end + END.length)}`);
-    process.stdout.write(`Updated ${targetPath} from ${PACKAGE}@${VERSION}.\n`);
-  } else {
-    process.stderr.write("Use --check, --print, or --write.\n");
-    process.exitCode = 2;
+  return { source, start, end, matrix: source.slice(start, end + END.length) };
+};
+
+const checkMatrix = (generated) => {
+  if (currentMatrix().matrix !== generated) {
+    process.stderr.write("Policy 2.1 capability matrix is stale. Run: node scripts/generate-policy-2-1-capabilities.cjs --write\n");
+    process.exitCode = 1;
+    return;
   }
+  process.stdout.write(`Policy 2.1 capability matrix matches ${PACKAGE}@${VERSION}.\n`);
+};
+
+const writeMatrix = (generated) => {
+  const { source, start, end } = currentMatrix();
+  writeFileSync(targetPath, `${source.slice(0, start)}${generated}${source.slice(end + END.length)}`);
+  process.stdout.write(`Updated ${targetPath} from ${PACKAGE}@${VERSION}.\n`);
+};
+
+const runCommand = (generated) => {
+  if (process.argv.includes("--print")) {
+    process.stdout.write(`${generated}\n`);
+    return;
+  }
+  if (process.argv.includes("--check")) {
+    checkMatrix(generated);
+    return;
+  }
+  if (process.argv.includes("--write")) {
+    writeMatrix(generated);
+    return;
+  }
+  process.stderr.write("Use --check, --print, or --write.\n");
+  process.exitCode = 2;
+};
+
+const main = async () => {
+  runCommand(generateMatrix(await loadManifest()));
 };
 
 main().catch((error) => {
