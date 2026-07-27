@@ -87,6 +87,194 @@
         }
       }
     },
+    "/v1/service-metadata": {
+      "get": {
+        "tags": [
+          "Conformance"
+        ],
+        "summary": "Immutable deployed service commit",
+        "description": "Returns the full Git commit SHA embedded in the deployed release artifact, pinning the running deployment to an exact build. The sigil-sign source repository is not public, so this value is not independently verifiable against published source. It establishes deployment parity and build pinning for parties that already hold repository access, such as auditors under an active engagement. Clients relying on it for parity evidence must require a 200 response and compare `serviceCommit` to the expected commit. The endpoint sends `Cache-Control: no-store` so an intermediary cannot serve stale deployment metadata.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Deployed artifact commit metadata",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                },
+                "description": "Disables intermediary caching of deployment metadata."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "schemaVersion",
+                    "serviceCommit"
+                  ],
+                  "properties": {
+                    "schemaVersion": {
+                      "type": "string",
+                      "enum": [
+                        "sigil-sign-service-metadata/v1"
+                      ]
+                    },
+                    "serviceCommit": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{40}$"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The deployed artifact has no commit binding.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                },
+                "description": "Disables intermediary caching of deployment metadata."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "schemaVersion",
+                    "status"
+                  ],
+                  "properties": {
+                    "schemaVersion": {
+                      "type": "string",
+                      "enum": [
+                        "sigil-sign-service-metadata/v1"
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "unavailable"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/capabilities": {
+      "get": {
+        "tags": [
+          "Conformance"
+        ],
+        "summary": "Sigil Sign policy and feature capabilities",
+        "description": "Returns the unauthenticated, schema-versioned capability registry used by authoring clients for advisory deployment preflight.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Current Sigil Sign capability registry",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "max-age=300"
+                  ]
+                },
+                "description": "Allows the registry to be cached for five minutes."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "schema_version",
+                    "engine_version",
+                    "supported_policy_versions",
+                    "feature_keys"
+                  ],
+                  "properties": {
+                    "schema_version": {
+                      "type": "integer",
+                      "enum": [
+                        1
+                      ]
+                    },
+                    "engine_version": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "supported_policy_versions": {
+                      "type": "array",
+                      "minItems": 4,
+                      "maxItems": 4,
+                      "uniqueItems": true,
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "0.x",
+                          "1.x",
+                          "2.0.x",
+                          "2.1.x"
+                        ]
+                      }
+                    },
+                    "feature_keys": {
+                      "type": "array",
+                      "minItems": 22,
+                      "maxItems": 22,
+                      "uniqueItems": true,
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "policy.version",
+                          "signature.sigil-envelope-v1",
+                          "profile.repository",
+                          "profile.filesystem",
+                          "profile.git",
+                          "profile.database",
+                          "evm",
+                          "evm.chain_actions",
+                          "evm.token",
+                          "evm.token.consensus_threshold",
+                          "evm.require_calldata_enrichment",
+                          "evm.calldata_unknown_selector",
+                          "tool_calls",
+                          "tool_calls.http",
+                          "tool_calls.http.method_rules",
+                          "mcp",
+                          "custom",
+                          "soft_limits",
+                          "soft_limits.cap",
+                          "execution_limits",
+                          "execution_limits.require_approval",
+                          "execution_limits.require_shim"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/.well-known/jwks.json": {
       "get": {
         "tags": [
