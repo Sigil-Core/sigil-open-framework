@@ -236,8 +236,8 @@
                     },
                     "feature_keys": {
                       "type": "array",
-                      "minItems": 22,
-                      "maxItems": 22,
+                      "minItems": 23,
+                      "maxItems": 23,
                       "uniqueItems": true,
                       "items": {
                         "type": "string",
@@ -263,7 +263,8 @@
                           "soft_limits.cap",
                           "execution_limits",
                           "execution_limits.require_approval",
-                          "execution_limits.require_shim"
+                          "execution_limits.require_shim",
+                          "activation.trusted_shim.v1"
                         ]
                       }
                     }
@@ -608,7 +609,7 @@
           "Warranty"
         ],
         "summary": "Deploy a signed warranty.md policy to an API key",
-        "description": "Binds a signed warranty.md to the presenting API key. The body carries the warranty.md content and an operator signature. Future calls to /v1/authorize for this key evaluate against the deployed policy. Rate-limited to 20 deploys per minute per source.",
+        "description": "Atomically binds a signed warranty.md to the presenting API key. The body carries the exact signed warranty.md bytes and the operator public key that verifies them. Destructive Policy 2.1 profiles also require a short-lived trusted-shim activation JWT supplied separately from the signed policy. Attempt-rate controls are enforced at the edge and do not mutate activation state.",
         "requestBody": {
           "required": true,
           "content": {
@@ -616,17 +617,40 @@
               "schema": {
                 "type": "object",
                 "required": [
-                  "warranty",
-                  "signature"
+                  "warranty_md",
+                  "operator_public_key"
                 ],
                 "properties": {
-                  "warranty": {
+                  "warranty_md": {
                     "type": "string",
-                    "description": "Full warranty.md text"
+                    "description": "Full signed warranty.md text, including its signature block"
                   },
-                  "signature": {
+                  "operator_public_key": {
                     "type": "string",
-                    "description": "Ed25519 signature of the operator over warranty content"
+                    "description": "Raw base64url Ed25519 operator public key that verifies the signature block"
+                  },
+                  "trusted_shim_attestation": {
+                    "type": "string",
+                    "maxLength": 16384,
+                    "description": "Compact EdDSA JWT required for destructive Policy 2.1 activation. It binds trusted shim identity and exact version, issuer, environment audience, policy hash, operator-key fingerprint, capabilities, freshness, and a one-time nonce."
+                  }
+                }
+              },
+              "examples": {
+                "ordinaryPolicy": {
+                  "summary": "Signed policy without a destructive Policy 2.1 profile",
+                  "value": {
+                    "warranty_md": "version: 2.1.1\n\n## tool_calls\nallowed: bash\n\n## signature\nsigil-sig: <base64url-signature>",
+                    "operator_public_key": "<base64url-ed25519-public-key>"
+                  }
+                },
+                "destructivePolicyActivation": {
+                  "summary": "Destructive Policy 2.1 activation validated by Sigil Sign",
+                  "description": "OpenAPI cannot infer controls embedded inside signed warranty_md text. Sigil Sign requires trusted_shim_attestation when repository, filesystem, Git, or database profiles are present and returns a stable 409 denial when it is absent or invalid.",
+                  "value": {
+                    "warranty_md": "version: 2.1.1\n\n## repository\nroots: .\nblock_outside_writes: true\nprotect_git_history: true\nprotect_sensitive_files: true\ngit_providers: github\nrequire_shim: true\n\n## signature\nsigil-sig: <base64url-signature>",
+                    "operator_public_key": "<base64url-ed25519-public-key>",
+                    "trusted_shim_attestation": "<compact-EdDSA-JWT>"
                   }
                 }
               }
@@ -640,11 +664,14 @@
           "400": {
             "description": "Invalid warranty.md or signature"
           },
+          "409": {
+            "description": "Trusted-shim activation denied with a stable SIGIL_TRUSTED_SHIM_* error_code"
+          },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
           },
-          "429": {
-            "$ref": "#/components/responses/RateLimited"
+          "503": {
+            "description": "Usage or activation backing state is unavailable"
           }
         }
       }
