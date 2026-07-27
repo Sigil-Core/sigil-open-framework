@@ -11,7 +11,7 @@ Policy 2.1 adds typed resource profiles to `warranty.md`. The profiles describe 
 
 A Policy 2.1 action requires:
 
-- `version: 2.1.0`
+- a `version` in the `2.1.x` family
 - structured metadata for the target resource and observed effects
 - an adapter version in the `2.1.x` family
 - fail-closed execution

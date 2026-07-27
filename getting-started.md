@@ -60,7 +60,7 @@ Your warranty.md defines what your agent is allowed to do. The file must be sign
 - **Warrant Builder:** guided step-by-step flow for common policies, including repository, Git, and database profiles. No policy syntax required. Recommended for first-time operators.
 - **Manual Warrant:** choose the structured Form for common policies or Advanced Mode to author any Policy 2.1 field that Sign accepts. Advanced Mode preserves the exact source bytes through validation, signing, download, re-import, and deployment. See the [generated authoring-capability matrix](/developer-toolkit/policy-2-1) before choosing a surface.
 
-Both paths generate your Ed25519 keypair in the browser (no key material ever leaves your machine), sign the policy, and provide your `SIGIL_OPERATOR_PUBLIC_KEY` value ready to paste.
+When you create a policy, either path can generate an Ed25519 keypair in the browser and provide the `SIGIL_OPERATOR_PUBLIC_KEY` value ready to paste. An unchanged signed import verifies with its operator public key and can download or deploy without generating a new keypair or re-signing.
 
 Deploy the signed warranty.md to your server and set `WARRANTY_PATH` to its location. If you omit this path, the service looks for `config/warranty.md` relative to `process.cwd()`.
 
