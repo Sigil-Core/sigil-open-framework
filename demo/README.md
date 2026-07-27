@@ -24,7 +24,7 @@ The demo sends five `POST /v1/authorize` requests to the live Sigil Sign API:
 - Nothing is mocked. All requests hit `https://sign.sigilcore.com/v1/authorize`.
 - The `warranty.md` in this directory is a format 2.0 reference showing the policy your API key must be associated with. Sign and deploy it via Sigil Warrant before running.
 - Requires Node.js >= 20 (native `fetch`).
-- `framework` is set to `"demo"` - a custom testing framework identifier. Custom identifiers are accepted by the [Framework Registry](../framework-registry) validation rules.
+- `framework` is set to `"demo"` - a custom testing framework identifier. Custom identifiers are accepted by the [Framework Registry](../framework-registry.md) validation rules.
 
 ### Integration gap flag
 
