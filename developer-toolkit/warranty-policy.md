@@ -16,7 +16,7 @@ Use **Sigil Warrant** at [sigilcore.com/tools/warrant](https://sigilcore.com/too
 - **Warrant Builder:** guided step-by-step flow. No policy syntax required. Recommended for first-time operators.
 - **Manual Warrant:** choose the structured Form for common policies or Advanced Mode to edit the complete `warranty.md` source. Advanced Mode validates, signs, downloads, re-imports, and deploys the exact policy bytes.
 
-Both paths produce an identical signed `warranty.md` that Sigil Sign accepts at boot.
+Both paths produce a signed `warranty.md` with the same schema and signature-envelope contract. Its policy content reflects the controls you author.
 
 <Note>
   **Policy 2.1 authoring contract.** `@sigilcore/warrant-core@0.2.1` is the shared parser, canonicalizer, signer-envelope validator, and authoring-capability source. Manual Advanced covers every field that the deployed Sign contract accepts. Manual Form and Warrant Builder expose their supported subsets and route unsupported fields to Advanced Mode or reject them before changing policy state. See [Policy 2.1 authoring capabilities](/developer-toolkit/policy-2-1) for the generated field matrix.
