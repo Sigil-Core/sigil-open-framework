@@ -37,7 +37,7 @@ The reference provider taxonomy covers `generic`, `github`, `gitlab`, and `bitbu
 
 `@sigilcore/warrant-core@0.2.1` defines the policy contract that Manual Warrant, Warrant Builder, and Sigil Sign share. Manual Advanced is the complete source-authoring path. It accepts every Policy 2.1 field, validates all independent errors, preserves an unedited signed policy byte-for-byte, and signs and deploys the exact source payload.
 
-Manual Form and Warrant Builder support the subsets in the generated matrix below. A guided surface either preserves a supported control or rejects the import before mutating state. It never silently drops or rewrites a policy field. Signed imports use Advanced Mode until an operator explicitly detaches the signature to edit the policy.
+Manual Form and Warrant Builder support the subsets in the generated matrix below. Warrant Builder includes guided Git controls and the 28 supported database operations. A guided surface either preserves a supported control or rejects the import before mutating state. It never silently drops or rewrites a policy field. Signed imports use Advanced Mode until an operator explicitly detaches the signature to edit the policy.
 
 {/* BEGIN GENERATED POLICY 2.1 CAPABILITY MATRIX */}
 Source: `@sigilcore/warrant-core@0.2.1`, `AUTHORING_CAPABILITY_MANIFEST` (capability schema v1).

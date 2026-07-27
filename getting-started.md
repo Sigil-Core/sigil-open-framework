@@ -57,7 +57,7 @@ Your warranty.md defines what your agent is allowed to do. The file must be sign
 
 **Use [Sigil Warrant](https://sigilcore.com/tools/warrant)** to generate, sign, and download your `warranty.md`. Two paths are available:
 
-- **Warrant Builder:** guided step-by-step flow for common policies, including repository, Git, and database profiles. No policy syntax required. Recommended for first-time operators.
+- **Warrant Builder:** guided step-by-step flow for common policies, including repository and Git controls plus the 28 supported database operations. No policy syntax required. Recommended for first-time operators.
 - **Manual Warrant:** choose the structured Form for common policies or Advanced Mode to author any Policy 2.1 field that Sign accepts. Advanced Mode preserves the exact source bytes through validation, signing, download, re-import, and deployment. See the [generated authoring-capability matrix](/developer-toolkit/policy-2-1) before choosing a surface.
 
 When you create a policy, either path can generate an Ed25519 keypair in the browser and provide the `SIGIL_OPERATOR_PUBLIC_KEY` value ready to paste. An unchanged signed import verifies with its operator public key and can download or deploy without generating a new keypair or re-signing.
