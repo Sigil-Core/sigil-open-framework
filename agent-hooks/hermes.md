@@ -155,6 +155,41 @@ for any environment that touches production, external systems, or on-chain actio
 | `framework` | `string` | No | `'agent-hooks'` | Use `'hermes'` for telemetry and audit routing |
 | `failMode` | `'open' \| 'closed'` | No | `'open'` | Block (`closed`) or allow (`open`) when Sigil is unreachable |
 
+## Troubleshooting a hook that never fires
+
+A declared hook that never registers is the first thing to check, because
+nothing reports an error when it happens. The agent keeps running, no tool call
+is blocked, and Sigil looks installed while every action executes ungoverned.
+Two causes account for most of it.
+
+**Keep the `hooks:` block in `~/.hermes/config.yaml`.** That is the active
+config file and the one step 1 uses. Nous's hooks page also refers to
+`cli-config.yaml` in two places, which points at `cli-config.yaml.example`, a
+commented reference file rather than a config Hermes loads. A `hooks:` block
+placed there never registers and never raises an error, so the agent runs
+ungoverned while the file looks correct.
+
+**Pre-approve the hook on any non-interactive run.** Hermes prompts once to
+approve each `(event, command)` pair and remembers the answer. A gateway, cron,
+or CI run has no terminal to answer that prompt, and Nous states the consequence
+plainly, which is that a newly added hook silently stays unregistered. Set one
+of the three escape hatches before the first non-interactive run.
+
+- `HERMES_ACCEPT_HOOKS=1` in the environment
+- `--accept-hooks` on the CLI, for example `hermes --accept-hooks chat`
+- `hooks_auto_accept: true` in the config file
+
+Each one approves hook pairs without asking, including any hook added later, so
+scope them to hosts whose config and commands you control. On a shared or
+long-lived host, prefer `HERMES_ACCEPT_HOOKS=1` on the specific service unit
+over `hooks_auto_accept: true`, which blanket-approves every hook the config
+can introduce.
+
+**Verify enforcement instead of assuming it.** After install, run a tool call
+your policy denies and confirm Hermes blocks it. A passing deny is the only
+evidence that the hook registered. `failMode: 'closed'` does not cover this
+case, because a hook that never runs has no fail mode to apply.
+
 ## Source
 
 - [github.com/Sigil-Core/agent-hooks](https://github.com/Sigil-Core/agent-hooks) — TypeScript package, MIT License
