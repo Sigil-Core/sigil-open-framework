@@ -7,10 +7,6 @@ Vernon Wharff<br /> Sigil Open Framework<br /> July 2026 - v1.4
 
 [Download the v1.4 PDF](https://www.sigilgovernance.com/The_Pre-Execution_Enforcement_Gap_-_Sigil_Open_Framework.pdf)
 
-**Version 1.4.** Reframed as a report on a deployed system. The summary now leads with the production deployment and states the February 2026 priority claim, and Related Academic Work is extended to cover the March-June 2026 convergent cluster in full. No technical claim in Sections 5-9 changed from v1.3.
-
-**Version 1.3 correction.** Sections 7 and 8 now distinguish a pre-tool authorization checkpoint from the final mutation boundary required by Policy 2.1. An approval or hold resolution does not itself prove execution. A Policy 2.1 destructive-resource claim requires a trusted, fail-closed adapter that owns the final mutation, validates structured execution metadata, and consumes a one-time execution grant.
-
 ## Summary
 
 AI governance standards now tell organizations how to define policy, allocate responsibility, assess risk, monitor behavior, and document outcomes. Agentic systems expose the remaining gap. Documentation can tell an agent what should happen. Evaluation can estimate what an agent might do. Monitoring can record what an agent did. Pre-execution enforcement controls what an agent can do. This paper names that gap the Pre-Execution Enforcement Gap and reports on the Sigil Open Framework (SOF), an execution-control layer built for it and running in production since February 2026.
