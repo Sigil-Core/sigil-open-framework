@@ -1,19 +1,23 @@
 ---
 title: "The Pre-Execution Enforcement Gap"
-description: "A position paper on pre-execution enforcement as the missing control family for agentic AI governance."
+description: "A deployed execution-control layer for agentic AI, and its mapping to ISO/IEC 42001 and NIST AI RMF."
 ---
 
-Vernon Wharff<br />
-Sigil Open Framework<br />
-July 2026 - v1.3
+Vernon Wharff<br /> Sigil Open Framework<br /> July 2026 - v1.4
 
-[Download the v1.3 PDF](https://www.sigilgovernance.com/The_Pre-Execution_Enforcement_Gap_-_Sigil_Open_Framework.pdf)
+[Download the v1.4 PDF](https://www.sigilgovernance.com/The_Pre-Execution_Enforcement_Gap_-_Sigil_Open_Framework.pdf)
+
+**Version 1.4.** Reframed as a report on a deployed system. The summary now leads with the production deployment and states the February 2026 priority claim, and Related Academic Work is extended to cover the March-June 2026 convergent cluster in full. No technical claim in Sections 5-9 changed from v1.3.
 
 **Version 1.3 correction.** Sections 7 and 8 now distinguish a pre-tool authorization checkpoint from the final mutation boundary required by Policy 2.1. An approval or hold resolution does not itself prove execution. A Policy 2.1 destructive-resource claim requires a trusted, fail-closed adapter that owns the final mutation, validates structured execution metadata, and consumes a one-time execution grant.
 
 ## Summary
 
-AI governance standards now tell organizations how to define policy, allocate responsibility, assess risk, monitor behavior, and document outcomes. Agentic systems expose the remaining gap. Documentation can tell an agent what should happen. Evaluation can estimate what an agent might do. Monitoring can record what an agent did. Pre-execution enforcement controls what an agent can do. This paper names that gap the Pre-Execution Enforcement Gap and argues that high-stakes agent actions should pass through deterministic policy evaluation before they reach tools, credentials, wallets, APIs, or infrastructure. The Sigil Open Framework (SOF) proposes an execution control layer for that gap, using signed Sigil Warrants, Intent Attestations, holds, denials, and audit evidence to bind human intent to machine action.
+AI governance standards now tell organizations how to define policy, allocate responsibility, assess risk, monitor behavior, and document outcomes. Agentic systems expose the remaining gap. Documentation can tell an agent what should happen. Evaluation can estimate what an agent might do. Monitoring can record what an agent did. Pre-execution enforcement controls what an agent can do. This paper names that gap the Pre-Execution Enforcement Gap and reports on the Sigil Open Framework (SOF), an execution-control layer built for it and running in production since February 2026.
+
+SOF interposes a deterministic authorization boundary between an agent's proposed action and the tool, credential, wallet, API, or infrastructure endpoint that would execute it. Policy is expressed in an operator-signed Sigil Warrant. Decisions are bound to that policy by hash and carried in Ed25519 Intent Attestations. Outcomes are ALLOWED, DENIED, or PENDING for human approval, and every decision emits a hash-chained evidence record. This paper contributes four things. It names and defines the gap. It describes the deployed architecture and its decision semantics. It walks a worked end-to-end trace through a production agent runtime. And it maps SOF to ISO/IEC 42001:2023 Annex A and NIST AI RMF 1.0 at control level. It also states the framework's coverage limits and failure modes explicitly, including what the worked example does not prove.
+
+**Deployment and priority.** SOF entered production use in late February 2026. Between March and June 2026 a cluster of independent preprints converged on the same architectural primitive under different names, including pre-action authorization, right-to-act, certificate-bound execution authority, invocation-bound capability tokens, and institutional attestation. This paper documents a system that predates that literature and reads it as convergent validation rather than precedent. The Related Academic Work section maps SOF against each of those proposals directly.
 
 ## The Pre-Execution Enforcement Gap
 
@@ -47,9 +51,9 @@ That is the key observation. Berkeley's GPAI Profile v1.2 and Agentic AI Profile
 
 ## Related Academic Work
 
-A small academic literature has begun forming around the same architectural primitive that SOF instantiates. Nine preprints posted between February and May 2026 propose runtime authorization, policy-on-path governance, non-compensatory pre-action boundaries, capability tokens, task-scoped envelopes, dependency-graph enforcement, and authorization propagation for AI agents. SOF shipped to production in late February 2026 and predates them all. Their formal vocabulary is nonetheless useful for grounding the SOF position in academic terms.
+An academic literature has formed around the same architectural primitive that SOF instantiates. Preprints posted between February and June 2026 propose runtime authorization, policy-on-path governance, non-compensatory pre-action boundaries, capability tokens, task-scoped envelopes, dependency-graph enforcement, certificate-bound execution authority, receiver-attested action receipts, institutional attestation, and authorization propagation for AI agents. SOF entered production use in late February 2026 and predates them all. That sequencing is a matter of record rather than a priority dispute. Several of these proposals were developed concurrently and independently, and the convergence of unrelated groups on the same boundary is stronger evidence that the boundary is real than any single specification would be. Their formal vocabulary is useful for grounding the SOF architecture in academic terms, and the mappings below are offered in that spirit.
 
-Uchibeke (2026) characterizes the pre-action authorization problem and proposes Open Agent Passport (OAP), an open specification with reference implementation that intercepts tool calls synchronously, evaluates them against declarative policy, and produces a cryptographically signed audit record. The architecture described converges with what Sigil Sign + signed `warranty.md` + Ed25519 Intent Attestation already implements. SOF and OAP are best understood as parallel contemporaneous specifications converging on the same primitive, rather than one preceding the other in dependency.
+Uchibeke (2026) characterizes the pre-action authorization problem and proposes Open Agent Passport (OAP), an open specification with reference implementation that intercepts tool calls synchronously, evaluates them against declarative policy, and produces a cryptographically signed audit record. The architecture described converges with what Sigil Sign \+ signed `warranty.md` \+ Ed25519 Intent Attestation already implements. SOF and OAP are best understood as parallel contemporaneous specifications converging on the same primitive, rather than one preceding the other in dependency.
 
 Kaptein, Khan, and Podstavnychy (2026) provide a formal framework treating execution paths as the central object of governance. Their policy function maps agent identity, partial path, proposed next action, and shared organizational state to a violation probability. They argue that prompt-level control is not a case of this framework, and that static access control is a degenerate special case ignoring the path. The authors explicitly state that their paper does not present an implementation. SOF is the implementation: `warranty.md` rules instantiate the deterministic policy function, Sigil Sign acts as the Policy Engine, the per-task evidence chain serves as the governance state vector, and operator-level approval thresholds expose the fleet-level risk budget.
 
@@ -57,9 +61,17 @@ Lavi (2026) distinguishes pre-action legitimacy from pre-action authorization an
 
 Tallam (2026) approaches the same domain from the synthesis side rather than proposing a new specification. The paper surveys the convergence of recent runtime authorization work — including invocation-bound capability tokens, execution-count revocation, task-scoped envelopes, dependency-graph enforcement, and post-quantum delegation chains — and distills seven structural requirements (R1–R7) for authorization architectures in multi-agent AI systems: agent principals as first-class subjects, explicit bounded delegation, boundary-level evaluation, aggregation-policy expressibility, workflow-scoped self-contained traces, temporal validity as policy decision, and recovery traceable through the synthesis graph. SOF satisfies R1, R2, R3, R5, and R6 directly through its signed warrant, Intent Attestations, PreToolUse gateway, per-session evidence chain, and configurable attestation expiry. R4 (aggregation) and R7 (recovery) are partial — SOF's deny-rules and evidence chain support these requirements but do not formally guarantee them across multi-agent synthesis graphs. SOF and Tallam's framework approach the same domain from opposite directions: SOF as deployed specification, the R1–R7 framework as synthesis vocabulary that names what SOF was already enforcing.
 
-Several other 2026 preprints address adjacent mechanisms within the same architectural domain. Prakash (2026) specifies Invocation-Bound Capability Tokens that fuse identity, attenuated authorization, and provenance binding into an append-only token chain — functionally adjacent to SOF's Intent Attestation chain. Parakhin (2026) provides formal proof that TTL-based token revocation fails at agent execution speeds and proposes execution-count-based Release Consistency, an approach SOF could adopt for attestation invalidation. Sharma et al. (2026) propose task-scoped authorization envelopes derived from natural-language task descriptions; the envelope concept is architecturally adjacent to SOF's per-session evidence chain. Palumbo et al. (2026) propose a dependency-graph reference monitor for policy enforcement across agent state, providing a complementary mechanism for the aggregation requirements SOF's deny-rules only partially address. Chen (2026) provides a post-quantum continuous delegation protocol with formally verified revocation, relevant to SOF's hybrid Ed25519 + ML-DSA-65 attestation signatures, now shipped in the reference signer.
+Several other 2026 preprints address adjacent mechanisms within the same architectural domain. Prakash (2026) specifies Invocation-Bound Capability Tokens that fuse identity, attenuated authorization, and provenance binding into an append-only token chain — functionally adjacent to SOF's Intent Attestation chain. Parakhin (2026) provides formal proof that TTL-based token revocation fails at agent execution speeds and proposes execution-count-based Release Consistency, an approach SOF could adopt for attestation invalidation. Sharma et al. (2026) propose task-scoped authorization envelopes derived from natural-language task descriptions; the envelope concept is architecturally adjacent to SOF's per-session evidence chain. Palumbo et al. (2026) propose a dependency-graph reference monitor for policy enforcement across agent state, providing a complementary mechanism for the aggregation requirements SOF's deny-rules only partially address. Chen (2026) provides a post-quantum continuous delegation protocol with formally verified revocation, relevant to SOF's hybrid Ed25519 \+ ML-DSA-65 attestation signatures, now shipped in the reference signer.
 
-These papers add academic vocabulary to a category SOF has already shipped. They do not change the SOF claim. They sharpen the language available to describe it.
+He and Yu (2026) propose the Sovereign Execution Broker (SEB), a runtime enforcement boundary that consumes certificates issued by a separate assurance layer, verifies that a requested mutation matches its certified execution contract, checks validity windows, policy epochs, revocation epochs, and live-state drift, then mints a scoped execution identity and records signed decision and outcome records. SEB's central premise, that production mutation authority must not reside inside a non-deterministic reasoning process, is the SOF premise stated in infrastructure terms. The architectural difference is decomposition. SEB splits certification at the assurance boundary from enforcement at the broker, where SOF combines policy evaluation and enforcement at the PreToolUse gateway and treats the signed warrant as the certificate. SEB's explicit modelling of policy epochs and revocation epochs is more developed than SOF's current attestation-expiry approach and is a candidate for adoption.
+
+Figuera (2026) proposes receiver-attested confidential receipts for agent actions, where the receiving system rather than the acting agent attests that an action occurred. This inverts the trust direction of SOF's evidence chain, which is generated at the enforcement point. The two are complementary rather than competing. A receiver attestation and an enforcement-point attestation bound to the same action produce independent corroboration, which is materially stronger than either alone. This bears directly on SOF's Policy 2.1 destructive-resource claim, where the v1.3 correction already established that an approval does not itself prove execution.
+
+Salfeld-Nebgen (2026) argues for governing actions rather than agents, using institutional attestation as the governance unit. That framing is the closest published statement of the position this paper takes in the Fiduciary Agent Framework section. Identity-centric governance fails when agents are ephemeral, delegated, and composed, so the durable governable object is the action and its authorization, not the actor.
+
+Read together, these proposals describe one boundary from several directions, a deterministic checkpoint sited between intent and effect that emits independently verifiable evidence. The naming has not settled. The architecture has.
+
+These papers add academic vocabulary to a category SOF has already shipped. They do not change the SOF claim. They sharpen the language available to describe it, and in the cases of SEB's epoch model and Figuera's receiver attestation they identify concrete extensions worth adopting.
 
 ## The Sigil Open Framework Position
 
@@ -84,7 +96,7 @@ FINRA's 2026 Annual Regulatory Oversight Report, published December 9, 2025, tre
 The SOF to ISO/IEC 42001 mapping is strongest where Annex A asks for proof that policy reached operation. The table below does not claim that SOF satisfies the whole AIMS. It identifies controls where SOF can serve as a primary evidence surface for the pre-execution enforcement portion of the control.
 
 | Control | ISO/IEC 42001 control surface | SOF primitive | Evidence surface |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `A.2.2` AI policy | AI policy documented for development or use of AI systems | Sigil Warrant and signed `warranty.md` | Operator-defined execution policy, Ed25519 signature, `policyHash` in attestations |
 | `A.4.4` Tooling resources | Tooling resources documented for the AI system | Agent Hooks and framework registry | Supported framework identifier, governed action class, tool-call policy block |
 | `A.6.2.5` AI system deployment | Deployment plan and requirements before deployment | OEE authorization path and gateway checks | Signed policy, verification key, `/v1/authorize`, write rejection without valid proof |
@@ -96,7 +108,7 @@ The SOF to ISO/IEC 42001 mapping is strongest where Annex A asks for proof that 
 Partial mappings matter too. ISO/IEC 42001 contains controls that SOF can support without satisfying completely. A defensible statement of applicability should include these with scope language, so the organization does not over-claim.
 
 | Control | What SOF supports | What remains outside SOF |
-|---|---|---|
+| --- | --- | --- |
 | `A.2.3` Policy alignment | Execution rules can encode security, privacy, finance, and acceptable-use requirements | The policy crosswalk, approval process, and ownership model |
 | `A.2.4` AI policy review | Policy versions and `policyHash` changes show when new rules entered operation | Review cadence, management approval, and suitability analysis |
 | `A.3.2` Roles and responsibilities | Operator signature, tenant scope, hold resolver, Vault trust anchors | Role definitions, competence records, staffing, governance authority |
@@ -117,7 +129,7 @@ The mapping has limits. Sigil does not perform impact assessments. It does not j
 NIST AI RMF 1.0 is voluntary and flexible. It does not prescribe a single implementation architecture. SOF maps to a subset of NIST subcategories where runtime enforcement can produce direct evidence.
 
 | NIST subcategory | NIST control surface | SOF primitive | Evidence surface |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `Govern 1.3` | Processes determine needed risk-management activity based on risk tolerance | Sigil Warrant | Signed thresholds, allowlists, blocklists, approval gates |
 | `Govern 1.4` | Risk-management process and outcomes established through policies and controls | Warrant plus Command | Signed policy tied to approval, denial, and hold records |
 | `Map 3.5` | Human oversight processes defined, assessed, and documented | Approval thresholds and consensus holds | Hold creation, resolver action, outcome, timestamp, matched rule |
@@ -129,7 +141,7 @@ These primary NIST mappings apply to governed action paths. They do not by thems
 SOF also supports several NIST subcategories partially.
 
 | NIST subcategory | What SOF supports | What remains outside SOF |
-|---|---|---|
+| --- | --- | --- |
 | `Govern 2.1` | Operator key, tenant scope, hold resolver, framework identity | Role descriptions, training, competence, communication lines |
 | `Govern 5.1` | Verifiable decisions that outside evaluators can inspect | Feedback intake, prioritization, stakeholder engagement |
 | `Map 1.1` | Intended use expressed as enforceable action scope | Context analysis, laws, norms, user expectations |
@@ -292,7 +304,7 @@ The denial is not merely a missing execution. It is a positive evidence event. T
 The example answers the questions an auditor or compliance lead will ask.
 
 | Audit question | Evidence produced |
-|---|---|
+| --- | --- |
 | Was there a governing policy? | Yes. `warrant-prod-coding-agent-2026-04-26` existed as a signed Sigil Warrant. |
 | Was the policy authorized at the time of decision? | Yes. The signature and policy hash bind the decision to the warrant version. |
 | What did the agent try to do? | The declared intent records `tool_calls.bash` with `rm -rf ./build`. |
@@ -431,30 +443,33 @@ That is the missing control family for agentic AI governance.
 
 ## References
 
-- Berkeley Center for Long-Term Cybersecurity. Agentic AI Risk-Management Standards Profile. https://cltc.berkeley.edu/publication/agentic-ai-risk-management-standards-profile
-- Berkeley Center for Long-Term Cybersecurity. General-Purpose AI Risk-Management Standards Profile v1.2. https://cltc.berkeley.edu/publication/ai-risk-management-standards-profile-v1-2/
-- Berkeley Center for Long-Term Cybersecurity. AI Risk-Management Standards Profile for General-Purpose AI and Foundation Models v1.2. https://cltc.berkeley.edu/publication/ai-risk-management-standards-profile-v1-2/
-- Chen, Z. AITH: Post-Quantum Continuous Delegation for AI Agents. arXiv:2604.07695, 2026. https://arxiv.org/abs/2604.07695
-- European Commission. AI Act overview. https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai
-- International Organization for Standardization. ISO/IEC 42001:2023. https://www.iso.org/standard/42001
-- Kaptein, M., V.-J. Khan, and A. Podstavnychy. Runtime Governance for AI Agents: Policies on Paths. arXiv:2603.16586, 2026. https://arxiv.org/abs/2603.16586
-- Lavi, G. The Pre-Action Legitimacy Gap in AI Systems: A Deterministic, Non-Compensatory Decision Boundary for Execution. arXiv:2604.24153, 2026. https://arxiv.org/abs/2604.24153
-- National Institute of Standards and Technology. AI Risk Management Framework 1.0. https://www.nist.gov/news-events/events/2023/01/nist-ai-risk-management-framework-ai-rmf-10-launch
-- National Institute of Standards and Technology. Artificial Intelligence Risk Management Framework: Generative Artificial Intelligence Profile. https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence
-- Palumbo, A., S. Jha, et al. PCAS: Policy Compiler for Agentic Systems. arXiv:2602.16708, 2026. https://arxiv.org/abs/2602.16708
-- Parakhin, V. The Bureaucracy of Speed: Capability Coherence Systems for Agent Authorization. arXiv:2603.09875, 2026. https://arxiv.org/abs/2603.09875
-- Prakash, S. AIP: Invocation-Bound Capability Tokens with Biscuit and Datalog. arXiv:2603.24775, 2026. https://arxiv.org/abs/2603.24775
-- Sigil Open Framework documentation index. https://docs.sigilcore.com/llms.txt
-- Sigil Open Framework Agent Hooks. https://docs.sigilcore.com/agent-hooks/overview.md
-- Sigil Open Framework Agent Hooks repository. https://github.com/Sigil-Core/agent-hooks
-- Sigil Open Framework Fiduciary Agent Framework. https://docs.sigilcore.com/components/fiduciary-agent-framework.md
-- Sigil Open Framework Fiduciary Agent Framework repository. https://github.com/Sigil-Core/faf/blob/main/README.md
-- Sigil Open Framework Open Execution Engine. https://docs.sigilcore.com/components/open-execution-engine.md
-- Sigil Open Framework Open Execution Engine repository. https://github.com/Sigil-Core/oee/blob/main/README.md
-- Sigil Open Framework Open Execution Engine vertical contribution guide. https://github.com/Sigil-Core/oee/blob/main/CONTRIBUTING.md
-- Sigil Open Framework Sigil Command. https://docs.sigilcore.com/components/sigil-command.md
-- Sigil Open Framework Sigil Vault. https://docs.sigilcore.com/components/sigil-vault.md
-- Sigil Open Framework Sigil Warrant and warranty.md. https://docs.sigilcore.com/developer-toolkit/warranty-policy.md
-- Sharma, A., R. Jiang, Z. Lin, and L. Chen. PAuth: Precise Task-Scoped Authorization for AI Agents. arXiv:2603.17170, 2026. https://arxiv.org/abs/2603.17170
-- Tallam, K. Authorization Propagation in Multi-Agent AI Systems: Identity Governance as Infrastructure. arXiv:2605.05440, 2026. https://arxiv.org/abs/2605.05440
-- Uchibeke, U. Before the Tool Call: Deterministic Pre-Action Authorization for Autonomous AI Agents. arXiv:2603.20953, 2026. https://arxiv.org/abs/2603.20953
+- Berkeley Center for Long-Term Cybersecurity. Agentic AI Risk-Management Standards Profile. [https://cltc.berkeley.edu/publication/agentic-ai-risk-management-standards-profile](https://cltc.berkeley.edu/publication/agentic-ai-risk-management-standards-profile)
+- Berkeley Center for Long-Term Cybersecurity. General-Purpose AI Risk-Management Standards Profile v1.2. [https://cltc.berkeley.edu/publication/ai-risk-management-standards-profile-v1-2/](https://cltc.berkeley.edu/publication/ai-risk-management-standards-profile-v1-2/)
+- Berkeley Center for Long-Term Cybersecurity. AI Risk-Management Standards Profile for General-Purpose AI and Foundation Models v1.2. [https://cltc.berkeley.edu/publication/ai-risk-management-standards-profile-v1-2/](https://cltc.berkeley.edu/publication/ai-risk-management-standards-profile-v1-2/)
+- Chen, Z. AITH: Post-Quantum Continuous Delegation for AI Agents. arXiv:2604.07695, 2026. [https://arxiv.org/abs/2604.07695](https://arxiv.org/abs/2604.07695)
+- Figuera, J. Notarized Agents: Receiver-Attested Confidential Receipts for AI Agent Actions. arXiv:2606.04193, 2026. [https://arxiv.org/abs/2606.04193](https://arxiv.org/abs/2606.04193)
+- He, J. and D. Yu. Sovereign Execution Brokers: Enforcing Certificate-Bound Authority in Agentic Control Planes. arXiv:2606.20520, 2026. [https://arxiv.org/abs/2606.20520](https://arxiv.org/abs/2606.20520)
+- European Commission. AI Act overview. [https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai](https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai)
+- International Organization for Standardization. ISO/IEC 42001:2023. [https://www.iso.org/standard/42001](https://www.iso.org/standard/42001)
+- Kaptein, M., V.-J. Khan, and A. Podstavnychy. Runtime Governance for AI Agents: Policies on Paths. arXiv:2603.16586, 2026. [https://arxiv.org/abs/2603.16586](https://arxiv.org/abs/2603.16586)
+- Lavi, G. The Pre-Action Legitimacy Gap in AI Systems: A Deterministic, Non-Compensatory Decision Boundary for Execution. arXiv:2604.24153, 2026. [https://arxiv.org/abs/2604.24153](https://arxiv.org/abs/2604.24153)
+- National Institute of Standards and Technology. AI Risk Management Framework 1.0. [https://www.nist.gov/news-events/events/2023/01/nist-ai-risk-management-framework-ai-rmf-10-launch](https://www.nist.gov/news-events/events/2023/01/nist-ai-risk-management-framework-ai-rmf-10-launch)
+- National Institute of Standards and Technology. Artificial Intelligence Risk Management Framework: Generative Artificial Intelligence Profile. [https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence](https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence)
+- Palumbo, A., S. Jha, et al. PCAS: Policy Compiler for Agentic Systems. arXiv:2602.16708, 2026. [https://arxiv.org/abs/2602.16708](https://arxiv.org/abs/2602.16708)
+- Parakhin, V. The Bureaucracy of Speed: Capability Coherence Systems for Agent Authorization. arXiv:2603.09875, 2026. [https://arxiv.org/abs/2603.09875](https://arxiv.org/abs/2603.09875)
+- Prakash, S. AIP: Invocation-Bound Capability Tokens with Biscuit and Datalog. arXiv:2603.24775, 2026. [https://arxiv.org/abs/2603.24775](https://arxiv.org/abs/2603.24775)
+- Salfeld-Nebgen, J. Governing Actions, Not Agents: Institutional Attestation as a Governance Model for Autonomous AI Systems. arXiv:2606.26298, 2026. [https://arxiv.org/abs/2606.26298](https://arxiv.org/abs/2606.26298)
+- Sigil Open Framework documentation index. [https://docs.sigilcore.com/llms.txt](https://docs.sigilcore.com/llms.txt)
+- Sigil Open Framework Agent Hooks. [https://docs.sigilcore.com/agent-hooks/overview.md](https://docs.sigilcore.com/agent-hooks/overview.md)
+- Sigil Open Framework Agent Hooks repository. [https://github.com/Sigil-Core/agent-hooks](https://github.com/Sigil-Core/agent-hooks)
+- Sigil Open Framework Fiduciary Agent Framework. [https://docs.sigilcore.com/components/fiduciary-agent-framework.md](https://docs.sigilcore.com/components/fiduciary-agent-framework.md)
+- Sigil Open Framework Fiduciary Agent Framework repository. [https://github.com/Sigil-Core/faf/blob/main/README.md](https://github.com/Sigil-Core/faf/blob/main/README.md)
+- Sigil Open Framework Open Execution Engine. [https://docs.sigilcore.com/components/open-execution-engine.md](https://docs.sigilcore.com/components/open-execution-engine.md)
+- Sigil Open Framework Open Execution Engine repository. [https://github.com/Sigil-Core/oee/blob/main/README.md](https://github.com/Sigil-Core/oee/blob/main/README.md)
+- Sigil Open Framework Open Execution Engine vertical contribution guide. [https://github.com/Sigil-Core/oee/blob/main/CONTRIBUTING.md](https://github.com/Sigil-Core/oee/blob/main/CONTRIBUTING.md)
+- Sigil Open Framework Sigil Command. [https://docs.sigilcore.com/components/sigil-command.md](https://docs.sigilcore.com/components/sigil-command.md)
+- Sigil Open Framework Sigil Vault. [https://docs.sigilcore.com/components/sigil-vault.md](https://docs.sigilcore.com/components/sigil-vault.md)
+- Sigil Open Framework Sigil Warrant and warranty.md. [https://docs.sigilcore.com/developer-toolkit/warranty-policy.md](https://docs.sigilcore.com/developer-toolkit/warranty-policy.md)
+- Sharma, A., R. Jiang, Z. Lin, and L. Chen. PAuth: Precise Task-Scoped Authorization for AI Agents. arXiv:2603.17170, 2026. [https://arxiv.org/abs/2603.17170](https://arxiv.org/abs/2603.17170)
+- Tallam, K. Authorization Propagation in Multi-Agent AI Systems: Identity Governance as Infrastructure. arXiv:2605.05440, 2026. [https://arxiv.org/abs/2605.05440](https://arxiv.org/abs/2605.05440)
+- Uchibeke, U. Before the Tool Call: Deterministic Pre-Action Authorization for Autonomous AI Agents. arXiv:2603.20953, 2026. [https://arxiv.org/abs/2603.20953](https://arxiv.org/abs/2603.20953)
