@@ -15,6 +15,18 @@ If standard agentic frameworks are the accelerator pedal, SOF is the cryptograph
 
 ---
 
+## Evidence a third party can check
+
+The central question is not whether an agent seems safe. It is whether an outside reviewer can determine who authorized a specific action, under which policy, before the action ran.
+
+SOF binds the signed policy, declared intent, decision, approval outcome where required, and execution check into evidence a verifier can inspect. A reviewer does not need a commercial relationship with the deployment to examine the artifacts. The reviewer still makes an independent trust decision about the policy owner and issuer. Verification proves what the signed evidence says. It does not make the action correct or make a signer trustworthy.
+
+The reference signer publishes a JSON Web Key Set (JWKS) for its JWT Intent Attestations. That is the correct discovery format for JWK-formatted JWT verification keys. Other signature systems can use different discovery formats. For example, a deployment using [RFC 9421 HTTP Message Signatures](https://www.rfc-editor.org/rfc/rfc9421.html) can expose an HTTP Message Signatures directory with `keyid`, `alg`, and hexadecimal `public_key` values. That directory is not a JWKS.
+
+[Pipelock documents](https://github.com/luckyPipewrench/pipelock/blob/4aa4867b53211cc36c6d4ffc28a52c9eabce39d2/docs/guides/federation.md#well-known-directory) an operator-hosted directory at `/.well-known/http-message-signatures-directory` for its HTTP Message Signatures verification keys. That can be a stronger trust posture than a vendor-hosted JWKS because it removes the vendor from the verification path. SOF does not claim that its JWKS is categorically more trustworthy. Its defensible distinction is that a third party can discover the verification material and evaluate the evidence without a relationship to the deployment.
+
+---
+
 ## The Doctrine of Structural Trust
 
 > Safety is not a property of prompts. Safety is a property of architecture.
