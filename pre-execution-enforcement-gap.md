@@ -7,6 +7,8 @@ Vernon Wharff<br /> Sigil Open Framework<br /> July 2026 - v1.4
 
 [Download the v1.4 PDF](https://www.sigilgovernance.com/The_Pre-Execution_Enforcement_Gap_-_Sigil_Open_Framework.pdf)
 
+Cite as: Wharff, V. _The Pre-Execution Enforcement Gap: A Deployed Execution-Control Layer for Agentic AI._ Zenodo, 2026. [https://doi.org/10.5281/zenodo.21657496](https://doi.org/10.5281/zenodo.21657496)
+
 ## Summary
 
 AI governance standards now tell organizations how to define policy, allocate responsibility, assess risk, monitor behavior, and document outcomes. Agentic systems expose the remaining gap. Documentation can tell an agent what should happen. Evaluation can estimate what an agent might do. Monitoring can record what an agent did. Pre-execution enforcement controls what an agent can do. This paper names that gap the Pre-Execution Enforcement Gap and reports on the Sigil Open Framework (SOF), an execution-control layer built for it and running in production since February 2026.
