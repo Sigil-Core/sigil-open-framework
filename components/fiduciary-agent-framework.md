@@ -3,6 +3,10 @@ title: "Fiduciary Agent Framework (FAF)"
 description: "The legal-technical bridge for autonomous liability."
 ---
 
+<Note>
+  **Who this is for:** You've deployed — or your client has deployed — an AI agent that can move money, sign transactions, or commit an organization. When that agent acts, no court will hold _it_ responsible. A human will be: the founder, GP, or officer who turned it on. FAF is the legal wrapper that bounds that liability; the enforcement mechanics that make the wrapper binding live in [OEE](/components/open-execution-engine). The rest of this page explains how the two connect.
+</Note>
+
 AI agents are not legal entities. They cannot sign term sheets, act as fiduciaries, or be held liable in a court of law. Handing an AI execution authority over a treasury without a legal wrapper is an unquantifiable liability for human operators.
 
 The **Fiduciary Agent Framework (FAF)** is the legal governance layer of the Sigil Open Framework — the counterpart to OEE's technical enforcement.
