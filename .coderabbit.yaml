@@ -12,6 +12,30 @@ reviews:
     enabled: false
 
   path_instructions:
+    # Review finding rejected 2026-07-29 (raised HIGH on sigil-vault and sigil-command).
+    # The reviewer claimed `update-types: ["version-update:semver-major"]` under
+    # `ignore` filters version updates only, so a scoped ignore cannot suppress a
+    # security fix. GitHub's own documentation says the opposite. "Controlling
+    # dependencies updated by Dependabot" states that `ignore` -- explicitly including
+    # "types of updates" -- applies when Dependabot "opens pull requests for version
+    # updates and security updates", and the Dependabot options reference marks
+    # `ignore` as one of the options that "also change how Dependabot creates pull
+    # requests for security updates". The opposite caveat ("update-types only affects
+    # version updates, not security updates") is written against `allow`, and is
+    # deliberately absent from `ignore`. The guidance below therefore stands as written.
+    - path: ".github/dependabot.yml"
+      instructions: |
+        Do NOT suggest restricting npm entries to `dependency-type: production`,
+        and do NOT suggest removing dev-dependency groups. Build tooling is where
+        this fleet's advisories actually live (typescript-eslint, tailwindcss,
+        lovable-tagger). sigil-sign carries the production-only pattern and
+        accumulated 6 open alerts behind it. It is a counter-example, not a
+        template to copy.
+        Do NOT suggest a blanket `ignore: "*"` with `version-update:semver-major`.
+        Dependabot applies ignore conditions to SECURITY updates as well as
+        version updates, so that rule silently suppresses the fix PR whenever the
+        only remedy is a major bump. Verified 2026-07-29 against the open
+        react-router advisory (fixed only in 7.x against a declared ^6.30.x).
     - path: "architecture.md"
       instructions: |
         Canonical public architecture document for the Sigil Open Framework.
@@ -47,3 +71,29 @@ reviews:
   path_filters:
     - "!.claude/**"
     - "!demo/**"
+
+# Sigil house rules live in agents-global.md, which is generated from a canonical
+# source maintained outside this repository and is intended to be byte-identical
+# wherever it is committed; edit the canonical source, never a repo copy.
+# CodeRabbit's default code-guidelines discovery does not include that filename
+# (it looks for AGENTS.md, CLAUDE.md, .cursorrules and similar), and CLAUDE.md is
+# gitignored fleet-wide, so without this block CodeRabbit reviews Sigil code with
+# no house-rules context at all. The pattern below is a no-op in any repository
+# where agents-global.md is not yet committed, and begins supplying context the
+# moment it is. Added 2026-07-29.
+#
+# Review finding rejected 2026-07-29: a reviewer asked that filePatterns be made
+# non-exclusive, or that the built-in defaults be excluded so that only
+# agents-global.md loads. Neither is needed nor possible. filePatterns is ADDITIVE:
+# CodeRabbit always scans its documented default set (**/.cursorrules,
+# .github/copilot-instructions.md, **/CLAUDE.md, **/GEMINI.md, **/.cursor/rules/*,
+# **/.windsurfrules, **/.clinerules/*, **/.rules/*, **/AGENT.md, **/AGENTS.md,
+# **/REVIEW.md) in addition to whatever is listed here, and the configuration schema
+# exposes no key to exclude or override that set. Additive is also the behaviour we
+# want, since agents-global.md is meant to supplement the defaults, not replace them.
+# Source: docs.coderabbit.ai/reference/configuration, knowledge_base.code_guidelines.
+knowledge_base:
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - "**/agents-global.md"
