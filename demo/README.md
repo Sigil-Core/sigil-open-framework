@@ -2,7 +2,7 @@
 
 1. Get an API key at [sigilcore.com/tools/keys](https://sigilcore.com/tools/keys)
 2. Deploy the included `warranty.md` via [Sigil Warrant](https://sigilcore.com/tools/warrant) (or use an existing policy with equivalent rules)
-3. `cd demo && npm install`
+3. `cd demo && npm ci` using Node 22.22.0 and npm 11.12.1
 4. `SIGIL_API_KEY=sk_sigil_... npm run demo`
 5. Watch six agent actions exercise token caps, recipient bounds, job-type allowlisting, and an MCP approval boundary.
 
@@ -24,6 +24,8 @@ The demo sends five `POST /v1/authorize` requests to the live Sigil Sign API:
 - Nothing is mocked. All requests hit `https://sign.sigilcore.com/v1/authorize`.
 - The `warranty.md` in this directory is a format 2.0 reference showing the policy your API key must be associated with. Sign and deploy it via Sigil Warrant before running.
 - Requires Node.js >= 20 (native `fetch`).
+- `package-lock.json` is the authoritative demo inventory. Run `npm ci` rather
+  than `npm install` for a reproducible dependency tree.
 - `framework` is set to `"demo"` - a custom testing framework identifier. Custom identifiers are accepted by the [Framework Registry](../framework-registry.md) validation rules.
 
 ### Integration gap flag

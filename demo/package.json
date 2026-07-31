@@ -2,10 +2,17 @@
   "name": "@sigilcore/demo",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "npm@11.12.1",
+  "engines": {
+    "node": ">=20.19.0",
+    "npm": ">=11.12.1 <12"
+  },
   "scripts": {
-    "demo": "tsx demo.ts"
+    "demo": "tsx demo.ts",
+    "typecheck": "tsc --noEmit --target es2022 --module nodenext --moduleResolution nodenext demo.ts"
   },
   "devDependencies": {
+    "@types/node": "22.20.1",
     "tsx": "^4.0.0",
     "typescript": "^5.4.0"
   }

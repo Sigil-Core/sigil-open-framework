@@ -1,0 +1,77 @@
+name: Demo dependency audit
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  demo-dependency-audit:
+    name: Demo dependency audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: demo
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v4.0.4
+        with:
+          node-version: 22.22.0
+          cache: npm
+          cache-dependency-path: demo/package-lock.json
+      - name: Pin and assert the package-manager contract
+        run: |
+          npm install --global npm@11.12.1
+          test "$(node --version)" = v22.22.0
+          test "$(npm --version)" = 11.12.1
+          printf 'node=%s\nnpm=%s\nsha=%s\n' "$(node --version)" "$(npm --version)" "$GITHUB_SHA" > dependency-toolchain.txt
+      - name: Clean install
+        run: npm ci
+      - name: Capture and validate npm audits
+        run: |
+          set +e
+          npm audit --json > audit-full.json 2> audit-full.stderr
+          full_status=$?
+          npm audit --omit=dev --json > audit-production.json 2> audit-production.stderr
+          production_status=$?
+          set -e
+          FULL_STATUS="$full_status" PRODUCTION_STATUS="$production_status" node --input-type=module -e '
+            import fs from "node:fs";
+            for (const [file, status] of [["audit-full.json", Number(process.env.FULL_STATUS)], ["audit-production.json", Number(process.env.PRODUCTION_STATUS)]]) {
+              const text = fs.readFileSync(file, "utf8");
+              if (!text.trim()) throw new Error(`${file} is empty`);
+              const audit = JSON.parse(text);
+              const total = audit?.metadata?.vulnerabilities?.total;
+              if (!Number.isInteger(total)) throw new Error(`${file} has no numeric vulnerability total`);
+              if (total !== 0) throw new Error(`${file} reports ${total} vulnerabilities`);
+              if (status !== 0) throw new Error(`${file} exited ${status} despite zero findings`);
+            }
+          '
+      - name: Verify package signatures
+        run: npm audit signatures > audit-signatures.txt
+      - name: Verify lockfile determinism and typecheck
+        run: |
+          shasum -a 256 package-lock.json > package-lock.before.sha256
+          npm install --package-lock-only --ignore-scripts
+          git -C .. diff --exit-code -- demo/package-lock.json
+          shasum -a 256 package-lock.json > package-lock.after.sha256
+          diff -u package-lock.before.sha256 package-lock.after.sha256
+          npm run typecheck
+      - name: Retain dependency evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: demo-dependency-audit-${{ github.sha }}
+          path: |
+            demo/dependency-toolchain.txt
+            demo/audit-*.json
+            demo/audit-*.stderr
+            demo/audit-signatures.txt
+            demo/package-lock.*.sha256
+          if-no-files-found: warn
