@@ -76,7 +76,7 @@ The contract is the specification. Not any single engine. Not any single product
 
 ### Layer 1 — The Reference Enforcement Engine: Open Execution Engine (OEE)
 
-OEE is the reference implementation of the SOF enforcement specification. It implements every required primitive: policy evaluation via Sigil Lex, Intent Attestation issuance, consensus hold management, and gated RPC/bundler execution. It is the engine Sigil Core publishes and operates at sign.sigilcore.com.
+OEE is the reference implementation of the SOF enforcement specification. The specification defines policy evaluation via Sigil Lex, Intent Attestation issuance, consensus hold management, and gated RPC/bundler execution. It is the engine Sigil Core publishes and operates at sign.sigilcore.com. A deployment's conformance and evidence status must be verified separately.
 
 OEE is one valid SOF engine. It is not the only one. Alternative engines may conform to the specification and interoperate within the same governance stack — see [Implementing a Conforming Signer](#implementing-a-conforming-signer) below.
 
@@ -117,6 +117,8 @@ A signer that conforms to SOF MUST:
 3. **Issue Ed25519-signed JWTs** that conform to the Intent Attestation claim set, including chain binding, commit binding, and expiry semantics.
 4. **Publish a JWKS endpoint** at `/.well-known/jwks.json` so gated execution layers can verify issued attestations.
 5. **Reject non-conforming intents** with structured denial responses, not silent passthrough.
+
+If the signer claims Class 3 consensus support, it MUST also implement the hold-resolution requirements in [the Conformance Contract](conformance.md#xr-02----class-3-consensus-rules): tenant-scoped authenticated review; durable identity, decision, reason, time, and idempotency evidence; exact-intent-only approval; and fail-closed behavior for expiry, rejection, mismatch, authorization failure, conflict, or unavailable storage.
 
 ### What a Conforming Signer MAY Do
 
@@ -208,11 +210,11 @@ SOF does not claim to have originated this primitive. SOF's contribution is a sp
 
 ## Human-in-the-Loop Oversight
 
-SOF ensures that while execution is autonomous, oversight is absolute. Through integrations with **Sigil Command** (the web and mobile control plane), human operators retain:
+SOF can require human review for governed actions when a signer implements the Class 3 consensus workflow. Through an operator surface such as **Sigil Command**, human operators can retain:
 
-- **Real-time Execution Monitoring:** View intent proposals before they hit the chain.
-- **High-Value Approvals:** Require manual cryptographic countersignatures for specific thresholds.
-- **The Kill Switch:** An emergency pause that instantly revokes the agent's capability to generate valid attestations.
+- **Real-time Execution Monitoring:** View enforcement events for governed intents.
+- **High-Value Approvals:** For a Class 3-capable signer, review the exact held intent and record an approval or rejection under the conformance requirements.
+- **The Kill Switch:** An emergency pause that stops new attestations when the deployment implements it.
 
 Conforming signers MAY expose equivalent oversight surfaces on their own implementations.
 

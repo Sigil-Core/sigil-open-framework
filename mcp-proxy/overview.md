@@ -25,7 +25,7 @@ Sigil MCP Proxy (@sigilcore/mcp-proxy)
         ↓
 APPROVED → request forwarded to the real MCP server
 DENIED   → JSON-RPC error (-32001) returned to the client
-PENDING  → call held for human approval, then resolved or timed out
+PENDING  → call remains blocked; a Class 3-capable signer may resolve the exact held intent or it times out
 ```
 
 <Note>

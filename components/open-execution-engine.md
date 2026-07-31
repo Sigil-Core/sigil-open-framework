@@ -3,7 +3,7 @@ title: "Open Execution Engine (OEE)"
 description: "The reference implementation of the SOF enforcement specification."
 ---
 
-The **Open Execution Engine (OEE)** is the reference implementation of the [Sigil Open Framework's enforcement specification](/conformance). It implements every required primitive — policy evaluation via Sigil Lex, Intent Attestation issuance, consensus hold management, and gated RPC/bundler execution — and is the engine Sigil Core publishes and operates at `sign.sigilcore.com`.
+The **Open Execution Engine (OEE)** is the reference implementation of the [Sigil Open Framework's enforcement specification](/conformance). The specification defines policy evaluation via Sigil Lex, Intent Attestation issuance, consensus hold management, and gated RPC/bundler execution. OEE is the engine Sigil Core publishes and operates at `sign.sigilcore.com`; deployment-specific conformance evidence must be verified independently.
 
 OEE is one valid SOF signer. It is not the only valid one. The [Conformance Contract](/conformance) defines what any third-party signer — audit firm, custodian, enterprise security team — must implement to interoperate with the same governance stack. This page describes how OEE meets that contract.
 
@@ -32,9 +32,9 @@ No transaction may execute on-chain without passing this pipeline.
 | `## soft_limits` | Version-gated aggregate count and USD-sum caps | Informational under 1.x; `DENIED` on breach under 2.0 |
 | `## execution_limits` | Hard runaway-loop ceilings for tool calls | `DENIED` immediately |
 
-Class 1 (structural) rules in `## evm` are required for [Core Conformance](/conformance#core-conformance). Class 2 semantic and Class 3 consensus capabilities map to [Extended Conformance](/conformance#extended-conformance) — OEE implements both.
+Class 1 (structural) rules in `## evm` are required for [Core Conformance](/conformance#core-conformance). Class 2 semantic and Class 3 consensus capabilities map to [Extended Conformance](/conformance#extended-conformance). A deployment may claim Class 3 only after it satisfies the documented hold-resolution requirements and has verified the running behavior.
 
-Consensus holds (`PENDING`) are stored with a 24-hour TTL. Execution remains blocked until the hold is resolved through Sigil Command. This is the structural implementation of human-in-the-loop governance — not optional monitoring, but enforced at the cryptographic level.
+For a signer claiming Class 3 consensus support, consensus holds (`PENDING`) are stored with a 24-hour TTL and remain blocked until an authenticated, tenant-authorized operator records `APPROVE` or `REJECT`. The durable record MUST bind the original intent, triggering rule, policy hash, resolver identity, decision, resolution time, idempotency key or equivalent request identifier, and any reason the resolver supplies. Approval may issue one short-lived attestation only for the exact held intent after the record is durable. Rejection, expiry, mismatched intent, duplicate conflicting resolution, unauthorized access, and resolution-store failure MUST issue no attestation and fail closed.
 
 ## Verticals
 

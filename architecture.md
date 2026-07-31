@@ -176,7 +176,7 @@ No Sigil infrastructure required for verification. Any JWT library that supports
 
 Agent hooks are the client-side interception layer. Without hooks, OEE governs only EVM transactions routed through the gateway. With hooks, OEE can govern each action class that the installed hook intercepts and represents as a structured intent, including bash commands, file writes, HTTP requests, wallet signing, and email sends. The enforcement boundary remains the intercepted intent. For `bash`, that boundary is the command string before shell execution, not network egress initiated later by a child process.
 
-`@sigilcore/agent-hooks` and `agent-hooks-rs` intercept tool calls before they execute and route them through Sigil Sign for evaluation. Approved intents proceed; denied intents are blocked; held intents wait for operator review. For Sigil unreachability, TypeScript hooks support explicit `failMode: 'open' | 'closed'`, while the Rust crates default closed.
+`@sigilcore/agent-hooks` and `agent-hooks-rs` intercept tool calls before they execute and route them through Sigil Sign for evaluation. Approved intents proceed; denied intents are blocked; held intents remain blocked pending the Class 3 resolution protocol. For Sigil unreachability, TypeScript hooks support explicit `failMode: 'open' | 'closed'`, while the Rust crates default closed.
 
 <Card title="Agent Hooks" icon="plug" href="/agent-hooks/overview">
   Installation and integration reference for TypeScript and Rust agent runtimes.
@@ -186,9 +186,13 @@ Agent hooks are the client-side interception layer. Without hooks, OEE governs o
 
 ## Consensus Holds
 
-A consensus hold is a PENDING decision stored with a 24-hour TTL. It is triggered by configured approval gates such as EVM consensus thresholds or `email.require_approval`, not by `## soft_limits`. Under 1.x, soft limits remain informational. Under 2.0, an exceeded aggregate cap returns `DENIED`, never `PENDING`.
+A consensus hold is a `PENDING` decision stored with a 24-hour TTL. It is triggered by configured approval gates such as EVM consensus thresholds or `email.require_approval`, not by `## soft_limits`. Under 1.x, soft limits remain informational. Under 2.0, an exceeded aggregate cap returns `DENIED`, never `PENDING`.
 
-The hold is not optional monitoring. The agent cannot execute the held action until a human resolves the hold. Resolution options are APPROVE (issue attestation) or REJECT (deny permanently). If the hold expires without resolution, it auto-rejects.
+For a signer that claims Class 3 consensus support, hold resolution is a normative protocol requirement. The signer MUST retain the hold's tenant, intent binding, triggering policy rule, policy hash, creation time, and expiry; accept a resolution only from an authenticated actor authorized for that tenant; and persist resolver identity, decision, resolution time, idempotency key or equivalent request identifier, and any reason the resolver supplies. It MUST permit only `APPROVE` or `REJECT` while the hold remains active. A resolved or expired hold MUST NOT return to `PENDING`.
+
+An `APPROVE` resolution MUST bind to the exact held intent and issue at most one short-lived attestation after the approval is recorded. A `REJECT`, expired hold, unauthorized resolution attempt, mismatched intent, duplicate conflicting resolution, or unavailable resolution store MUST fail closed and issue no attestation. If the hold expires without resolution, it auto-rejects.
+
+The hold is not optional monitoring. The agent cannot execute the held action until an eligible human resolution completes under these conditions. Product deployment evidence is separate from this normative SOF requirement.
 
 This is the primary mechanism for human oversight in high-stakes autonomous deployments. The agent continues operating on all other actions — only the held action is gated.
 
