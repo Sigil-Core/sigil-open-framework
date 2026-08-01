@@ -138,6 +138,8 @@ For `PENDING` responses, the body **MUST** include:
 - `message`: human-readable explanation
 - `intent_attestation`: explicitly `null` unless and until the hold is resolved
 
+When a signer claims Class 3 consensus support, its `PENDING` response **MUST** also identify the durable hold and its expiry. The signer **MUST NOT** issue an attestation for that hold until the Class 3 resolution requirements in XR-02 complete.
+
 The signer **MUST NOT** return silently passed-through responses, empty bodies, or generic HTTP error codes for policy violations.
 
 ### CR-06 -- Versioning
@@ -171,9 +173,11 @@ The signer **MAY** implement Class 2 rule evaluation, including:
 
 ### XR-02 -- Class 3 Consensus Rules
 
-The signer **MAY** implement Class 3 consensus rule evaluation, including durable hold creation, multi-party countersignature, and human-in-loop gating per the consensus protocol defined in sigil-attestations.
+A signer **MAY** implement Class 3 consensus rule evaluation, including durable hold creation, multi-party countersignature, and human-in-the-loop gating. A signer that claims Class 3 **MUST** expose active hold state at a documented authenticated HTTP endpoint or equivalent operator surface and **MUST** honor the 24-hour TTL minimum on consensus holds.
 
-A signer that implements Class 3 **MUST** expose hold state at a documented HTTP endpoint and **MUST** honor the 24-hour TTL minimum on consensus holds.
+For each hold, the signer **MUST** durably retain the tenant scope, exact intent binding, triggering policy rule, policy hash, creation time, expiry, and current status. It **MUST** accept a resolution only from an authenticated actor authorized for the hold's tenant and **MUST** durably record resolver identity, `APPROVE` or `REJECT` decision, resolution time, an idempotency key or equivalent request identifier, and any reason the resolver supplies.
+
+The signer **MUST** allow resolution only while the hold is active. An `APPROVE` **MUST** apply only to the exact held intent and **MUST** issue at most one short-lived attestation after the approval record is durable. A `REJECT`, expired hold, unauthorized resolver, tenant mismatch, intent mismatch, duplicate conflicting resolution, or unavailable hold store **MUST** fail closed and issue no attestation. A modified action **MUST** be rejected and resubmitted as a new intent. A resolved or expired hold **MUST NOT** return to `PENDING`.
 
 ### XR-03 -- Capability Broker Integration
 

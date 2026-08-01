@@ -113,10 +113,10 @@ The protocol stack governs execution. These two components extend governance int
     icon="terminal"
     href="/components/sigil-command"
   >
-    **Operator console.** Read-only, real-time violation log for every policy
-    enforcement event on your API key. Magic link auth, included on every tier.
-    See what your firewall is doing, resolve consensus holds, and audit agent
-    behavior.
+    **Operator console.** Tenant-scoped, real-time enforcement visibility for
+    policy events on your API key. In a Class 3-capable deployment, authenticated
+    operators can review exact held intents under the SOF hold-resolution
+    requirements. Verify deployment availability separately.
   </Card>
   <Card
     title="Sigil Vault"
