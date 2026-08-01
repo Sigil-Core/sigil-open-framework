@@ -130,7 +130,7 @@ NIST AI RMF 1.0 is voluntary and flexible. It does not prescribe a single implem
 | --- | --- | --- | --- |
 | `Govern 1.3` | Processes determine needed risk-management activity based on risk tolerance | Sigil Warrant | Signed thresholds, allowlists, blocklists, approval gates |
 | `Govern 1.4` | Risk-management process and outcomes established through policies and controls | Warrant plus Command | Signed policy tied to approval, denial, and hold records |
-| `Map 3.5` | Human oversight processes defined, assessed, and documented | Approval thresholds and consensus holds | Hold creation, resolver action, outcome, timestamp, matched rule |
+| `Map 3.5` | Human oversight processes defined, assessed, and documented | Approval thresholds and consensus holds | Hold creation, matched rule, and blocked execution. Resolver action, outcome, and timestamp require a verified Class 3 deployment and apply only after its production effective date. |
 | `Manage 2.4` | Mechanisms supersede, disengage, or deactivate systems outside intended use | OEE denial, gateway rejection, Vault hard rejection | No attestation issued, write blocked, credential release refused |
 | `Manage 4.1` | Post-deployment monitoring, appeal, override, decommissioning, incident response, recovery, change management | Command and Vault audit records | Denial and hold history, credential-release events, audit-chain verification |
 
