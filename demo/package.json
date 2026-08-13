@@ -9,7 +9,7 @@
   },
   "scripts": {
     "demo": "tsx demo.ts",
-    "typecheck": "tsc --noEmit --target es2022 --module nodenext --moduleResolution nodenext demo.ts"
+    "typecheck": "tsc --noEmit --target es2022 --module nodenext --moduleResolution nodenext --types node demo.ts"
   },
   "devDependencies": {
     "@types/node": "26.2.0",
