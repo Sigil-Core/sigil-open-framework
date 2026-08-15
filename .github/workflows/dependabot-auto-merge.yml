@@ -1,0 +1,42 @@
+name: Dependabot auto-merge
+
+on: pull_request
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    name: Enable auto-merge on green Dependabot PRs
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+      # Major bumps are excluded on purpose: they wait for the nightly
+      # retrospective sweep, which verifies the deploy before merging.
+      #
+      # The merge runs on AUTOMERGE_PAT, not GITHUB_TOKEN: pushes made with
+      # GITHUB_TOKEN never trigger other workflows, so a self-merged PR would
+      # silently skip the push-to-main deploy and CI runs. The PAT lives in
+      # both the Actions and Dependabot secret stores (Dependabot-triggered
+      # runs resolve secrets from the Dependabot store). No GITHUB_TOKEN
+      # fallback on purpose: a missing PAT must fail loudly here rather than
+      # quietly restore the deploy-skipping merge path.
+      - name: Require AUTOMERGE_PAT
+        if: steps.metadata.outputs.update-type != 'version-update:semver-major'
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::AUTOMERGE_PAT is not set in this repo's Dependabot secrets; refusing to merge with GITHUB_TOKEN (its pushes skip deploy/CI triggers)."
+            exit 1
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.AUTOMERGE_PAT }}
+      - name: Enable auto-merge (patch and minor updates)
+        if: steps.metadata.outputs.update-type != 'version-update:semver-major'
+        run: gh pr merge --auto --squash "$PR_URL" || gh pr merge --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.AUTOMERGE_PAT }}
