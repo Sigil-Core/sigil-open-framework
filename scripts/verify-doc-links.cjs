@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const { existsSync, readFileSync, readdirSync, statSync } = require("node:fs");
-const { dirname, extname, join, normalize, relative, resolve, sep } = require("node:path");
+const { dirname, extname, join, relative, resolve, sep } = require("node:path");
 
 const repoRoot = dirname(__dirname);
 const failures = [];
