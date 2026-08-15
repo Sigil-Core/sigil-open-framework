@@ -1,0 +1,27 @@
+name: Policy docs gate
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  policy-docs-gate:
+    name: Policy docs gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v4.0.4
+        with:
+          node-version: 22.22.0
+      - name: Verify current policy documentation
+        run: |
+          node scripts/generate-current-policy-capabilities.cjs --check
+          node scripts/verify-current-policy-versions.cjs
+          node scripts/verify-doc-links.cjs

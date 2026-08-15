@@ -137,6 +137,21 @@ The proxy sets `@sigilcore/agent-hooks` `failMode: "closed"` explicitly. It
 handles the structured `SIGIL_UNREACHABLE` and `failOpen` result fields, so an
 English response message cannot turn an outage into an accidental approval.
 
+## Policy 2.2 result inspection
+
+An inspection-enabled proxy can enforce Policy 2.2 after an exact covered
+`tools/call` completes and before its result reaches the client. Coverage comes
+only from exact `response.web_fetch_tools` and `response.http_tools` mappings
+under `## mcp`. The deterministic local ruleset returns `ALLOW` or `BLOCK`;
+blocked disclosure carries no result content.
+
+This does not inspect `## tool_calls`, built-in client features, MCP resources,
+prompts, subscriptions, or unknown methods. An inspection profile refuses
+those MCP methods, and cannot be combined with `--unsafe-bypass`. Release 1
+does not redact, call a scanner, or provide observe mode. See
+[Policy 2.2 response inspection](/developer-toolkit/policy-2-2) for the exact
+grammar and failure modes.
+
 ## HTTP/SSE Transport
 
 Proxy a remote MCP server with `--remote`:
