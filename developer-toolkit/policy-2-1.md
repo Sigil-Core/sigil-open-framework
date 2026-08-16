@@ -45,7 +45,7 @@ The reference provider taxonomy covers `generic`, `github`, `gitlab`, and `bitbu
 
 Manual Form and Warrant Builder support the subsets in the generated matrix below. Warrant Builder includes guided Git controls and the 28 supported database operations. A guided surface either preserves a supported control or rejects the import before mutating state. It never silently drops or rewrites a policy field. Signed imports use Advanced Mode until an operator explicitly detaches the signature to edit the policy.
 
-The generated capability matrix now follows the current policy family. See [Policy 2.2 authoring capabilities](policy-2-2.md#authoring-capability-matrix). Historical Policy 2.1 semantics on this page are unchanged.
+The [archived Policy 2.1 capability matrix](policy-2-1-capabilities-archive.md) preserves the exact `@sigilcore/warrant-core@0.2.1` authoring contract for operators maintaining this policy family. The separately generated [Policy 2.2 authoring capabilities](policy-2-2.md#authoring-capability-matrix) apply only to Policy 2.2 Warrants.
 
 The [corpus vectors](../conformance/vectors/) cover the resource profiles and advanced controls. Run the vectors against the selected adapter before relying on an enforcement boundary.
 
