@@ -1,8 +1,13 @@
 # .coderabbit.yaml — sigil-open-framework (documentation/specification repo)
 #
-# Auto-review is OFF (Vernon, July 21, 2026): code review happens locally
-# and passes BEFORE a PR is opened; automated PR reviewers are duplicative
-# and delay deployment. CodeRabbit remains available on-demand via
+# CodeRabbit auto-review is OFF (Vernon, July 21, 2026; rationale corrected
+# August 16, 2026). It is NOT off because automated PR review is duplicative:
+# under the v3 flow Greptile's hosted PR review IS the review of record and
+# runs automatically on every PR and every pushed update. CodeRabbit stays off
+# because a second automatic LLM review of the same diff on the same side of
+# the PR boundary is the stacking the narrowed July 21 rule still forbids.
+# Do not read this file as a reason to disable Greptile auto-review.
+# CodeRabbit remains available on-demand via
 # `@coderabbitai review` in a PR comment. No automated reviewer is a
 # required status check on this repository's default branch, for the same
 # reason. The path instructions below still apply to on-demand reviews.
