@@ -7,21 +7,27 @@ description: "Warranty policy for an agent that calls external tools through MCP
 
 Copy the policy body below into Sigil Warrant, sign it, and deploy it with the API key used by this agent.
 
-MCP intents are matched on trusted `metadata.serverId` and `metadata.toolName`, which fail closed when absent. Tool patterns match the tool name or `server.tool` form, with trailing-`*` wildcard support.
+MCP intents are matched on trusted `metadata.serverId` and `metadata.toolName`, which fail closed when absent. Tool patterns match the tool name or `server.tool` form, with trailing-`*` wildcard support. This is the only canonical example that opts into Policy 2.2 inbound result inspection because it declares exact MCP tool identities.
 
 ```markdown
-version: 2.0.0
+version: 2.2.0
 
 ## mcp
 # Replace these placeholders with the real MCP servers this agent connects to.
-allowed_servers: github, slack, postgres-readonly
+allowed_servers: browser, github, http, slack, postgres-readonly
 # Enumerate the real tools your deployment uses; a tool not on this list is
 # denied. `github.*` allows every tool on the github server except those
 # blocked below (blocked_tools is checked first).
-allowed_tools: github.*, slack.send_message, postgres-readonly.query
+allowed_tools: browser.open, github.*, http.request, slack.send_message, postgres-readonly.query
 # Denies the listed destructive tools. `delete_*` matches any tool whose name
 # starts with "delete_" on any allowed server.
 blocked_tools: github.delete_repository, github.force_push, delete_*
+# Only these exact tools have inbound result inspection. These opaque tokens
+# must also be exact members of allowed_tools.
+response.web_fetch_tools: browser.open
+response.http_tools: http.request
+response.deterministic_ruleset: sof-response-rules-v1
+response.block_classes: malicious_url, prompt_injection, secret
 
 ## tool_calls
 # An MCP gateway agent does not need a raw shell, and every governed channel
@@ -45,6 +51,9 @@ deny_string: "ANTHROPIC_API_KEY"
 deny_string: "AWS_SECRET_ACCESS_KEY"
 deny_string: "DATABASE_URL"
 deny_string: "BEGIN RSA PRIVATE KEY"
+# Response-result literal. Bare deny_string rules above remain outbound intent
+# checks and do not inspect tool results.
+response.deny_string: "ignore all previous instructions"
 
 ## soft_limits
 daily_tool_calls: 500

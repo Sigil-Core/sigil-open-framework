@@ -7,11 +7,22 @@ const { dirname, join } = require("node:path");
 const { pathToFileURL } = require("node:url");
 
 const PACKAGE = "@sigilcore/warrant-core";
-const VERSION = "0.2.1";
-const START = "{/* BEGIN GENERATED POLICY 2.1 CAPABILITY MATRIX */}";
-const END = "{/* END GENERATED POLICY 2.1 CAPABILITY MATRIX */}";
+const VERSION = "0.3.0";
+const FAMILY = "2.2.x";
+const START = "{/* BEGIN GENERATED CURRENT POLICY CAPABILITY MATRIX */}";
+const END = "{/* END GENERATED CURRENT POLICY CAPABILITY MATRIX */}";
 const repoRoot = dirname(__dirname);
-const targetPath = join(repoRoot, "developer-toolkit", "policy-2-1.md");
+const targetPath = join(repoRoot, "developer-toolkit", "policy-2-2.md");
+
+const packageSpec = () => {
+  const index = process.argv.indexOf("--package-spec");
+  if (index === -1) return `${PACKAGE}@${VERSION}`;
+  const spec = process.argv[index + 1];
+  if (!spec || spec.startsWith("--")) {
+    throw new Error("--package-spec requires a package name, tarball, or directory");
+  }
+  return spec;
+};
 
 const capabilityStatus = (capability) => {
   const dimensions = [
@@ -37,7 +48,10 @@ const renderSurface = (entries, surface) => {
 const loadManifest = async () => {
   const packageDir = mkdtempSync(join(tmpdir(), "sigil-warrant-core-"));
   try {
-    const packed = JSON.parse(execFileSync("npm", ["pack", `${PACKAGE}@${VERSION}`, "--pack-destination", packageDir, "--json"], { encoding: "utf8" }));
+    const packed = JSON.parse(execFileSync("npm", ["pack", packageSpec(), "--pack-destination", packageDir, "--json"], { encoding: "utf8" }));
+    if (packed[0].name !== PACKAGE || packed[0].version !== VERSION) {
+      throw new Error(`Expected ${PACKAGE}@${VERSION}, received ${packed[0].name}@${packed[0].version}`);
+    }
     const tarball = join(packageDir, packed[0].filename);
     if (!existsSync(tarball)) throw new Error(`npm did not produce ${tarball}`);
     execFileSync("tar", ["-xzf", tarball, "-C", packageDir]);
@@ -50,6 +64,7 @@ const loadManifest = async () => {
 const groupCapabilitiesByFeature = (packageModule) => {
   const byFeature = new Map();
   for (const [path, capability] of Object.entries(packageModule.AUTHORING_CAPABILITY_MANIFEST)) {
+    if (!capability.versions.includes(FAMILY)) continue;
     const entries = byFeature.get(capability.deploy_feature_key) ?? [];
     entries.push([path, capability]);
     byFeature.set(capability.deploy_feature_key, entries);
@@ -59,14 +74,16 @@ const groupCapabilitiesByFeature = (packageModule) => {
 
 const generateMatrix = (packageModule) => {
   const byFeature = groupCapabilitiesByFeature(packageModule);
-  const rows = packageModule.DEPLOY_FEATURE_KEYS.map((feature) => {
-    const entries = byFeature.get(feature) ?? [];
-    return `| \`${feature}\` | ${renderSurface(entries, "manual-form")} | ${renderSurface(entries, "manual-advanced")} | ${renderSurface(entries, "builder")} |`;
-  });
+  const rows = packageModule.DEPLOY_FEATURE_KEYS
+    .filter((feature) => byFeature.has(feature))
+    .map((feature) => {
+      const entries = byFeature.get(feature);
+      return `| \`${feature}\` | ${renderSurface(entries, "manual-form")} | ${renderSurface(entries, "manual-advanced")} | ${renderSurface(entries, "builder")} |`;
+    });
 
   return [
     START,
-    `Source: \`${PACKAGE}@${VERSION}\`, \`AUTHORING_CAPABILITY_MANIFEST\` (capability schema v${packageModule.SIGN_CAPABILITIES_SCHEMA_VERSION}).`,
+    `Source: \`${PACKAGE}@${VERSION}\`, \`AUTHORING_CAPABILITY_MANIFEST\`, filtered to \`${FAMILY}\` (capability schema v${packageModule.SIGN_CAPABILITIES_SCHEMA_VERSION}).`,
     "",
     "Legend: A = author, I = import, P = preserve without loss, D = deploy. `none` means the surface rejects that field before mutating policy state.",
     "",
@@ -89,11 +106,11 @@ const currentMatrix = () => {
 
 const checkMatrix = (generated) => {
   if (currentMatrix().matrix !== generated) {
-    process.stderr.write("Policy 2.1 capability matrix is stale. Run: node scripts/generate-policy-2-1-capabilities.cjs --write\n");
+    process.stderr.write("Current Policy 2.2 capability matrix is stale. Run: node scripts/generate-current-policy-capabilities.cjs --write\n");
     process.exitCode = 1;
     return;
   }
-  process.stdout.write(`Policy 2.1 capability matrix matches ${PACKAGE}@${VERSION}.\n`);
+  process.stdout.write(`Current Policy 2.2 capability matrix matches ${PACKAGE}@${VERSION}.\n`);
 };
 
 const writeMatrix = (generated) => {
@@ -115,7 +132,7 @@ const runCommand = (generated) => {
     writeMatrix(generated);
     return;
   }
-  process.stderr.write("Use --check, --print, or --write.\n");
+  process.stderr.write("Use --check, --print, or --write. Development may add --package-spec <spec>; CI uses the released package.\n");
   process.exitCode = 2;
 };
 

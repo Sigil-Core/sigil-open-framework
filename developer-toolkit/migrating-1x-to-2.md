@@ -1,16 +1,16 @@
 ---
-title: "Migrate warranty.md from 1.x to 2.0"
-description: "A field-by-field migration path for typed HTTP, MCP, provenance, approval, and aggregate cap controls."
+title: "Migrate warranty.md from 1.x to 2.x"
+description: "A field-by-field migration path through Policy 2.2, including exact MCP result coverage."
 ---
 
-# Migrate warranty.md from 1.x to 2.0 and 2.1
+# Migrate warranty.md from 1.x to 2.0, 2.1, or 2.2
 
-Policy formats 2.0 and 2.1 keep the 1.x EVM, tool-call, custom, and execution-limit semantics. The version line opts into the new grammar. Operators must review the new boundaries, sign the resulting file again, and redeploy it before the new controls take effect.
+Policy formats 2.0 through 2.2 keep the 1.x EVM, tool-call, custom, and execution-limit semantics. The version line opts into the new grammar. Policy 2.2 can add inbound inspection for exact covered MCP tool results; it does not add result inspection to `## tool_calls`. Operators must review the new boundaries, sign the resulting file again, and redeploy it before the new controls take effect.
 
 ## Migration sequence
 
 1. Copy the signed 1.x policy into a working file.
-2. Remove the old `## signature` block and change the root line to `version: 2.0.0` or `version: 2.1.0`.
+2. Remove the old `## signature` block and change the root line to `version: 2.0.0`, `version: 2.1.0`, or `version: 2.2.0`.
 3. Add only the v2 sections the agent actually uses.
 4. Parse and test approved, denied, and pending intents against the new policy.
 5. Sign the complete body with Sigil Warrant and deploy the new file.
@@ -20,7 +20,7 @@ For destructive repository, Git, provider, or production database actions, choos
 
 Manual Warrant Advanced Mode can import, validate, preserve, and deploy every Policy 2.1 field that Sign accepts. Use it for filesystem profiles, per-method HTTP rules, EVM calldata enrichment, or any policy that exceeds the structured Form or Builder matrix. It keeps the source bytes intact until you edit them. Any edit detaches the old signature, so sign the complete policy again before deployment.
 
-Warrant Builder supports the repository profile, Git controls, and the 28 supported database operations through its guided controls. It rejects filesystem profiles, per-method HTTP rules, EVM calldata enrichment, and other unsupported fields before changing any Builder state. The structured Manual Form follows its own limits. Check the [generated capability matrix](/developer-toolkit/policy-2-1) before choosing a guided surface.
+Warrant Builder supports the repository profile, Git controls, the 28 supported database operations, and exact Policy 2.2 response mappings through its guided controls. It rejects filesystem profiles, per-method HTTP rules, EVM calldata enrichment, and other unsupported fields before changing any Builder state. The structured Manual Form follows its own limits. Check the [current generated capability matrix](/developer-toolkit/policy-2-2#authoring-capability-matrix) before choosing a guided surface.
 
 Manual Warrant's Migration flow uses a strict Version 1 rollback bundle when preparing a migration or rollback. It validates the bundle before use. The bundle contains policy material, not a deployment receipt, and does not prove that either policy was deployed.
 
@@ -38,6 +38,7 @@ Manual Warrant's Migration flow uses a strict Version 1 rollback bundle when pre
 | Repository writes | `## repository` plus `## filesystem` | Component-aware roots, blocked paths, sensitive-file classes, and impact ceilings |
 | Git history and hosted providers | `## git` plus provider metadata | Full ref topology, fast-forward rules, provider operation taxonomy, and approval gates |
 | Production database effects | `## database` | Explicit SQL effects, resource allowlists, routine catalogs, read-only transactions, and timeouts |
+| Exact inbound MCP tool results | Policy `2.2.0`, exact `mcp.response.*` mappings, and optional `custom.response.deny_string` | Local deterministic `ALLOW` or `BLOCK` in an inspection-enabled Sigil MCP Proxy |
 
 ## Example
 
@@ -67,6 +68,13 @@ cap.linkedin_posts.group_by: metadata.channel
 ```
 
 The exact connector server ID, tool names, and metadata schema must come from the installed connector. Do not promote illustrative names into production without capturing those values from the adapter.
+
+For Policy 2.2, map only exact `serverId.toolName` values that are also exact
+members of `allowed_tools`. Do not copy a `## tool_calls` web or HTTP action
+into these mappings: those actions remain outside inbound inspection. Release
+1 has no redaction, scanner adapter, or observe mode. Follow the
+[Policy 2.2 response inspection guide](/developer-toolkit/policy-2-2) before
+activating the re-signed Warrant.
 
 ## Compatibility and rollback
 
