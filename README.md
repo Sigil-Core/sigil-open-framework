@@ -243,7 +243,7 @@ If you are an audit firm, custody provider, or enterprise security team building
 
 → [**Read the Sigil Attestations Specification**](https://github.com/Sigil-Core/sigil-attestations)
 
-The SOF Conformance Test Suite begins with the portable Policy 2.0 vector corpus in [`conformance/vectors/`](conformance/vectors/). Implementations should run those fixtures through their parser, evaluator, counter store, and audit projection, then publish the resulting policy hash and decision evidence with their conformance declaration.
+The SOF Conformance Test Suite begins with the portable Policy 2.0 and Policy 2.1 vector corpus in [`conformance/vectors/`](conformance/vectors/). Implementations should run those fixtures through their parser, evaluator, counter store, and audit projection, then publish the resulting policy hash and decision evidence with their conformance declaration.
 
 ---
 
