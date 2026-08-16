@@ -1,11 +1,11 @@
 ---
 title: "Migrate warranty.md from 1.x to 2.x"
-description: "A field-by-field migration path through Policy 2.2, including exact MCP result coverage."
+description: "A field-by-field migration path through Policy 2.3, including exact MCP result coverage and local response controls."
 ---
 
-# Migrate warranty.md from 1.x to 2.0, 2.1, or 2.2
+# Migrate warranty.md from 1.x through 2.3
 
-Policy formats 2.0 through 2.2 keep the 1.x EVM, tool-call, custom, and execution-limit semantics. The version line opts into the new grammar. Policy 2.2 can add inbound inspection for exact covered MCP tool results; it does not add result inspection to `## tool_calls`. Operators must review the new boundaries, sign the resulting file again, and redeploy it before the new controls take effect.
+Policy formats 2.0 through 2.3 keep the 1.x EVM, tool-call, custom, and execution-limit semantics. The version line opts into the new grammar. Policy 2.2 adds inbound inspection for exact covered MCP tool results. Policy 2.3 adds local redaction, operator-hosted scanner evidence, and time-bounded observe mode. Neither version adds result inspection to `## tool_calls`. Operators must review the new boundaries, sign the resulting file again, and redeploy it before the new controls take effect.
 
 ## Migration sequence
 
@@ -20,7 +20,7 @@ For destructive repository, Git, provider, or production database actions, choos
 
 Manual Warrant Advanced Mode can import, validate, preserve, and deploy every Policy 2.1 field that Sign accepts. Use it for filesystem profiles, per-method HTTP rules, EVM calldata enrichment, or any policy that exceeds the structured Form or Builder matrix. It keeps the source bytes intact until you edit them. Any edit detaches the old signature, so sign the complete policy again before deployment.
 
-Warrant Builder supports the repository profile, Git controls, the 28 supported database operations, and exact Policy 2.2 response mappings through its guided controls. It rejects filesystem profiles, per-method HTTP rules, EVM calldata enrichment, and other unsupported fields before changing any Builder state. The structured Manual Form follows its own limits. Check the [current generated capability matrix](/developer-toolkit/policy-2-2#authoring-capability-matrix) before choosing a guided surface.
+Warrant Builder supports the repository profile, Git controls, the 28 supported database operations, and exact Policy 2.3 response controls through its guided controls. It rejects filesystem profiles, per-method HTTP rules, EVM calldata enrichment, and other unsupported fields before changing any Builder state. The structured Manual Form follows its own limits. Check the [current generated capability matrix](/developer-toolkit/policy-2-3#authoring-capability-matrix) before choosing a guided surface.
 
 Manual Warrant's Migration flow uses a strict Version 1 rollback bundle when preparing a migration or rollback. It validates the bundle before use. The bundle contains policy material, not a deployment receipt, and does not prove that either policy was deployed.
 
@@ -69,12 +69,13 @@ cap.linkedin_posts.group_by: metadata.channel
 
 The exact connector server ID, tool names, and metadata schema must come from the installed connector. Do not promote illustrative names into production without capturing those values from the adapter.
 
-For Policy 2.2, map only exact `serverId.toolName` values that are also exact
+For Policy 2.2 or 2.3, map only exact `serverId.toolName` values that are also exact
 members of `allowed_tools`. Do not copy a `## tool_calls` web or HTTP action
-into these mappings: those actions remain outside inbound inspection. Release
-1 has no redaction, scanner adapter, or observe mode. Follow the
-[Policy 2.2 response inspection guide](/developer-toolkit/policy-2-2) before
-activating the re-signed Warrant.
+into these mappings: those actions remain outside inbound inspection. Follow
+the [Policy 2.3 response controls guide](/developer-toolkit/policy-2-3) before
+activating a re-signed 2.3 Warrant. Roll back semantically by stopping 2.3
+issuance first, rejecting new 2.3 activation, and keeping signed 2.2 policies
+on format 1 until every remaining consumer is compatible.
 
 ## Compatibility and rollback
 

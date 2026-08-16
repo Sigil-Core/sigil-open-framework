@@ -405,15 +405,16 @@ The example does not prove that the operator authored the correct policy. A warr
 
 The first auditor question is coverage. A denial log proves that one attempted action passed through SOF. It does not prove that all actions in the deployment passed through SOF. A defensible deployment therefore needs a coverage statement. The statement should identify which agent frameworks, tools, APIs, wallets, gateways, and credential routes are in scope. It should identify out-of-band paths and either remove them, monitor them, or mark them outside the claim. Without that scope boundary, an attestation proves the governed path worked, not that every possible path was governed.
 
-Policy 2.2 partially mitigates GAP-005 for a narrower post-execution surface:
-exact MCP `tools/call` results mapped in a 2.2 Warrant and traversing an
-inspection-enabled Sigil MCP Proxy. Those results receive a bounded,
-deterministic local `ALLOW` or `BLOCK` decision before disclosure. This does
-not cover `## tool_calls`, built-in client tools, MCP resources, prompts,
+Policy 2.3 extends GAP-005 mitigation for the same narrow post-execution
+surface. Exact MCP `tools/call` results mapped in a 2.3 Warrant and traversing
+an inspection-enabled Sigil MCP Proxy receive a bounded local decision before
+disclosure. The proxy can block, redact mapped UTF-8 ranges, use an
+authenticated operator-hosted scanner, or record time-bounded observe findings.
+Raw response content stays inside the operator trust boundary. This does not
+cover `## tool_calls`, built-in client tools, MCP resources, prompts,
 subscriptions, unknown methods, or any route that bypasses the maintained
-proxy. Release 1 provides no redaction, scanner adapter, or observe mode.
-Therefore Policy 2.2 is evidence of partial mitigation on the named path, not
-closure of the general coverage gap.
+proxy. Policy 2.3 is evidence of mitigation on the named path, not closure of
+the general coverage gap.
 
 The second question is failure behavior. The published Agent Hooks package supports `failMode: 'open'` and `failMode: 'closed'`. In open mode, Sigil unreachability can return an approved fallback with a `failOpen` marker. In closed mode, unreachability returns `DENIED` with `SIGIL_UNREACHABLE`. The package documentation recommends closed mode for production agents, externally visible actions, and wallet or on-chain actions. Vault is stricter. Missing, invalid, expired, replayed, or otherwise unacceptable attestations are hard-rejected, and backend timeouts do not pass through blindly. SOF therefore should not claim a single universal fail-closed default across all components. The correct claim is more precise: high-stakes deployments should configure fail-closed behavior at the hook layer, and Vault enforces hard rejection for credential release.
 

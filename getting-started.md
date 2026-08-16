@@ -6,11 +6,11 @@ description: "From zero to your first authorized execution in 2 minutes."
 # Getting Started
 
 <Note>
-  Policy 2.2 can inspect exact covered MCP tool results only on the maintained,
-  inspection-enabled Sigil MCP Proxy path. This inbound result gate is distinct
-  from the outbound authorization described below. See
-  [Policy 2.2 response inspection](/developer-toolkit/policy-2-2) for exact
-  coverage and limitations.
+  Policy 2.3 can block or redact exact covered MCP tool results and can use an
+  operator-hosted scanner or time-bounded observe mode on the maintained,
+  inspection-enabled Sigil MCP Proxy path. Response content stays inside the
+  operator trust boundary. See [Policy 2.3 response controls](/developer-toolkit/policy-2-3)
+  for exact coverage and limitations.
 </Note>
 
 Sigil Sign is the reference implementation of the [SOF enforcement specification](/conformance), a deterministic execution firewall for agent-driven EVM actions. It sits between your AI agent and the blockchain, ensuring that high-stakes actions cannot execute without explicit authorization.
@@ -66,7 +66,7 @@ Your warranty.md defines what your agent is allowed to do. The file must be sign
 **Use [Sigil Warrant](https://sigilcore.com/tools/warrant)** to generate, sign, and download your `warranty.md`. Two paths are available:
 
 - **Warrant Builder:** guided step-by-step flow for common policies, including repository and Git controls plus the 28 supported database operations. No policy syntax required. Recommended for first-time operators.
-- **Manual Warrant:** choose the structured Form for common policies or Advanced Mode to author any field that the current Sign policy contract accepts. Advanced Mode preserves the exact source bytes through validation, signing, download, re-import, and deployment. See the [current generated authoring-capability matrix](/developer-toolkit/policy-2-2#authoring-capability-matrix) before choosing a surface.
+- **Manual Warrant:** choose the structured Form for common policies or Advanced Mode to author any field that the current Sign policy contract accepts. Advanced Mode preserves the exact source bytes through validation, signing, download, re-import, and deployment. See the [current generated authoring-capability matrix](/developer-toolkit/policy-2-3#authoring-capability-matrix) before choosing a surface.
 
 When you create a policy, either path can generate an Ed25519 keypair in the browser and provide the `SIGIL_OPERATOR_PUBLIC_KEY` value ready to paste. An unchanged signed import verifies with its operator public key and can download or deploy without generating a new keypair or re-signing.
 
