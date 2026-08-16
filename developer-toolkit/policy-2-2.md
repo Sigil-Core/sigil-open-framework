@@ -68,10 +68,9 @@ behavior unless an operator explicitly authors and signs a 2.2 Warrant.
 
 ## Authoring capability matrix
 
-This is the single generated matrix for the current policy family. It is
-derived from the exact released `@sigilcore/warrant-core` manifest. A guided
-surface either preserves a supported control or rejects the import before
-mutating policy state.
+This matrix records the released Policy 2.2 authoring contract. It remains here
+for operators maintaining format 1 Warrants. Use the [current Policy 2.3
+capability matrix](policy-2-3.md#authoring-capability-matrix) for new Warrants.
 
 {/* BEGIN GENERATED CURRENT POLICY CAPABILITY MATRIX */}
 Source: `@sigilcore/warrant-core@0.3.0`, `AUTHORING_CAPABILITY_MANIFEST`, filtered to `2.2.x` (capability schema v1).
@@ -109,6 +108,5 @@ Legend: A = author, I = import, P = preserve without loss, D = deploy. `none` me
 | `execution_limits.require_shim` | `A/I/P/D`: `execution_limits.require_shim` | `A/I/P/D`: `execution_limits.require_shim` | `A/I/P/D`: `execution_limits.require_shim` |
 {/* END GENERATED CURRENT POLICY CAPABILITY MATRIX */}
 
-Regenerate the matrix only from the released package:
-`node scripts/generate-current-policy-capabilities.cjs --write`. CI and local
-verification use `--check` to detect stale capability claims.
+This Policy 2.2 snapshot is no longer regenerated. The current-family generator
+targets Policy 2.3.

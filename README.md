@@ -134,7 +134,7 @@ A conforming signer MAY:
 
 The **SOF Conformance Test Suite** begins with the portable Policy 2.0 and Policy 2.1 vector corpus in [`conformance/vectors/`](conformance/vectors/). Implementations should run those fixtures through their parser, evaluator, counter store, and audit projection, then publish the resulting policy hash and decision evidence with their conformance declaration. Policy 2.1 vectors require a structured execution boundary, trusted effect metadata, and a one-time execution grant.
 
-The current authoring contract is published in the [generated capability matrix](developer-toolkit/policy-2-2.md#authoring-capability-matrix). It derives from the exact `@sigilcore/warrant-core` manifest shared with Sigil Sign, so operators can choose Manual Form, Manual Advanced, or Warrant Builder without silently losing a policy control.
+The current authoring contract is published in the [Policy 2.3 capability matrix](developer-toolkit/policy-2-3.md#authoring-capability-matrix). It derives from the exact `@sigilcore/warrant-core` manifest shared with Sigil Sign, so operators can choose Manual Form, Manual Advanced, or Warrant Builder without silently losing a policy control.
 
 For the cryptographic conformance declaration, publish `/.well-known/sof-conformance.json` using the schema in [`conformance.md`](conformance.md). The declaration keeps the attestation contract version (`sigil-attestations-v1`) separate from the supported `warranty.md` policy schema versions.
 
