@@ -7,12 +7,12 @@ const { dirname, join } = require("node:path");
 const { pathToFileURL } = require("node:url");
 
 const PACKAGE = "@sigilcore/warrant-core";
-const VERSION = "0.3.0";
-const FAMILY = "2.2.x";
+const VERSION = "0.4.0";
+const FAMILY = "2.3.x";
 const START = "{/* BEGIN GENERATED CURRENT POLICY CAPABILITY MATRIX */}";
 const END = "{/* END GENERATED CURRENT POLICY CAPABILITY MATRIX */}";
 const repoRoot = dirname(__dirname);
-const targetPath = join(repoRoot, "developer-toolkit", "policy-2-2.md");
+const targetPath = join(repoRoot, "developer-toolkit", "policy-2-3.md");
 
 const packageSpec = () => {
   const index = process.argv.indexOf("--package-spec");
@@ -48,7 +48,13 @@ const renderSurface = (entries, surface) => {
 const loadManifest = async () => {
   const packageDir = mkdtempSync(join(tmpdir(), "sigil-warrant-core-"));
   try {
-    const packed = JSON.parse(execFileSync("npm", ["pack", packageSpec(), "--pack-destination", packageDir, "--json"], { encoding: "utf8" }));
+    const packed = JSON.parse(execFileSync("npm", ["pack", packageSpec(), "--pack-destination", packageDir, "--json"], {
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        npm_config_cache: process.env.npm_config_cache || join(packageDir, "npm-cache"),
+      },
+    }));
     if (packed[0].name !== PACKAGE || packed[0].version !== VERSION) {
       throw new Error(`Expected ${PACKAGE}@${VERSION}, received ${packed[0].name}@${packed[0].version}`);
     }
@@ -106,11 +112,11 @@ const currentMatrix = () => {
 
 const checkMatrix = (generated) => {
   if (currentMatrix().matrix !== generated) {
-    process.stderr.write("Current Policy 2.2 capability matrix is stale. Run: node scripts/generate-current-policy-capabilities.cjs --write\n");
+    process.stderr.write("Current Policy 2.3 capability matrix is stale. Run: node scripts/generate-current-policy-capabilities.cjs --write\n");
     process.exitCode = 1;
     return;
   }
-  process.stdout.write(`Current Policy 2.2 capability matrix matches ${PACKAGE}@${VERSION}.\n`);
+  process.stdout.write(`Current Policy 2.3 capability matrix matches ${PACKAGE}@${VERSION}.\n`);
 };
 
 const writeMatrix = (generated) => {

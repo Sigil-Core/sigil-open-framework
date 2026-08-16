@@ -7,10 +7,10 @@ description: "Warranty policy for an agent that calls external tools through MCP
 
 Copy the policy body below into Sigil Warrant, sign it, and deploy it with the API key used by this agent.
 
-MCP intents are matched on trusted `metadata.serverId` and `metadata.toolName`, which fail closed when absent. Tool patterns match the tool name or `server.tool` form, with trailing-`*` wildcard support. This is the only canonical example that opts into Policy 2.2 inbound result inspection because it declares exact MCP tool identities.
+MCP intents are matched on trusted `metadata.serverId` and `metadata.toolName`, which fail closed when absent. Tool patterns match the tool name or `server.tool` form, with trailing-`*` wildcard support. This is the only canonical example that opts into Policy 2.3 inbound result inspection because it declares exact MCP tool identities.
 
 ```markdown
-version: 2.2.0
+version: 2.3.0
 
 ## mcp
 # Replace these placeholders with the real MCP servers this agent connects to.
@@ -27,7 +27,17 @@ blocked_tools: github.delete_repository, github.force_push, delete_*
 response.web_fetch_tools: browser.open
 response.http_tools: http.request
 response.deterministic_ruleset: sof-response-rules-v1
-response.block_classes: malicious_url, prompt_injection, secret
+response.block_classes: malicious_url, prompt_injection
+response.redact_classes: pii, secret
+# The scanner profile selects operator-owned runtime configuration. It is not a
+# URL, and no endpoint or credential belongs in the Warrant.
+response.scanner.required: true
+response.scanner.profile: operator-presidio-v1
+response.scanner.classes: pii, prompt_injection
+response.scanner.min_confidence: 0.85
+# Observe findings never change disposition and expire at this UTC instant.
+response.observe_classes: prompt_injection
+response.observe_until: 2026-09-05T00:00:00Z
 
 ## tool_calls
 # An MCP gateway agent does not need a raw shell, and every governed channel

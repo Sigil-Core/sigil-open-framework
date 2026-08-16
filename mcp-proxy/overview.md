@@ -137,9 +137,9 @@ The proxy sets `@sigilcore/agent-hooks` `failMode: "closed"` explicitly. It
 handles the structured `SIGIL_UNREACHABLE` and `failOpen` result fields, so an
 English response message cannot turn an outage into an accidental approval.
 
-## Policy 2.2 result inspection
+## Policy 2.2 and 2.3 result inspection
 
-An inspection-enabled proxy can enforce Policy 2.2 after an exact covered
+An inspection-enabled proxy can enforce Policy 2.2 or 2.3 after an exact covered
 `tools/call` completes and before its result reaches the client. Coverage comes
 only from exact `response.web_fetch_tools` and `response.http_tools` mappings
 under `## mcp`. The deterministic local ruleset returns `ALLOW` or `BLOCK`;
@@ -147,10 +147,13 @@ blocked disclosure carries no result content.
 
 This does not inspect `## tool_calls`, built-in client features, MCP resources,
 prompts, subscriptions, or unknown methods. An inspection profile refuses
-those MCP methods, and cannot be combined with `--unsafe-bypass`. Release 1
-does not redact, call a scanner, or provide observe mode. See
-[Policy 2.2 response inspection](/developer-toolkit/policy-2-2) for the exact
-grammar and failure modes.
+those MCP methods, and cannot be combined with `--unsafe-bypass`. Policy 2.2
+returns `ALLOW` or `BLOCK`. Policy 2.3 can also redact mapped UTF-8 ranges, use
+an authenticated operator-hosted scanner, and record time-bounded observe
+findings that never change disposition. Raw content stays inside the operator
+trust boundary and never reaches hosted Sigil Sign, the durable ledger, logs,
+metrics, traces, or hosted receipts. See [Policy 2.3 response controls](/developer-toolkit/policy-2-3)
+for the scanner boundary, rollback order, exact grammar, and limitations.
 
 ## HTTP/SSE Transport
 
