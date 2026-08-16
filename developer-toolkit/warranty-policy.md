@@ -19,19 +19,19 @@ Use **Sigil Warrant** at [sigilcore.com/tools/warrant](https://sigilcore.com/too
 Both paths produce a signed `warranty.md` with the same schema and signature-envelope contract. Its policy content reflects the controls you author.
 
 <Note>
-  **Policy 2.1 authoring contract.** `@sigilcore/warrant-core@0.2.1` is the shared parser, canonicalizer, signer-envelope validator, and authoring-capability source. Manual Advanced covers every field that the deployed Sign contract accepts. Manual Form and Warrant Builder expose their supported subsets and route unsupported fields to Advanced Mode or reject them before changing policy state. See [Policy 2.1 authoring capabilities](/developer-toolkit/policy-2-1) for the generated field matrix.
+  **Current authoring contract.** `@sigilcore/warrant-core@0.3.0` is the shared parser, canonicalizer, signer-envelope validator, and authoring-capability source for Policy 2.2. Manual Advanced covers every field that the deployed Sign contract accepts. Manual Form and Warrant Builder expose their supported subsets and route unsupported fields to Advanced Mode or reject them before changing policy state. See the [current generated capability matrix](/developer-toolkit/policy-2-2#authoring-capability-matrix).
 </Note>
 
 ## File Format
 
-`warranty.md` uses a plain-text, typed-block format. Blocks are defined by `##` headers. A 1.x policy requires an enforceable EVM, tool-call, custom, or model-budget rule. A 2.0 or profileless 2.1 policy may also consist of enforced `## soft_limits`. A 2.1 resource profile adds a trusted execution-shim boundary only when the policy declares one of the resource-profile blocks.
+`warranty.md` uses a plain-text, typed-block format. Blocks are defined by `##` headers. A 1.x policy requires an enforceable EVM, tool-call, custom, or model-budget rule. A 2.0 or profileless 2.1 policy may also consist of enforced `## soft_limits`. A 2.1 resource profile adds a trusted execution-shim boundary only when the policy declares one of the resource-profile blocks. Policy 2.2 adds exact inbound MCP result coverage; it does not extend that coverage to `## tool_calls`.
 
 > **Policy format 2.0.0:** 1.x policies keep their existing semantics. New 2.0 syntax is opt-in through the version line and requires a Sign build that supports the field. Policy format 2.0 adds typed HTTP intents, allow-rule operators, enforced named caps, MCP-native actions, approval patterns, and provenance gates. Existing signed 1.x files remain unchanged.
 
 For a controlled upgrade, follow the [1.x to 2.0 migration guide](/developer-toolkit/migrating-1x-to-2). The guide includes the re-sign, rollback, and conformance-vector checks required before activation.
 
 ```markdown
-version: 2.1.0
+version: 2.2.0
 
 ## evm
 max_transaction_eth: 5.0
@@ -70,7 +70,10 @@ max_tool_calls_per_task: 50
 sigil-sig: <base64url>
 ```
 
-This current reference uses profileless Policy 2.1. It keeps the EVM and tool-call fields shown here without asserting a repository, filesystem, Git, or database execution boundary.
+This current reference uses profileless Policy 2.2. It keeps the EVM and
+tool-call fields shown here without asserting a repository, filesystem, Git, or
+database execution boundary. Because it declares no `mcp.response.*` mapping,
+it also makes no inbound result-inspection claim.
 
 ## Policy Sections
 
@@ -148,6 +151,10 @@ MCP policy is deny-by-default unless this block exists. Sign dispatches on the `
 | `blocked_tools` | MCP tool identities or tool names that always deny |
 | `require_approval` | MCP tool patterns that return `PENDING` with a durable 24-hour hold |
 | `require_shim` | Require `provenance: shim` for MCP actions governed by this block |
+| `response.web_fetch_tools` | Policy 2.2 exact `serverId.toolName` members of `allowed_tools` inspected as web-fetch results |
+| `response.http_tools` | Policy 2.2 exact `serverId.toolName` members of `allowed_tools` inspected as HTTP results |
+| `response.deterministic_ruleset` | Policy 2.2 pinned local ruleset; Release 1 accepts `sof-response-rules-v1` |
+| `response.block_classes` | Policy 2.2 deterministic block classes: `malicious_url`, `prompt_injection`, or `secret` |
 
 ```markdown
 ## mcp
@@ -157,6 +164,12 @@ blocked_tools: buffer.delete_*
 require_approval: buffer.create_post
 require_shim: true
 ```
+
+Policy 2.2 response mappings are opaque exact tokens. Wildcards, aliases,
+duplicates, values absent from `allowed_tools`, and mappings on `## tool_calls`
+are rejected. `response.deny_string` under `## custom` is the response-specific
+literal; bare `deny_string` continues to inspect outbound intent only. See
+[Policy 2.2 response inspection](/developer-toolkit/policy-2-2).
 
 ### `## soft_limits`
 
