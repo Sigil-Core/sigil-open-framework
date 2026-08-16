@@ -348,6 +348,17 @@
             "$schema": "https://json-schema.org/draft/2020-12/schema",
             "additionalProperties": false,
             "properties": {
+              "compiled_policy_digest": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "compiled_policy_envelope_digest": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "compiled_response_policy": {
+                "type": "string"
+              },
               "intent_attestation": {
                 "type": "string"
               },
@@ -1261,6 +1272,17 @@
                   "$schema": "https://json-schema.org/draft/2020-12/schema",
                   "additionalProperties": false,
                   "properties": {
+                    "compiled_policy_digest": {
+                      "pattern": "^[0-9a-f]{64}$",
+                      "type": "string"
+                    },
+                    "compiled_policy_envelope_digest": {
+                      "pattern": "^[0-9a-f]{64}$",
+                      "type": "string"
+                    },
+                    "compiled_response_policy": {
+                      "type": "string"
+                    },
                     "intent_attestation": {
                       "type": "string"
                     },
@@ -3493,7 +3515,19 @@
                           "execution_limits",
                           "execution_limits.require_approval",
                           "execution_limits.require_shim",
-                          "activation.trusted_shim.v1"
+                          "activation.trusted_shim.v1",
+                          "mcp.response.web_fetch_tools",
+                          "mcp.response.http_tools",
+                          "mcp.response.deterministic_ruleset",
+                          "mcp.response.block_classes",
+                          "mcp.response.redact_classes",
+                          "mcp.response.scanner.required",
+                          "mcp.response.scanner.profile",
+                          "mcp.response.scanner.classes",
+                          "mcp.response.scanner.min_confidence",
+                          "mcp.response.observe_classes",
+                          "mcp.response.observe_until",
+                          "custom.response.deny_string"
                         ],
                         "type": "string"
                       },
@@ -3511,7 +3545,9 @@
                           "0.x",
                           "1.x",
                           "2.0.x",
-                          "2.1.x"
+                          "2.1.x",
+                          "2.2.x",
+                          "2.3.x"
                         ],
                         "type": "string"
                       },
@@ -4091,5 +4127,5 @@
     }
   ],
   "x-sigil-contract-version": "1.0.0",
-  "x-sigil-schema-source-digest": "70d6882f9f7d8db6e24e754b80156fab560b91c62d89e9dbc3dff5c7a71c0f8c"
+  "x-sigil-schema-source-digest": "fe1d0e6a8bb115e6b3253aafec93143a8eda49ae5cb12473fcc95ca45bf3d13b"
 }
