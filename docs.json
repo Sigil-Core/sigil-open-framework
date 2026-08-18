@@ -106,6 +106,7 @@
             "group": "Resources",
             "pages": [
               "faq",
+              "api-reference",
               "pre-execution-enforcement-gap",
               "control-mapping"
             ]
