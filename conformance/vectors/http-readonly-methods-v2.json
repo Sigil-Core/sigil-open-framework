@@ -6,13 +6,13 @@
     {
       "name": "get-approved",
       "intent": { "action": "http", "method": "GET", "url": "https://api.audited.example.com/v1/reports" },
-      "expected_decision": "APPROVED",
+      "expected_decision": "ALLOWED",
       "expected_error_code": null
     },
     {
       "name": "head-approved",
       "intent": { "action": "http", "method": "HEAD", "url": "https://api.audited.example.com/v1/reports" },
-      "expected_decision": "APPROVED",
+      "expected_decision": "ALLOWED",
       "expected_error_code": null
     },
     {

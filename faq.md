@@ -334,7 +334,7 @@ description: "Diagnosing policy violations, validation errors, startup failures,
 <AccordionGroup>
   <Accordion title="What is Sigil Command?">
     Sigil Command is the read-only operator console for Sigil Sign. It displays
-    a real-time violation log for every `DENIED`, `PENDING`, and `APPROVED` policy
+    a real-time violation log for every `DENIED`, `PENDING`, and `ALLOWED` policy
     enforcement event for your API key. It is available at
     [command.sigilcore.com](https://command.sigilcore.com).
 

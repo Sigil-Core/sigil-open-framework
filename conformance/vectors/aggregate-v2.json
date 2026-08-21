@@ -7,7 +7,7 @@
       "name": "cap-reservation-approved",
       "intent": { "action": "mcp.buffer.create_post", "provenance": "shim", "metadata": { "serverId": "buffer", "toolName": "create_post", "arguments": { "channelId": "linkedin-company" } } },
       "aggregate_store_result": { "approved": true, "total": 2 },
-      "expected_decision": "APPROVED",
+      "expected_decision": "ALLOWED",
       "expected_error_code": null
     },
     {

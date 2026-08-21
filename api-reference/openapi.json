@@ -366,7 +366,7 @@
                 "type": "string"
               },
               "status": {
-                "const": "APPROVED",
+                "const": "ALLOWED",
                 "type": "string"
               }
             },
@@ -376,7 +376,7 @@
               "message"
             ],
             "type": "object",
-            "x-sigil-selector": "APPROVED"
+            "x-sigil-selector": "ALLOWED"
           },
           {
             "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1290,7 +1290,7 @@
                       "type": "string"
                     },
                     "status": {
-                      "const": "APPROVED",
+                      "const": "ALLOWED",
                       "type": "string"
                     }
                   },
@@ -1300,7 +1300,7 @@
                     "message"
                   ],
                   "type": "object",
-                  "x-sigil-selector": "APPROVED"
+                  "x-sigil-selector": "ALLOWED"
                 }
               }
             },
@@ -2518,7 +2518,7 @@
                           "type": "string"
                         },
                         "status": {
-                          "const": "APPROVED",
+                          "const": "ALLOWED",
                           "type": "string"
                         },
                         "test_run": {
@@ -2535,7 +2535,7 @@
                         "observe_mode_active"
                       ],
                       "type": "object",
-                      "x-sigil-selector": "APPROVED"
+                      "x-sigil-selector": "ALLOWED"
                     },
                     {
                       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -3589,7 +3589,7 @@
     },
     "/v1/holds/{holdId}": {
       "get": {
-        "description": "Returns the current state of a hold (PENDING, APPROVED, DENIED, EXPIRED) plus the source intent and policy reference. Requires the API key that created the hold: a hold is owned by the key it was issued to, and a key can read only its own holds. Holds expire at 24 hours by default. Rate-limited to 30 lookups per minute.",
+        "description": "Returns the current state of a hold (PENDING, ALLOWED, DENIED, EXPIRED) plus the source intent and policy reference. Requires the API key that created the hold: a hold is owned by the key it was issued to, and a key can read only its own holds. Holds expire at 24 hours by default. Rate-limited to 30 lookups per minute.",
         "parameters": [
           {
             "description": "The hold identifier returned when the policy required consensus",

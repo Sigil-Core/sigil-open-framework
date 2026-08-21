@@ -1,7 +1,7 @@
 /**
  * Sigil Demo - six agent actions against the live /v1/authorize endpoint.
  *
- * Scene 1: APPROVED  - Base USDC contract.call under token cap
+ * Scene 1: ALLOWED  - Base USDC contract.call under token cap
  * Scene 2: DENIED    - Base USDC contract.call over token cap
  * Scene 3: PENDING   - allowed email recipient held for approval
  * Scene 4: DENIED    - blocked email recipient
@@ -70,7 +70,7 @@ async function authorize(body: Record<string, unknown>): Promise<unknown> {
 // ---------------------------------------------------------------------------
 
 async function scene1(): Promise<void> {
-  header("Scene 1: APPROVED");
+  header("Scene 1: ALLOWED");
   desc("contract.call on Base USDC, amount: 2500.50 USDC");
 
   const intent = {
