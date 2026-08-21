@@ -31,7 +31,7 @@ if (!SIGIL_API_KEY) {
       "Get one at https://sigilcore.com/tools/keys and run:\n" +
       "  SIGIL_API_KEY=sk_sigil_... npm run demo\n",
   );
-  process.exit(1);
+  throw new Error("SIGIL_API_KEY is required.");
 }
 
 // ---------------------------------------------------------------------------
@@ -217,5 +217,5 @@ async function main(): Promise<void> {
 
 main().catch((err) => {
   console.error("\x1b[31mFatal:\x1b[0m", err);
-  process.exit(1);
+  process.exitCode = 1;
 });
