@@ -16,7 +16,6 @@ if (config.version !== 1 || !Array.isArray(config.scanPaths) || !Array.isArray(c
 const realRoot = realpathSync(root);
 const excluded = new Set(config.excludedPaths);
 const files = [];
-const extensions = /(?:^|\/)(?:Dockerfile|Makefile)$|\.(?:c|cc|css|go|h|html|js|json|jsx|md|mjs|rs|sh|sql|toml|ts|tsx|txt|ya?ml)$/;
 const walk = (absolute) => {
   for (const entry of readdirSync(absolute, { withFileTypes: true })) {
     if (['.git', '.next', 'build', 'coverage', 'dist', 'node_modules', 'target'].includes(entry.name)) continue;
@@ -24,7 +23,7 @@ const walk = (absolute) => {
     const repoPath = relative(realRoot, child).split('\\').join('/');
     if (excluded.has(repoPath)) continue;
     if (entry.isDirectory()) walk(child);
-    else if (entry.isFile() && extensions.test(repoPath)) files.push(child);
+    else if (entry.isFile()) files.push(child);
   }
 };
 for (const scanPath of config.scanPaths) {
@@ -40,7 +39,9 @@ const legacy = ['APP', 'ROVED'].join('');
 const violations = [];
 for (const file of files) {
   const repoPath = relative(realRoot, file).split('\\').join('/');
-  const lines = readFileSync(file, 'utf8').split('\n');
+  const content = readFileSync(file);
+  if (content.includes(0)) continue;
+  const lines = content.toString('utf8').split('\n');
   for (let index = 0; index < lines.length; index += 1) {
     const expression = lines[index].trim();
     let offset = 0;
