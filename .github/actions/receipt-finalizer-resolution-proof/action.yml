@@ -1,0 +1,28 @@
+name: Receipt finalizer resolution proof
+description: Prove that callers can resolve the public finalizer action boundary.
+
+inputs:
+  caller:
+    description: Repository that invoked the proof.
+    required: true
+
+outputs:
+  caller:
+    description: Validated caller repository.
+    value: ${{ steps.proof.outputs.caller }}
+
+runs:
+  using: composite
+  steps:
+    - id: proof
+      shell: bash
+      env:
+        INPUT_CALLER: ${{ inputs.caller }}
+      run: |
+        set -euo pipefail
+        if [[ ! "$INPUT_CALLER" =~ ^(Sigil-Core|SigilWatch)/[A-Za-z0-9._-]+$ ]]; then
+          echo "Unsupported caller" >&2
+          exit 1
+        fi
+        printf 'caller=%s\n' "$INPUT_CALLER" >> "$GITHUB_OUTPUT"
+        printf 'Resolved public finalizer boundary for %s\n' "$INPUT_CALLER"
