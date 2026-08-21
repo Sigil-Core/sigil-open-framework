@@ -24,4 +24,6 @@ jobs:
         run: |
           node scripts/generate-current-policy-capabilities.cjs --check
           node scripts/verify-current-policy-versions.cjs
+          node scripts/verify-claude-shim-example.cjs
+          node scripts/verify-claude-shim-example.test.cjs
           node scripts/verify-doc-links.cjs
