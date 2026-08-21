@@ -102,7 +102,7 @@ For each tool call, before executing:
         ↓
 createOpenRouterToolGate → POST /v1/authorize → Sigil Sign
         ↓
-APPROVED → host executes the tool
+ALLOWED → host executes the tool
 DENIED   → rejection JSON returned to the model as the tool result
 PENDING  → held; surface for human approval
 ```

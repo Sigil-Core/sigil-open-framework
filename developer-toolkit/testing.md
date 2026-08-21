@@ -93,7 +93,7 @@ A simulation endpoint that evaluates an intent against your deployed policy and 
 ### What it does
 
 - Runs the same policy evaluation as `/v1/authorize`.
-- Returns `APPROVED`, `DENIED`, or `PENDING`, with the matched rule and the public Sigil error code.
+- Returns `ALLOWED`, `DENIED`, or `PENDING`, with the matched rule and the public Sigil error code.
 - Includes `test_run: true` and `observe_mode_active: <bool>` in the response.
 
 ### What it does not do
@@ -175,8 +175,8 @@ A typical GitHub Actions step:
       --data @fixtures/expected-approved-intent.json)
 
     decision=$(echo "$response" | jq -r '.status')
-    if [ "$decision" != "APPROVED" ]; then
-      echo "Policy regression: expected APPROVED, got $decision"
+    if [ "$decision" != "ALLOWED" ]; then
+      echo "Policy regression: expected ALLOWED, got $decision"
       echo "$response" | jq
       exit 1
     fi

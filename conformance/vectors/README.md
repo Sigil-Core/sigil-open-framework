@@ -7,7 +7,7 @@ Each vector records:
 - the exact unsigned policy body;
 - a canonical policy hash after parsing;
 - request intents with trusted provenance and metadata where required;
-- expected `APPROVED`, `DENIED`, or `PENDING` decisions;
+- expected `ALLOWED`, `DENIED`, or `PENDING` decisions;
 - the public error code and violated rule for non-approved decisions.
 
 Promotion criteria for a new connector-specific vector remain stricter. Capture the installed connector's real server ID, tool names, argument schema, policy hash, and audit records. Run the fixture once in OBSERVE mode, assert the projected decision and redaction fields, terminate the canary, then repeat the assertions in ENFORCE mode.

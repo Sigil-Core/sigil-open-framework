@@ -7,7 +7,7 @@
     {
       "name": "patch-with-matching-row-filter-approved",
       "intent": { "action": "http", "method": "PATCH", "url": "https://your-project-ref.supabase.co/rest/v1/posts?slug=eq.launch-update" },
-      "expected_decision": "APPROVED",
+      "expected_decision": "ALLOWED",
       "expected_error_code": null
     },
     {
@@ -41,7 +41,7 @@
     {
       "name": "post-with-empty-query-unaffected",
       "intent": { "action": "http", "method": "POST", "url": "https://your-project-ref.supabase.co/rest/v1/posts" },
-      "expected_decision": "APPROVED",
+      "expected_decision": "ALLOWED",
       "expected_error_code": null
     },
     {

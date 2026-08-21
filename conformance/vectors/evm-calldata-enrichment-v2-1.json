@@ -109,7 +109,7 @@
           }
         }
       },
-      "expected_decision": "APPROVED",
+      "expected_decision": "ALLOWED",
       "expected_error_code": null
     }
   ]

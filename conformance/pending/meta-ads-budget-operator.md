@@ -12,7 +12,7 @@
 
 ## Required vector cases
 
-1. A small budget adjustment inside both boundaries returns `APPROVED`.
+1. A small budget adjustment inside both boundaries returns `ALLOWED`.
 2. An adjustment above the approval threshold returns `PENDING`.
 3. An unapproved account or campaign returns `DENIED`.
 4. A campaign or audience mutation tool returns `DENIED`.
