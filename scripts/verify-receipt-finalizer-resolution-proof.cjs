@@ -10,7 +10,7 @@ const actionPath = path.join(
 const action = fs.readFileSync(actionPath, 'utf8');
 
 assert.match(action, /^name: Receipt finalizer resolution proof$/m);
-assert.match(action, /^  using: composite$/m);
+assert.match(action, /^ {2}using: composite$/m);
 assert.match(action, /\^\(Sigil-Core\|SigilWatch\)\/\[A-Za-z0-9\._-\]\+\$/);
 assert.doesNotMatch(action, /deployment|receipt-resolution|origin-gate/i);
 assert.doesNotMatch(action, /secrets\.|github\.token|permissions:/i);
