@@ -16,11 +16,15 @@ const policySection = (policy, name) => {
 };
 
 const verifyClaudeShimExample = (markdown) => {
-  const fencedPolicy = markdown.match(/```markdown\n([\s\S]*?)\n```/);
-  if (!fencedPolicy) return ["Claude Code example has no fenced warranty.md policy"];
+  const fencedPolicies = [...markdown.matchAll(/```markdown\n([\s\S]*?)\n```/g)]
+    .map((match) => match[1])
+    .filter((content) => /^version:\s*\d+\.\d+\.\d+\s*$/m.test(content));
+  if (fencedPolicies.length !== 1) {
+    return [`Claude Code example must contain exactly one fenced warranty.md policy; found ${fencedPolicies.length}`];
+  }
 
   const failures = [];
-  const policy = fencedPolicy[1];
+  const policy = fencedPolicies[0];
   if (!/^version:\s*2\.1\.0\s*$/m.test(policy)) {
     failures.push("Claude Code example must remain Policy 2.1.0");
   }
