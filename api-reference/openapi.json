@@ -329,6 +329,11 @@
             ],
             "type": "object"
           },
+          "request_nonce": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
           "txCommit": {
             "pattern": "^[0-9a-f]{64}$",
             "type": "string"
@@ -359,6 +364,9 @@
               "compiled_response_policy": {
                 "type": "string"
               },
+              "decision_record": {
+                "type": "string"
+              },
               "intent_attestation": {
                 "type": "string"
               },
@@ -373,6 +381,7 @@
             "required": [
               "status",
               "intent_attestation",
+              "decision_record",
               "message"
             ],
             "type": "object",
@@ -382,6 +391,9 @@
             "$schema": "https://json-schema.org/draft/2020-12/schema",
             "additionalProperties": false,
             "properties": {
+              "decision_record": {
+                "type": "string"
+              },
               "error_code": {
                 "enum": [
                   "SIGIL_AGGREGATE_FIELD_MISSING",
@@ -500,7 +512,8 @@
               "message",
               "expiresAt",
               "policyRule",
-              "error_code"
+              "error_code",
+              "decision_record"
             ],
             "type": "object",
             "x-sigil-selector": "PENDING"
@@ -509,6 +522,9 @@
             "$schema": "https://json-schema.org/draft/2020-12/schema",
             "additionalProperties": {},
             "properties": {
+              "decision_record": {
+                "type": "string"
+              },
               "error_code": {
                 "enum": [
                   "SIGIL_AGGREGATE_FIELD_MISSING",
@@ -735,7 +751,7 @@
       "url": "https://www.apache.org/licenses/LICENSE-2.0"
     },
     "title": "Sigil Open Framework — Reference Implementation",
-    "version": "1.0.0"
+    "version": "2.0.0"
   },
   "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
   "openapi": "3.1.0",
@@ -1247,6 +1263,11 @@
                     ],
                     "type": "object"
                   },
+                  "request_nonce": {
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "type": "string"
+                  },
                   "txCommit": {
                     "pattern": "^[0-9a-f]{64}$",
                     "type": "string"
@@ -1283,6 +1304,9 @@
                     "compiled_response_policy": {
                       "type": "string"
                     },
+                    "decision_record": {
+                      "type": "string"
+                    },
                     "intent_attestation": {
                       "type": "string"
                     },
@@ -1297,6 +1321,7 @@
                   "required": [
                     "status",
                     "intent_attestation",
+                    "decision_record",
                     "message"
                   ],
                   "type": "object",
@@ -1304,7 +1329,7 @@
                 }
               }
             },
-            "description": "Approved authorization decision"
+            "description": "Allowed authorization decision"
           },
           "202": {
             "content": {
@@ -1313,6 +1338,9 @@
                   "$schema": "https://json-schema.org/draft/2020-12/schema",
                   "additionalProperties": false,
                   "properties": {
+                    "decision_record": {
+                      "type": "string"
+                    },
                     "error_code": {
                       "enum": [
                         "SIGIL_AGGREGATE_FIELD_MISSING",
@@ -1431,7 +1459,8 @@
                     "message",
                     "expiresAt",
                     "policyRule",
-                    "error_code"
+                    "error_code",
+                    "decision_record"
                   ],
                   "type": "object",
                   "x-sigil-selector": "PENDING"
@@ -1447,6 +1476,9 @@
                   "$schema": "https://json-schema.org/draft/2020-12/schema",
                   "additionalProperties": {},
                   "properties": {
+                    "decision_record": {
+                      "type": "string"
+                    },
                     "error_code": {
                       "enum": [
                         "SIGIL_AGGREGATE_FIELD_MISSING",
@@ -1693,6 +1725,9 @@
                       "$schema": "https://json-schema.org/draft/2020-12/schema",
                       "additionalProperties": {},
                       "properties": {
+                        "decision_record": {
+                          "type": "string"
+                        },
                         "error_code": {
                           "enum": [
                             "SIGIL_AGGREGATE_FIELD_MISSING",
@@ -1801,7 +1836,8 @@
                         "status",
                         "error_code",
                         "message",
-                        "intent_attestation"
+                        "intent_attestation",
+                        "decision_record"
                       ],
                       "type": "object",
                       "x-sigil-selector": "DENIED"
@@ -2003,6 +2039,9 @@
                       "$schema": "https://json-schema.org/draft/2020-12/schema",
                       "additionalProperties": {},
                       "properties": {
+                        "decision_record": {
+                          "type": "string"
+                        },
                         "error_code": {
                           "const": "SIGIL_AUTH_CONTEXT_MISSING",
                           "type": "string"
@@ -2031,6 +2070,9 @@
                       "$schema": "https://json-schema.org/draft/2020-12/schema",
                       "additionalProperties": {},
                       "properties": {
+                        "decision_record": {
+                          "type": "string"
+                        },
                         "error_code": {
                           "const": "SIGIL_INTERNAL_ERROR",
                           "type": "string"
@@ -2478,6 +2520,11 @@
                     ],
                     "type": "object"
                   },
+                  "request_nonce": {
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "type": "string"
+                  },
                   "txCommit": {
                     "pattern": "^[0-9a-f]{64}$",
                     "type": "string"
@@ -2505,6 +2552,9 @@
                       "$schema": "https://json-schema.org/draft/2020-12/schema",
                       "additionalProperties": false,
                       "properties": {
+                        "decision_record": {
+                          "type": "string"
+                        },
                         "intent_attestation": {
                           "type": "null"
                         },
@@ -2532,7 +2582,8 @@
                         "intent_attestation",
                         "policyHash",
                         "message",
-                        "observe_mode_active"
+                        "observe_mode_active",
+                        "decision_record"
                       ],
                       "type": "object",
                       "x-sigil-selector": "ALLOWED"
@@ -2541,6 +2592,9 @@
                       "$schema": "https://json-schema.org/draft/2020-12/schema",
                       "additionalProperties": {},
                       "properties": {
+                        "decision_record": {
+                          "type": "string"
+                        },
                         "error_code": {
                           "enum": [
                             "SIGIL_AGGREGATE_FIELD_MISSING",
@@ -2669,7 +2723,8 @@
                         "error_code",
                         "matched_rule",
                         "message",
-                        "observe_mode_active"
+                        "observe_mode_active",
+                        "decision_record"
                       ],
                       "type": "object",
                       "x-sigil-selector": "DENIED"
@@ -2678,6 +2733,9 @@
                       "$schema": "https://json-schema.org/draft/2020-12/schema",
                       "additionalProperties": {},
                       "properties": {
+                        "decision_record": {
+                          "type": "string"
+                        },
                         "error_code": {
                           "enum": [
                             "SIGIL_AGGREGATE_FIELD_MISSING",
@@ -2806,7 +2864,8 @@
                         "would_be_policy_rule",
                         "error_code",
                         "message",
-                        "observe_mode_active"
+                        "observe_mode_active",
+                        "decision_record"
                       ],
                       "type": "object",
                       "x-sigil-selector": "PENDING"
@@ -2824,6 +2883,9 @@
                   "$schema": "https://json-schema.org/draft/2020-12/schema",
                   "additionalProperties": {},
                   "properties": {
+                    "decision_record": {
+                      "type": "string"
+                    },
                     "error_code": {
                       "enum": [
                         "SIGIL_AGGREGATE_FIELD_MISSING",
@@ -3259,6 +3321,9 @@
                       "$schema": "https://json-schema.org/draft/2020-12/schema",
                       "additionalProperties": {},
                       "properties": {
+                        "decision_record": {
+                          "type": "string"
+                        },
                         "error_code": {
                           "const": "SIGIL_AUTH_CONTEXT_MISSING",
                           "type": "string"
@@ -3287,6 +3352,9 @@
                       "$schema": "https://json-schema.org/draft/2020-12/schema",
                       "additionalProperties": {},
                       "properties": {
+                        "decision_record": {
+                          "type": "string"
+                        },
                         "error_code": {
                           "const": "SIGIL_INTERNAL_ERROR",
                           "type": "string"
@@ -3589,7 +3657,7 @@
     },
     "/v1/holds/{holdId}": {
       "get": {
-        "description": "Returns the current state of a hold (PENDING, ALLOWED, DENIED, EXPIRED) plus the source intent and policy reference. Requires the API key that created the hold: a hold is owned by the key it was issued to, and a key can read only its own holds. Holds expire at 24 hours by default. Rate-limited to 30 lookups per minute.",
+        "description": "Returns the current non-authoritative state of a hold (PENDING, ALLOWED, DENIED, EXPIRED) plus the source intent and policy reference. A hold poll cannot authorize execution; clients must re-call /v1/authorize and validate its authoritative decision before executing. Requires the API key that created the hold: a hold is owned by the key it was issued to, and a key can read only its own holds. Holds expire at 24 hours by default. Rate-limited to 30 lookups per minute.",
         "parameters": [
           {
             "description": "The hold identifier returned when the policy required consensus",
@@ -4126,6 +4194,6 @@
       "name": "Conformance"
     }
   ],
-  "x-sigil-contract-version": "1.0.0",
-  "x-sigil-schema-source-digest": "fe1d0e6a8bb115e6b3253aafec93143a8eda49ae5cb12473fcc95ca45bf3d13b"
+  "x-sigil-contract-version": "2.0.0",
+  "x-sigil-schema-source-digest": "a50317e539dcf7a870c6c79ea23ea913b694126ed146bee5c99b00050863ea47"
 }
