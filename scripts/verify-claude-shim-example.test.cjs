@@ -31,4 +31,9 @@ if (verifyClaudeShimExample(withIntroductoryMarkdownFence).length !== 0) {
   throw new Error("an introductory markdown fence must not replace the warranty.md policy identity");
 }
 
+const withVersionedIntroductoryMarkdownFence = `\`\`\`markdown\nversion: 9.9.9\nThis is explanatory prose, not a policy.\n\`\`\`\n\n${source}`;
+if (verifyClaudeShimExample(withVersionedIntroductoryMarkdownFence).length !== 0) {
+  throw new Error("a version-bearing non-policy fence must not change warranty.md policy identity");
+}
+
 process.stdout.write("Verified planted missing and false trusted-shim declarations are rejected.\n");

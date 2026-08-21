@@ -18,7 +18,7 @@ const policySection = (policy, name) => {
 const verifyClaudeShimExample = (markdown) => {
   const fencedPolicies = [...markdown.matchAll(/```markdown\n([\s\S]*?)\n```/g)]
     .map((match) => match[1])
-    .filter((content) => /^version:\s*\d+\.\d+\.\d+\s*$/m.test(content));
+    .filter((content) => /^## repository\s*$/m.test(content) && /^## signature\s*$/m.test(content));
   if (fencedPolicies.length !== 1) {
     return [`Claude Code example must contain exactly one fenced warranty.md policy; found ${fencedPolicies.length}`];
   }
