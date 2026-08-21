@@ -137,7 +137,7 @@ Returns the unauthenticated, schema-versioned capability registry used by author
 
 Fetch the state of a consensus hold
 
-Returns the current state of a hold (PENDING, APPROVED, DENIED, EXPIRED) plus the source intent and policy reference. Requires the API key that created the hold: a hold is owned by the key it was issued to, and a key can read only its own holds. Holds expire at 24 hours by default. Rate-limited to 30 lookups per minute.
+Returns the current state of a hold (PENDING, ALLOWED, DENIED, EXPIRED) plus the source intent and policy reference. Requires the API key that created the hold: a hold is owned by the key it was issued to, and a key can read only its own holds. Holds expire at 24 hours by default. Rate-limited to 30 lookups per minute.
 
 **Parameters:**
 - `holdId` (path, string, required): The hold identifier returned when the policy required consensus

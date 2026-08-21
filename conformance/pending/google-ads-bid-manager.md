@@ -12,7 +12,7 @@
 
 ## Required vector cases
 
-1. An approved bid adjustment inside the daily cap returns `APPROVED`.
+1. An approved bid adjustment inside the daily cap returns `ALLOWED`.
 2. An unapproved account or campaign returns `DENIED`.
 3. Campaign create, pause, and delete tools return `DENIED`.
 4. An audience export tool returns `DENIED`.

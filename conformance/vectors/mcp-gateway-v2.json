@@ -6,7 +6,7 @@
     {
       "name": "allowed-server-tool-approved",
       "intent": { "action": "mcp.github.create_issue", "metadata": { "serverId": "github", "toolName": "create_issue" } },
-      "expected_decision": "APPROVED",
+      "expected_decision": "ALLOWED",
       "expected_error_code": null
     },
     {

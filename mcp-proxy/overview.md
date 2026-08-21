@@ -23,7 +23,7 @@ MCP client (Claude Desktop / Kimi / Codex MCP)
 Sigil MCP Proxy (@sigilcore/mcp-proxy)
         ↓  POST /v1/authorize → Sigil Sign
         ↓
-APPROVED → request forwarded to the real MCP server
+ALLOWED → request forwarded to the real MCP server
 DENIED   → JSON-RPC error (-32001) returned to the client
 PENDING  → call remains blocked; a Class 3-capable signer may resolve the exact held intent or it times out
 ```

@@ -159,7 +159,7 @@ PreToolUse hook (sigil-pretooluse.mjs)
         ↓
 createCodexPreToolUseHook maps the tool → POST /v1/authorize → Sigil Sign
         ↓
-APPROVED → command runs
+ALLOWED → command runs
 DENIED   → permissionDecision: "deny" returned to Codex
 PENDING  → treated as deny (Codex has no hold state)
 ```

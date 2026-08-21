@@ -21,13 +21,13 @@
     {
       "name": "explicit-zero-amount-approved",
       "intent": { "action": "contract.call", "chainId": 1, "amount": "0", "targetAddress": "0x2222222222222222222222222222222222222222" },
-      "expected_decision": "APPROVED",
+      "expected_decision": "ALLOWED",
       "expected_error_code": null
     },
     {
       "name": "amount-under-caps-approved",
       "intent": { "action": "wallet.transfer", "chainId": 1, "amount": "0.5", "targetAddress": "0x1111111111111111111111111111111111111111" },
-      "expected_decision": "APPROVED",
+      "expected_decision": "ALLOWED",
       "expected_error_code": null
     },
     {

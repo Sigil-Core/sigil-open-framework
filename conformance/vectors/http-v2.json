@@ -6,7 +6,7 @@
     {
       "name": "approved-post",
       "intent": { "action": "http", "method": "POST", "url": "https://api.example.com/v1/posts" },
-      "expected_decision": "APPROVED",
+      "expected_decision": "ALLOWED",
       "expected_error_code": null
     },
     {

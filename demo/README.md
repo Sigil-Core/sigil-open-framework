@@ -12,7 +12,7 @@ The demo sends five `POST /v1/authorize` requests to the live Sigil Sign API:
 
 | Scene | Intent | Expected |
 |-------|--------|----------|
-| 1 | `contract.call` on Base, 2,500.50 USDC | **APPROVED** - under `token.USDC.max_transaction` |
+| 1 | `contract.call` on Base, 2,500.50 USDC | **ALLOWED** - under `token.USDC.max_transaction` |
 | 2 | `contract.call` on Base, 12,500 USDC | **DENIED** - exceeds `token.USDC.max_transaction: 10000` |
 | 3 | `email.send` to `team@sigilcore.com` | **PENDING** - recipient allowed, `email.require_approval: true` |
 | 4 | `email.send` to `noreply@sigilcore.com` | **DENIED** - recipient is blocked before approval |

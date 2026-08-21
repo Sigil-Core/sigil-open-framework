@@ -103,7 +103,7 @@ pre_tool_call shell hook (sigil-pre-tool-call.mjs)
         ↓
 checkIntent → POST /v1/authorize → Sigil Sign
         ↓
-APPROVED → tool executes
+ALLOWED → tool executes
 DENIED   → {"decision": "block", "reason": ...} returned to Hermes
 PENDING  → treated as block (Hermes has no native hold state)
 ```

@@ -8,7 +8,7 @@
     {
       "name": "missing-amount-preserves-legacy-approval",
       "intent": { "action": "wallet.transfer", "chainId": 1, "targetAddress": "0x1111111111111111111111111111111111111111" },
-      "expected_decision": "APPROVED",
+      "expected_decision": "ALLOWED",
       "expected_error_code": null
     },
     {

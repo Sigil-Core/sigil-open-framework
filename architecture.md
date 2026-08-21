@@ -23,7 +23,7 @@ Sigil is a composable protocol stack. Three layers — enforcement, legal govern
 │                                                             │
 │  Intent Declaration → Sigil Sign Policy Evaluation           │
 │       ↓                    ↓                    ↓           │
-│    APPROVED             PENDING              DENIED         │
+│    ALLOWED             PENDING              DENIED         │
 │  (attestation)      (consensus hold)     (hard block)       │
 └────────────────────────┬────────────────────────────────────┘
                          │  Intent Attestation JWT (Ed25519 + ML-DSA-65)
@@ -119,7 +119,7 @@ Sigil Sign reads the operator's `warranty.md` at runtime and evaluates the inten
 
 Sigil Sign returns one of three decisions:
 
-- `APPROVED` — intent is within policy. A signed Intent Attestation is issued immediately.
+- `ALLOWED` — intent is within policy. A signed Intent Attestation is issued immediately.
 - `DENIED` — intent violates a hard policy rule. No attestation. Execution is blocked.
 - `PENDING` — intent matches a configured approval or consensus gate. A consensus hold is created with a 24-hour TTL. No attestation until the hold is resolved.
 

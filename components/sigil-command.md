@@ -28,7 +28,7 @@ Command displays your **violation log** — the chronological record of every po
 | **Time** | When the event occurred (UTC) |
 | **Endpoint** | The API path the agent called |
 | **Chain** | The blockchain chain ID for the transaction |
-| **Decision** | `DENIED`, `PENDING`, or `APPROVED` |
+| **Decision** | `DENIED`, `PENDING`, or `ALLOWED` |
 | **Policy rule** | The specific warranty.md rule that matched |
 
 Events are paginated (50 per page) with cursor-based loading. Every event is tied to your API key — you only see your own enforcement data. Tenant isolation is enforced server-side; the client cannot override it.

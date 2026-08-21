@@ -24,7 +24,7 @@
     {
       "name": "mixed-case-slides-through-substring-denylist",
       "intent": { "action": "bash", "command": "psql -c 'Drop Table users'" },
-      "expected_decision": "APPROVED",
+      "expected_decision": "ALLOWED",
       "expected_error_code": null
     }
   ]

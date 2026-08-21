@@ -30,7 +30,7 @@ POST /v1/authorize → Sigil Sign
         ↓
 Policy evaluated against warranty.md
         ↓
-APPROVED → tool executes
+ALLOWED → tool executes
 DENIED   → typed rejection returned to agent
 PENDING  → action held for human approval
 ```
@@ -138,7 +138,7 @@ const result = await checkIntent(intent, {
 
 | Mode | Unreachable result | Use when |
 |---|---|---|
-| `failMode: 'open'` | `APPROVED` with `failOpen: true` | Local development and non-financial workflows |
+| `failMode: 'open'` | `ALLOWED` with `failOpen: true` | Local development and non-financial workflows |
 | `failMode: 'closed'` | `DENIED` with `SIGIL_UNREACHABLE` | Production, externally-visible actions, and wallet or on-chain actions |
 
 In open mode, fallback approvals carry `failOpen: true` so hosts can distinguish an outage fallback from a real policy approval. In closed mode, `buildRejectionContext` tells the agent to pause and retry after connectivity is restored; it does not frame the event as a policy violation.

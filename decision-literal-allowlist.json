@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "scanPaths": ["."],
+  "excludedPaths": [
+    "agents-global.md",
+    "agents-history.md",
+    "agents-status.md",
+    "decision-literal-allowlist.json",
+    "docs/evidence/decision-vocabulary-wave0.md",
+    "scripts/decision-literal-gate.mjs",
+    "scripts/decision-literal-gate.test.mjs"
+  ],
+  "allowedOccurrences": [
+    {
+      "path": "pre-execution-enforcement-gap.md",
+      "expression": "\"decision\": \"APPROVED\",",
+      "expectedCount": 1,
+      "reason": "The published v1.4 paper source remains unchanged under the no-errata scope boundary."
+    },
+    {
+      "path": "pre-execution-enforcement-gap.md",
+      "expression": "The warrant can require approval for `email.send`. In that case, Sigil returns `PENDING` instead of `APPROVED` or `DENIED`.",
+      "expectedCount": 1,
+      "reason": "The published v1.4 paper source remains unchanged under the no-errata scope boundary."
+    }
+  ]
+}

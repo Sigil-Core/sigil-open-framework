@@ -164,7 +164,7 @@ The IronClaw builder rebinds the default `FrameworkId::AgentHooks` to `Framework
 | Mode | Unreachable result | Use when |
 |---|---|---|
 | `FailMode::Closed` | `DENIED` with `SIGIL_UNREACHABLE` | Production, externally-visible actions, and wallet or on-chain actions |
-| `FailMode::Open` | `APPROVED` with `fail_open: true` | Development or non-financial workflows |
+| `FailMode::Open` | `ALLOWED` with `fail_open: true` | Development or non-financial workflows |
 
 Unreachability includes network errors, DNS failures, refused connections, request timeouts, 5xx responses, non-JSON response bodies, and responses larger than 64 KiB. Authentication failures (`401` or `403`) return `SIGIL_AUTH_FAILURE`, not `SIGIL_UNREACHABLE`.
 
