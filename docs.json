@@ -46,6 +46,7 @@
             "group": "Developer Toolkit",
             "pages": [
               "developer-toolkit/quick-start",
+              "developer-toolkit/agent-plugin-package-check",
               "developer-toolkit/mock-engine",
               "developer-toolkit/warranty-policy",
               "developer-toolkit/policy-2-1",
