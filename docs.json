@@ -61,6 +61,7 @@
             "group": "Agent Hooks",
             "pages": [
               "agent-hooks/overview",
+              "agent-hooks/cowork",
               "agent-hooks/claude-code",
               "agent-hooks/codex",
               "agent-hooks/openrouter",

@@ -6,15 +6,14 @@ description: "Gate Hermes Agent tool calls against a signed Sigil policy using H
 ## Overview
 
 [Hermes Agent](https://hermes-agent.nousresearch.com) (Nous Research) has a
-first-class hook system built for exactly this. Its `pre_tool_call` hook fires
-**immediately before every tool executes**, built-in tools and plugin tools
-alike, and can veto the call. Sigil Open Framework (SOF) registers a shell hook
-that forwards each intended tool call to Sigil Sign `/v1/authorize` and blocks
-when the policy returns `DENIED`.
+first-class `pre_tool_call` hook that can run before built-in and plugin tools
+and veto a call. Sigil Open Framework (SOF) registers a shell hook that
+forwards each matched tool call to Sigil Sign `/v1/authorize`.
 
-Of the popular agent runtimes, Hermes offers the most complete pre-execution
-surface: a single hook governs `terminal`, `write_file`, `patch`, `web_search`,
-`read_file`, and any plugin or MCP tool the agent can reach.
+Coverage depends on the matcher, successful hook registration, and Hermes host
+failure handling. Set Hermes `fail_closed: true`. Without that host setting, a
+hook spawn failure, timeout, or malformed result can allow the tool to proceed
+even when the Sigil request itself uses closed mode.
 
 `@sigilcore/agent-hooks` ships a dedicated Hermes export:
 `createHermesPreToolCallHook`. It normalizes Hermes hook payloads, maps common
@@ -43,6 +42,7 @@ hooks:
     - matcher: "terminal|write_file|patch|web_search|web_extract"
       command: "node ~/.hermes/agent-hooks/sigil-pre-tool-call.mjs"
       timeout: 10
+      fail_closed: true
 ```
 
 The `matcher` is a regex over the tool name. Widen or narrow it to match the
@@ -141,9 +141,10 @@ precedence in tie cases. Both flow through the same dispatcher.
 
 ## Fail Mode
 
-The script uses `failMode: 'closed'`, so a tool is blocked if Sigil Sign is
-unreachable. Switch to `failMode: 'open'` for local development. Use closed mode
-for any environment that touches production, external systems, or on-chain actions.
+The script uses `failMode: 'closed'`, so the adapter returns a block if Sigil
+Sign is unreachable. Hermes `fail_closed: true` separately blocks if the shell
+hook cannot produce a valid result. Both settings are required for a closed
+deployment.
 
 ## Configuration
 

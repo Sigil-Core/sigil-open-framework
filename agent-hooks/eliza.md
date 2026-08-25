@@ -1,6 +1,6 @@
 ---
 title: "ELIZA"
-description: "Use @sigilcore/agent-hooks with ElizaOS to gate agent actions before execution."
+description: "Use an @sigilcore/agent-hooks decision helper in an ElizaOS action path."
 ---
 
 ## Installation
@@ -19,6 +19,7 @@ HTTP note: emit typed `http` only for an explicit valid method in the intercepte
 const config = {
   apiKey: process.env.SIGIL_API_KEY!,
   agentId: 'my-eliza-agent',
+  failMode: 'closed',
 };
 
 // Before any ELIZA action:
@@ -38,6 +39,12 @@ if (blocked) {
 
 `checkElizaAction` maps the ELIZA action name to a Sigil action type (lowercased), submits it to `/v1/authorize`, and returns `null` on approval or a rejection object on denial or hold.
 
+This is a decision helper, not automatic ElizaOS registration. The host must call
+it before every governed action and must not execute when it returns a rejection.
+Unwrapped actions and callers that ignore the result remain outside coverage.
+The package default is fail-open for compatibility, so production integrations
+must set `failMode: 'closed'` explicitly.
+
 ```typescript
 // Returns null if approved
 // Returns { blocked: true, rejection: SigilRejectionContext } if denied or pending
@@ -50,6 +57,7 @@ if (blocked) {
 | `apiKey` | `string` | Yes | — | Sigil API key (`sk_sigil_...`) |
 | `apiUrl` | `string` | No | `https://sign.sigilcore.com` | Sigil Sign endpoint |
 | `agentId` | `string` | No | `'agent'` | Agent identifier |
+| `failMode` | `'open' \| 'closed'` | No | `'open'` | Adapter result when Sigil is unreachable; use `'closed'` for governed production paths |
 | `onDenied` | `function` | No | — | Called when action is denied |
 | `onPending` | `function` | No | — | Called when action is held |
 | `onError` | `function` | No | — | Called on network error |
