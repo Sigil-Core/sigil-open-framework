@@ -12,10 +12,13 @@ intended action to Sigil Sign `/v1/authorize` and blocks when the policy returns
 `DENIED`.
 
 <Note>
-  **Coverage today.** Codex `PreToolUse` currently supports Bash, file edits
-  through `apply_patch` with `Edit` and `Write` matcher aliases, and MCP tool
-  calls. It still does not intercept WebSearch or every rich shell-streaming
-  path. Treat this as a strong guardrail, not a complete enforcement boundary.
+  **Coverage today.** A valid Codex `PreToolUse` denial blocks supported Bash,
+  `exec_command`, `apply_patch`, MCP, and the local function-tool calls that
+  the registered matchers cover.
+  Hosted tools, specialized paths, and continued `write_stdin` streams are not
+  fully covered. A hook crash, timeout, malformed output, or unsupported output
+  can also leave the host call on its normal path. Treat this as a guardrail,
+  not a complete enforcement boundary.
   For broader MCP governance, route tools through the
   [Sigil MCP Proxy](../mcp-proxy/overview). Track the
   [Codex hooks docs](https://developers.openai.com/codex/hooks) as coverage expands.
@@ -32,16 +35,10 @@ You need a Sigil API key and a signed `warranty.md` policy file deployed to Sigi
 
 Node.js 18 or newer is required for the hook script below.
 
-## 1. Enable hooks
+## 1. Register the PreToolUse hook
 
-Codex hooks are behind a feature flag. In `~/.codex/config.toml`:
-
-```toml
-[features]
-codex_hooks = true
-```
-
-## 2. Register the PreToolUse hook
+Hooks are enabled by default in current Codex releases. Use the canonical
+`hooks` configuration. The older `codex_hooks` feature flag is deprecated.
 
 In `~/.codex/hooks.json` (global) or `<repo>/.codex/hooks.json` (per project):
 
@@ -51,6 +48,16 @@ In `~/.codex/hooks.json` (global) or `<repo>/.codex/hooks.json` (per project):
     "PreToolUse": [
       {
         "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ~/.codex/hooks/sigil-pretooluse.mjs",
+            "statusMessage": "Sigil policy check"
+          }
+        ]
+      },
+      {
+        "matcher": "exec_command",
         "hooks": [
           {
             "type": "command",
@@ -104,7 +111,7 @@ In `~/.codex/hooks.json` (global) or `<repo>/.codex/hooks.json` (per project):
 }
 ```
 
-## 3. Add the hook script
+## 2. Add the hook script
 
 Install the package in a location the script can resolve, then create
 `~/.codex/hooks/sigil-pretooluse.mjs`:
@@ -166,11 +173,12 @@ PENDING  → treated as deny (Codex has no hold state)
 
 ## Fail Mode
 
-The script above uses `failMode: 'closed'`, so a Bash command is blocked if Sigil
-Sign is unreachable. For local development you can switch to `failMode: 'open'`,
-which allows the command through on an outage and tags the result with
-`failOpen: true`. Use closed mode for any environment that touches production,
-external systems, or on-chain actions.
+The script above uses `failMode: 'closed'`, so the adapter returns a denial if
+Sigil Sign is unreachable. Codex blocks when it receives that valid denial.
+This does not cover failure of the hook process itself. Codex documents hooks
+as guardrails rather than a complete security boundary, so pair them with the
+OS sandbox, managed approval policy, and an in-path MCP proxy for consequential
+connector actions.
 
 ## Adapter Status
 
@@ -197,7 +205,7 @@ Codex `PreToolUse` covers matching MCP tool calls and file edits through
 | `apiUrl` | `string` | No | `https://sign.sigilcore.com` | Sigil Sign endpoint |
 | `agentId` | `string` | No | `'agent'` | Agent identifier |
 | `framework` | `string` | No | `'agent-hooks'` | Use `'codex'` for telemetry and audit routing |
-| `failMode` | `'open' \| 'closed'` | No | `'open'` | Block (`closed`) or allow (`open`) when Sigil is unreachable |
+| `failMode` | `'open' \| 'closed'` | No | `'open'` | Adapter result when Sigil is unreachable; it does not control host hook-process failure |
 
 ## Source
 

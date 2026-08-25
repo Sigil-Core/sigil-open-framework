@@ -5,11 +5,11 @@ description: "Govern MCP tool calls from Claude Desktop, Kimi, and other MCP cli
 
 ## Overview
 
-Some of the most popular agent surfaces are **MCP clients with no pre-tool hook**.
-Claude Desktop and Kimi run tools exclusively through Model Context Protocol
-servers and expose no place to run a policy check before a tool fires. Codex fires
-hooks for Bash but not for MCP calls. For this entire class of client, the
-enforcement point is the MCP transport itself.
+Some agent surfaces expose tools through Model Context Protocol servers without
+a reliable native pre-tool boundary. For those routed calls, the enforcement
+point can be the MCP transport itself. Codex can also run hooks for supported MCP
+calls, but hook-process failures may still continue; the proxy is the stronger
+boundary for a server that is reachable only through it.
 
 `@sigilcore/mcp-proxy` sits between the client and its MCP servers. Every
 `tools/call` request is evaluated against your operator's `warranty.md` policy via
@@ -30,11 +30,11 @@ PENDING  → call remains blocked; a Class 3-capable signer may resolve the exac
 
 <Note>
   **What this governs.** The proxy governs **MCP tool calls only**. It does not see
-  a client's built-in capabilities (Claude Desktop connectors and web search, Codex's
-  native Bash and file edits). Pair the proxy with a native hook where one exists:
-  [Codex hooks](../agent-hooks/codex) for Bash, [Claude Code](../agent-hooks/claude-code)
-  and [Hermes](../agent-hooks/hermes) for full tool coverage. The proxy is the right
-  tool precisely where no native hook exists.
+  a client's built-in capabilities (Claude Desktop connectors and web search,
+  Codex's native Bash and file edits), other MCP servers, or any route that can
+  bypass it. Pair it with a host hook where one exists, but treat that hook
+  according to its documented failure boundary. No combination here implies
+  universal coverage of a host's native tools.
 </Note>
 
 ## Quick Start
@@ -157,11 +157,18 @@ for the scanner boundary, rollback order, exact grammar, and limitations.
 
 ## HTTP/SSE Transport
 
-Proxy a remote MCP server with `--remote`:
+Proxy a remote MCP server as the upstream with `--remote`:
 
 ```bash
 npx @sigilcore/mcp-proxy --remote https://api.example.com/mcp
 ```
+
+The published proxy is still **client-facing over stdio**. `--remote` changes
+the upstream transport; it does not expose a server-facing Streamable HTTP
+endpoint. Therefore the current package cannot itself be registered as a Cowork
+remote custom connector. That setup requires a separately deployed,
+authenticated Streamable HTTP gateway that applies the same authorization before
+forwarding each `tools/call`.
 
 Remote servers often require auth. Configure upstream headers in your config file
 using environment variable references. Every header value must reference at least

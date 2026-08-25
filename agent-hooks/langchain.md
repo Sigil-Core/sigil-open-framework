@@ -19,6 +19,7 @@ HTTP note: typed `http` requires an explicit valid method in the tool input. Inp
 const config = {
   apiKey: process.env.SIGIL_API_KEY!,
   agentId: 'my-langchain-agent',
+  failMode: 'closed',
 };
 
 // Wrap any LangChain tool:
@@ -41,6 +42,10 @@ const result = await safeTool.call('rm -rf /tmp/important');
 
 The JSON rejection is returned as the tool output string — LangChain agents receive it as a tool result and adjust their reasoning accordingly.
 
+Coverage is limited to the wrapped tool object and call path. Every governed
+tool must use the wrapper, and the agent must not retain an unwrapped reference.
+Set `failMode: 'closed'` so a Sign outage also blocks execution.
+
 ## Configuration
 
 | Field | Type | Required | Default | Description |
@@ -48,6 +53,7 @@ The JSON rejection is returned as the tool output string — LangChain agents re
 | `apiKey` | `string` | Yes | — | Sigil API key (`sk_sigil_...`) |
 | `apiUrl` | `string` | No | `https://sign.sigilcore.com` | Sigil Sign endpoint |
 | `agentId` | `string` | No | `'agent'` | Agent identifier |
+| `failMode` | `'open' \| 'closed'` | No | `'open'` | Adapter result when Sigil is unreachable; use `'closed'` for governed production paths |
 | `onDenied` | `function` | No | — | Called when action is denied |
 | `onPending` | `function` | No | — | Called when action is held |
 | `onError` | `function` | No | — | Called on network error |
