@@ -144,7 +144,13 @@ precedence in tie cases. Both flow through the same dispatcher.
 The script uses `failMode: 'closed'`, so the adapter returns a block if Sigil
 Sign is unreachable. Hermes `fail_closed: true` separately blocks if the shell
 hook cannot produce a valid result. Both settings are required for a closed
-deployment.
+deployment, and they are not sufficient on their own: a script that throws
+before it writes any output ends without a block response, and host handling
+of that empty exit can vary by Hermes version. Wrap the script body in a
+top-level try/catch that prints `{"decision": "block", "reason": "hook
+error"}` before a nonzero exit, and verify by test that a hook crash, a hook
+timeout, and a Sign outage each block the tool before calling the deployment
+closed.
 
 ## Configuration
 
