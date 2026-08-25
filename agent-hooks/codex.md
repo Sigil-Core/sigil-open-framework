@@ -57,6 +57,16 @@ In `~/.codex/hooks.json` (global) or `<repo>/.codex/hooks.json` (per project):
         ]
       },
       {
+        "matcher": "exec_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ~/.codex/hooks/sigil-pretooluse.mjs",
+            "statusMessage": "Sigil policy check"
+          }
+        ]
+      },
+      {
         "matcher": "apply_patch",
         "hooks": [
           {
