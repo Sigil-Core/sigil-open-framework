@@ -60,16 +60,27 @@ Create `~/.hermes/agent-hooks/sigil-pre-tool-call.mjs`:
 #!/usr/bin/env node
 import { createHermesPreToolCallHook } from '@sigilcore/agent-hooks';
 
-const payload = JSON.parse(await new Response(process.stdin).text());
-const hook = createHermesPreToolCallHook({
-  apiKey: process.env.SIGIL_API_KEY,
-  agentId: 'hermes-agent',
-  failMode: 'closed',
-});
-
-process.stdout.write(JSON.stringify(await hook(payload)));
-process.exit(0);
+try {
+  const payload = JSON.parse(await new Response(process.stdin).text());
+  const hook = createHermesPreToolCallHook({
+    apiKey: process.env.SIGIL_API_KEY,
+    agentId: 'hermes-agent',
+    failMode: 'closed',
+  });
+  process.stdout.write(JSON.stringify(await hook(payload)));
+  process.exit(0);
+} catch (err) {
+  process.stdout.write(JSON.stringify({
+    decision: 'block',
+    reason: `Sigil hook error: ${err?.message ?? 'unknown'}`,
+  }));
+  process.exit(1);
+}
 ```
+
+The try/catch is load-bearing: a parsing or adapter failure still writes a
+block response before the process exits, so the hook fails closed on its own
+errors instead of ending with empty output.
 
 Set `SIGIL_API_KEY` in your environment. On first use Hermes prompts once to
 approve the `(event, command)` pair and persists the decision. For non-interactive
