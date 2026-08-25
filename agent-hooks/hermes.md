@@ -6,15 +6,14 @@ description: "Gate Hermes Agent tool calls against a signed Sigil policy using H
 ## Overview
 
 [Hermes Agent](https://hermes-agent.nousresearch.com) (Nous Research) has a
-first-class hook system built for exactly this. Its `pre_tool_call` hook fires
-**immediately before every tool executes**, built-in tools and plugin tools
-alike, and can veto the call. Sigil Open Framework (SOF) registers a shell hook
-that forwards each intended tool call to Sigil Sign `/v1/authorize` and blocks
-when the policy returns `DENIED`.
+first-class `pre_tool_call` hook that can run before built-in and plugin tools
+and veto a call. Sigil Open Framework (SOF) registers a shell hook that
+forwards each matched tool call to Sigil Sign `/v1/authorize`.
 
-Of the popular agent runtimes, Hermes offers the most complete pre-execution
-surface: a single hook governs `terminal`, `write_file`, `patch`, `web_search`,
-`read_file`, and any plugin or MCP tool the agent can reach.
+Coverage depends on the matcher, successful hook registration, and Hermes host
+failure handling. Set Hermes `fail_closed: true`. Without that host setting, a
+hook spawn failure, timeout, or malformed result can allow the tool to proceed
+even when the Sigil request itself uses closed mode.
 
 `@sigilcore/agent-hooks` ships a dedicated Hermes export:
 `createHermesPreToolCallHook`. It normalizes Hermes hook payloads, maps common
@@ -43,6 +42,7 @@ hooks:
     - matcher: "terminal|write_file|patch|web_search|web_extract"
       command: "node ~/.hermes/agent-hooks/sigil-pre-tool-call.mjs"
       timeout: 10
+      fail_closed: true
 ```
 
 The `matcher` is a regex over the tool name. Widen or narrow it to match the
@@ -60,16 +60,27 @@ Create `~/.hermes/agent-hooks/sigil-pre-tool-call.mjs`:
 #!/usr/bin/env node
 import { createHermesPreToolCallHook } from '@sigilcore/agent-hooks';
 
-const payload = JSON.parse(await new Response(process.stdin).text());
-const hook = createHermesPreToolCallHook({
-  apiKey: process.env.SIGIL_API_KEY,
-  agentId: 'hermes-agent',
-  failMode: 'closed',
-});
-
-process.stdout.write(JSON.stringify(await hook(payload)));
-process.exit(0);
+try {
+  const payload = JSON.parse(await new Response(process.stdin).text());
+  const hook = createHermesPreToolCallHook({
+    apiKey: process.env.SIGIL_API_KEY,
+    agentId: 'hermes-agent',
+    failMode: 'closed',
+  });
+  process.stdout.write(JSON.stringify(await hook(payload)));
+  process.exit(0);
+} catch (err) {
+  process.stdout.write(JSON.stringify({
+    decision: 'block',
+    reason: `Sigil hook error: ${err?.message ?? 'unknown'}`,
+  }));
+  process.exit(1);
+}
 ```
+
+The try/catch is load-bearing: a parsing or adapter failure still writes a
+block response before the process exits, so the hook fails closed on its own
+errors instead of ending with empty output.
 
 Set `SIGIL_API_KEY` in your environment. On first use Hermes prompts once to
 approve the `(event, command)` pair and persists the decision. For non-interactive
@@ -141,9 +152,16 @@ precedence in tie cases. Both flow through the same dispatcher.
 
 ## Fail Mode
 
-The script uses `failMode: 'closed'`, so a tool is blocked if Sigil Sign is
-unreachable. Switch to `failMode: 'open'` for local development. Use closed mode
-for any environment that touches production, external systems, or on-chain actions.
+The script uses `failMode: 'closed'`, so the adapter returns a block if Sigil
+Sign is unreachable. Hermes `fail_closed: true` separately blocks if the shell
+hook cannot produce a valid result. Both settings are required for a closed
+deployment, and they are not sufficient on their own: a script that throws
+before it writes any output ends without a block response, and host handling
+of that empty exit can vary by Hermes version. Wrap the script body in a
+top-level try/catch that prints `{"decision": "block", "reason": "hook
+error"}` before a nonzero exit, and verify by test that a hook crash, a hook
+timeout, and a Sign outage each block the tool before calling the deployment
+closed.
 
 ## Configuration
 
