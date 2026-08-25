@@ -31,21 +31,25 @@ Unknown framework strings are accepted with a warning log. You are never blocked
 
 ### TypeScript Package
 
-These identifiers are exported by `@sigilcore/agent-hooks` as `FRAMEWORKS`.
+These identifiers are used by the TypeScript integrations. The adapter rows
+align with the `FRAMEWORKS` export of `@sigilcore/agent-hooks`. The `mcp-proxy`
+row is implemented by the separate `@sigilcore/mcp-proxy` package, and the Rust
+integrations align with the crates listed under Rust Crates below.
 
 | ID | Name | Adapter | Docs |
 |---|---|---|---|
 | `agent-hooks` | Generic TypeScript host | `checkIntent` | [Agent Hooks](agent-hooks/overview) |
-| `anthropic-sdk` | Claude Code / Anthropic SDK | `checkAnthropicToolUse` | [Claude Code](agent-hooks/claude-code) |
-| `codex` | OpenAI Codex | Codex `PreToolUse` hook (Bash) | [Codex](agent-hooks/codex) |
-| `openrouter` | OpenRouter | `checkIntent` on returned tool calls | [OpenRouter](agent-hooks/openrouter) |
-| `hermes` | Hermes Agent | Hermes `pre_tool_call` shell hook | [Hermes Agent](agent-hooks/hermes) |
+| `anthropic-sdk` | Claude Code / Anthropic SDK (legacy registry label) | `checkAnthropicToolUse` decision helper | [Anthropic SDK and Claude Code boundaries](agent-hooks/claude-code) |
+| `cowork` | Claude Cowork | `createCoworkPreToolUseHook` signal adapter | [Claude Cowork](agent-hooks/cowork) |
+| `codex` | OpenAI Codex | `createCodexPreToolUseHook` | [Codex](agent-hooks/codex) |
+| `openrouter` | OpenRouter | `createOpenRouterToolGate` decision helper | [OpenRouter](agent-hooks/openrouter) |
+| `hermes` | Hermes Agent | `createHermesPreToolCallHook` | [Hermes Agent](agent-hooks/hermes) |
 | `mcp-proxy` | Sigil MCP Proxy (Claude Desktop, Kimi) | MCP transport interceptor | [MCP Proxy](mcp-proxy/overview) |
 | `eliza` | ELIZA | `checkElizaAction` | [ELIZA](agent-hooks/eliza) |
 | `langchain` | LangChain | `wrapLangChainTool` | [LangChain](agent-hooks/langchain) |
 | `openclaw` | OpenClaw | `createOpenclawSigilHandler` | [Agent Hooks](agent-hooks/overview) |
 | `nemoclaw` | NVIDIA NemoClaw | `createOpenclawSigilHandler` | [Agent Hooks](agent-hooks/overview) |
-| `agentpay` | USD1 AgentPay (WLFI) | `checkIntent` | [AgentPay](agent-hooks/agentpay) |
+| `agentpay` | USD1 AgentPay (WLFI) | `checkAgentPayTransfer` decision helper | [AgentPay](agent-hooks/agentpay) |
 
 ### Rust Crates
 

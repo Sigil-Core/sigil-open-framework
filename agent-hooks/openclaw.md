@@ -9,6 +9,12 @@ OpenClaw is covered by the `createOpenclawSigilHandler` export. The handler
 submits the action at the host execution boundary and blocks on a `DENIED`
 decision.
 
+Coverage depends on OpenClaw registering and invoking this blocking callback for
+the tool path. Configure Sigil `failMode: 'closed'` for Sign outages and keep the
+host's own hook-timeout behavior closed. An unregistered callback, an uncovered
+tool path, or a host that continues after callback failure is outside this
+adapter's boundary.
+
 For web-capable tools, the handler emits a typed `http` intent only when the
 tool input explicitly supplies a valid HTTP method. It never infers `GET`.
 Without an explicit method it preserves the legacy `web_fetch` action, whose

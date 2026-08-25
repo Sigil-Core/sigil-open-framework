@@ -18,7 +18,7 @@ the same pattern works for every model OpenRouter routes to. Set
 
 HTTP note: the host may emit typed `http` only when an OpenRouter tool call includes an explicit valid method. Otherwise submit `web_fetch`; do not infer `GET` from a URL alone.
 
-`@sigilcore/agent-hooks` ships a dedicated OpenRouter export:
+`@sigilcore/agent-hooks` ships a dedicated OpenRouter decision helper:
 `createOpenRouterToolGate`. It parses tool calls, normalizes function names and
 arguments into Sigil intents, and returns rejection context as a tool result.
 Use `recordOpenRouterModelUsageAndCheckBudget` after model responses when your
@@ -104,13 +104,14 @@ createOpenRouterToolGate → POST /v1/authorize → Sigil Sign
         ↓
 ALLOWED → host executes the tool
 DENIED   → rejection JSON returned to the model as the tool result
-PENDING  → held; surface for human approval
+PENDING  → rejected unless the host implements a durable hold and exact resume
 ```
 
 On a non-approval, `createOpenRouterToolGate` returns a typed JSON object the
 model understands (`sigil_decision`, `sigil_message`, `sigil_next_steps`) as the
 tool result, so the agent adjusts instead of blindly retrying. The model never
-executes anything: your host remains the single enforcement point.
+executes anything: your host remains the enforcement point and must call and
+obey this helper on every governed path.
 
 ## Notes
 

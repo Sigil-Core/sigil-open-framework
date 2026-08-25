@@ -5,9 +5,15 @@ description: "Use @sigilcore/agent-hooks alongside WLFI's AgentPay SDK to govern
 
 ## Overview
 
-[AgentPay SDK](https://github.com/World-Liberty-Financial-X) enables AI agents to hold and spend USD1 on EVM chains. `@sigilcore/agent-hooks` is natively compatible — no additional configuration needed.
+[AgentPay SDK](https://github.com/World-Liberty-Financial-X) enables AI agents
+to hold and spend USD1 on EVM chains. `@sigilcore/agent-hooks` provides a
+decision helper for AgentPay transfers. The payment host must call it and refuse
+signing unless it returns `approved: true`.
 
-When an AgentPay agent executes a USD1 transfer on Ethereum (chainId 1) or BNB Smart Chain (chainId 56), the `wallet.transfer` or `wallet_sign` action routes through your Sigil policy before the transaction is signed.
+When the host invokes the helper before signing a USD1 transfer on Ethereum
+(chainId 1) or BNB Smart Chain (chainId 56), the `wallet.transfer` action routes
+through your Sigil policy first. The helper does not interpose AgentPay by
+itself and cannot stop a caller that ignores or bypasses the result.
 
 **The layers are additive:** AgentPay handles payment mechanics and key management. Sigil determines whether the agent is authorized to initiate the payment at all. AgentPay tells agents how to spend. Sigil tells agents what they're allowed to do.
 

@@ -32,11 +32,19 @@
       "docs": "agent-hooks/claude-code"
     },
     {
+      "id": "cowork",
+      "name": "Claude Cowork",
+      "category": "tool",
+      "language": "typescript",
+      "adapter": "createCoworkPreToolUseHook",
+      "docs": "agent-hooks/cowork"
+    },
+    {
       "id": "codex",
       "name": "OpenAI Codex",
       "category": "tool",
       "language": "typescript",
-      "adapter": "checkIntent",
+      "adapter": "createCodexPreToolUseHook",
       "docs": "agent-hooks/codex"
     },
     {
@@ -44,7 +52,7 @@
       "name": "OpenRouter",
       "category": "tool",
       "language": "typescript",
-      "adapter": "checkIntent",
+      "adapter": "createOpenRouterToolGate",
       "docs": "agent-hooks/openrouter"
     },
     {
@@ -52,7 +60,7 @@
       "name": "Hermes Agent",
       "category": "tool",
       "language": "typescript",
-      "adapter": "checkIntent",
+      "adapter": "createHermesPreToolCallHook",
       "docs": "agent-hooks/hermes"
     },
     {
@@ -108,7 +116,7 @@
       "name": "USD1 AgentPay (WLFI)",
       "category": "evm",
       "language": "typescript",
-      "adapter": "checkIntent",
+      "adapter": "checkAgentPayTransfer",
       "docs": "agent-hooks/agentpay"
     }
   ]

@@ -1,13 +1,19 @@
 ---
 title: "@sigilcore/agent-hooks"
-description: "PreToolUse interceptor for autonomous AI agents. Gates tool calls against a signed policy before they execute."
+description: "Authorization adapters for agent runtimes, with explicit coverage and host-enforcement boundaries."
 ---
 
 ## Overview
 
-`@sigilcore/agent-hooks` is the client-side enforcement layer for Sigil. It intercepts an agent's intended tool call **before** it executes, submits it to the Sigil Sign `/v1/authorize` endpoint, and blocks or holds the action based on the policy decision.
+`@sigilcore/agent-hooks` supplies authorization adapters for agent runtimes. An
+adapter maps an intended action to Sigil Sign `/v1/authorize` and returns the
+result in the shape its host expects.
 
-Without agent-hooks, Sigil Sign governs EVM transactions only. With agent-hooks, Sigil governs agent actions at the host boundary: bash commands, HTTP requests, file writes, wallet signing, email sends, and framework-specific tool calls.
+An adapter is an enforcement boundary only when the host invokes it before the
+action, honors a denial, and fails closed if the adapter crashes, times out, or
+returns malformed output. Some integrations meet that contract. Others are
+decision helpers or best-effort callbacks. The table below states the current
+boundary for each integration.
 
 The TypeScript package is the JavaScript integration surface. Rust hosts use the companion [`agent-hooks-rs`](./rust) crates, which share the same `/v1/authorize` wire fixtures and add a native IronClaw hook adapter.
 
@@ -19,7 +25,7 @@ npm install @sigilcore/agent-hooks
 
 ## How It Works
 
-Every tool call an agent attempts is intercepted before execution:
+For an in-path integration, the request flow is:
 
 ```
 Agent attempts tool call
@@ -32,8 +38,13 @@ Policy evaluated against warranty.md
         ↓
 ALLOWED → tool executes
 DENIED   → typed rejection returned to agent
-PENDING  → action held for human approval
+PENDING  → held only where the integration implements durable hold resolution;
+           otherwise returned as a rejection
 ```
+
+This diagram does not apply to native or hosted tools outside the named host
+boundary. A Sigil MCP server cannot govern another connector, and a host hook
+cannot govern tool paths that the host does not send through that hook.
 
 ## Supported Frameworks
 
@@ -43,21 +54,24 @@ host loop, payment wrapper, or transport layer. The dedicated adapters should
 grow over time for popular harnesses where a generic call hides important
 runtime nuance.
 
-### Dedicated Package Adapters
+### Enforcement Coverage
 
-| Framework | ID | Package | Export |
-|---|---|---|---|
-| Generic TypeScript host | `agent-hooks` | `@sigilcore/agent-hooks` | `checkIntent` |
-| Claude Code / Anthropic SDK | `anthropic-sdk` | `@sigilcore/agent-hooks` | `checkAnthropicToolUse` |
-| ELIZA | `eliza` | `@sigilcore/agent-hooks` | `checkElizaAction` |
-| LangChain | `langchain` | `@sigilcore/agent-hooks` | `wrapLangChainTool` |
-| OpenClaw | `openclaw` | `@sigilcore/agent-hooks` | `createOpenclawSigilHandler` |
-| NVIDIA NemoClaw | `nemoclaw` | `@sigilcore/agent-hooks` | `createOpenclawSigilHandler` |
-| [OpenAI Codex](./codex) | `codex` | `@sigilcore/agent-hooks` | `createCodexPreToolUseHook` |
-| [Hermes Agent](./hermes) | `hermes` | `@sigilcore/agent-hooks` | `createHermesPreToolCallHook` |
-| [OpenRouter](./openrouter) | `openrouter` | `@sigilcore/agent-hooks` | `createOpenRouterToolGate` |
-| USD1 AgentPay (WLFI) | `agentpay` | `@sigilcore/agent-hooks` | `checkAgentPayTransfer` |
-| IronClaw | `ironclaw` | `sigil-agent-hooks-ironclaw` | native Rust `Hook` |
+| Framework | Current boundary | Required deployment condition |
+|---|---|---|
+| Generic TypeScript host | Decision helper | Caller must invoke `checkIntent`, use closed mode, and refuse every non-approval. |
+| Claude Code command hook | Best-effort callback | A valid deny blocks, but host timeout, crash, or malformed output can continue through normal permission flow. |
+| Anthropic Agent SDK tool loop | Decision helper | Call `checkAnthropicToolUse` before the handler and refuse execution when it returns a rejection. |
+| [Claude Cowork](./cowork) plugin hook | Signal only | Do not use as an enforcement claim. The in-path connector gateway is a separate planned build; the shipped stdio proxy cannot serve as Cowork's remote connector endpoint. |
+| ELIZA | Decision helper | Caller must branch on `checkElizaAction` before the action. |
+| LangChain | In-path wrapper | Wrap every governed tool and set `failMode: 'closed'`. Unwrapped tools remain outside coverage. |
+| OpenClaw | Blocking host callback | Register the handler for every governed tool, use closed Sign handling, and keep the host's callback-timeout behavior closed. |
+| NVIDIA NemoClaw | Unverified | The OpenClaw-shaped adapter exists, but no NemoClaw-specific installation or execution proof has shipped. |
+| [OpenAI Codex](./codex) | Best-effort callback | A valid deny blocks supported local tools. Hook failures and hosted tools remain outside the boundary. |
+| [Hermes Agent](./hermes) | Best-effort callback | Set both Sigil `failMode: 'closed'` and Hermes `fail_closed: true`; verify the hook is registered. |
+| [OpenRouter](./openrouter) | Decision helper | The application owns the tool loop and must call the gate before its handler. |
+| USD1 AgentPay (WLFI) | Decision helper | The payment host must refuse signing unless `checkAgentPayTransfer` returns approval. |
+| IronClaw | In-path, fail closed | Use the native Rust `Hook`; denial, pending, timeout, and hook errors stop execution. |
+| [Sigil MCP Proxy](../mcp-proxy/overview) | In-path, fail closed for routed `tools/call` | Point the client at the proxy and remove direct access to the same upstream. |
 
 ### Documented Integration Patterns
 
@@ -66,8 +80,10 @@ runtime nuance.
 | IronClaw model budgets | `ironclaw` | `sigil-agent-hooks-core` | host wraps model provider calls and invokes Rust model-budget helpers |
 | Any framework | custom | TypeScript or Rust | generic client call with runtime-specific glue |
 
-For MCP clients with no pre-tool hook (Claude Desktop, Kimi), govern MCP tool
-calls at the transport layer with the [Sigil MCP Proxy](../mcp-proxy/overview).
+For MCP clients, govern calls at the transport layer with the
+[Sigil MCP Proxy](../mcp-proxy/overview). This covers only MCP traffic routed
+through that proxy. It does not cover native tools or parallel direct
+connectors.
 
 See the [Framework Registry](../framework-registry) for the full list and custom framework usage.
 
@@ -120,7 +136,12 @@ You need a Sigil API key and a signed `warranty.md` policy file deployed to Sigi
 
 ## Fail Modes
 
-When Sigil Sign is unreachable, agent-hooks can either fail open or fail closed. Unreachability includes network errors, DNS failures, refused connections, request timeouts, 5xx responses, and non-JSON response bodies.
+When Sigil Sign is unavailable or returns an unusable response, agent-hooks can
+either fail open or fail closed. This covers network errors, DNS failures,
+refused connections, request timeouts, 5xx responses, and non-JSON response
+bodies. This setting
+controls the adapter's result. It cannot repair a host that skips the adapter,
+terminates it, or ignores its result.
 
 ### TypeScript: `@sigilcore/agent-hooks`
 

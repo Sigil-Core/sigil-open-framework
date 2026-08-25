@@ -1,6 +1,6 @@
 ---
-title: "Claude Code / Anthropic SDK"
-description: "Use @sigilcore/agent-hooks with Claude Code and the Anthropic SDK to gate tool calls before execution."
+title: "Claude Code / Anthropic Agent SDK"
+description: "Use @sigilcore/agent-hooks with Anthropic tool loops and understand the different Claude Code hook boundary."
 ---
 
 ## Installation
@@ -11,8 +11,18 @@ npm install @sigilcore/agent-hooks
 
 ## Adapter Status
 
-Claude Code and the Anthropic SDK already have a dedicated package export:
-`checkAnthropicToolUse`. Use the generic model-budget helpers
+The Anthropic Agent SDK has a dedicated result helper:
+`checkAnthropicToolUse`. The helper returns a `tool_result` error block. Your
+SDK tool loop must call it before execution and must not execute the tool when
+it returns a rejection.
+
+Claude Code command hooks use a different host contract. A valid
+`PreToolUse` denial can block a covered call, but a command-hook timeout,
+process failure, or malformed result can continue through Claude Code's normal
+permission flow. Do not describe a Claude Code command hook as a complete
+fail-closed boundary.
+
+Use the generic model-budget helpers
 `recordModelUsage` and `checkModelBudget` around Anthropic SDK responses when
 the host owns the model loop and can read response usage.
 
@@ -28,14 +38,20 @@ const config = {
   agentId: 'my-claude-agent',
 };
 
-// In your PreToolUse hook:
+// In your Anthropic SDK tool loop, before the handler:
 const rejection = await checkAnthropicToolUse(toolUseBlock, config);
 if (rejection) {
   // Feed rejection back to Claude as a tool_result error
   return rejection;
 }
-// Otherwise, let the tool execute normally
+// Otherwise, invoke the tool handler.
 ```
+
+<Warning>
+  `checkAnthropicToolUse` does not register itself with Claude Code and cannot
+  stop a tool if the host never calls it. For Claude Code command hooks, test
+  both a policy denial and a hook timeout before making a coverage claim.
+</Warning>
 
 ## Tool Name Mapping
 
