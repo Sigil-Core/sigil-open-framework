@@ -9,6 +9,7 @@ const UNIT_ID = /^[a-z][a-z0-9-]{2,63}\/[a-z][a-z0-9-]{1,19}$/;
 const SERVICE = /^[a-z][a-z0-9-]{2,39}$/;
 const ORIGIN = /^[a-z][a-z0-9-]{1,31}$/;
 const UTC_SECOND = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
+const ARTIFACT_DIGEST = /^sha256:[a-f0-9]{64}$/;
 const PAYLOAD_KEYS = new Set(['receipt_schema_version', 'unit_id', 'service', 'environment', 'commit', 'intended_origins', 'run_id']);
 const EVIDENCE_KEYS = new Set(['evidence_schema_version', 'unit_id', 'origin', 'run_id', 'run_attempt', 'commit', 'parity_verified', 'parity_source', 'completed_at']);
 
@@ -130,10 +131,47 @@ function readEvidenceFile(directory) {
   return parseEvidenceJson(fs.readFileSync(evidencePath));
 }
 
-export function evaluateEvidenceDirectory(root, payload, { runId, runAttempt }) {
+export function evaluateEvidenceArtifactSet(artifacts, payload, { runIdNumber, runAttempt, commit }) {
+  try {
+    const prefix = `deploy-evidence-${runAttempt}-`;
+    const expectedNames = payload.intended_origins.map((origin) => `${prefix}${origin}`).sort();
+    const evidenceArtifacts = artifacts.filter((artifact) => String(artifact?.name ?? '').startsWith(prefix));
+    const names = evidenceArtifacts.map((artifact) => artifact.name).sort();
+    if (JSON.stringify(names) !== JSON.stringify(expectedNames)) {
+      throw new Error('evidence artifact names are missing, duplicate, or unexpected');
+    }
+    for (const artifact of evidenceArtifacts) {
+      if (deploymentId(artifact.id) === null || artifact.expired !== false ||
+          !ARTIFACT_DIGEST.test(artifact.digest ?? '') || !Number.isSafeInteger(artifact.size_in_bytes) ||
+          artifact.size_in_bytes < 2 || artifact.size_in_bytes > 65_536 ||
+          artifact.workflow_run?.id !== runIdNumber || artifact.workflow_run?.head_sha !== commit) {
+        throw new Error('evidence artifact metadata is invalid');
+      }
+    }
+    return { state: 'success', artifacts: evidenceArtifacts, reason: null };
+  } catch (error) {
+    return { state: 'failure', artifacts: [], reason: error instanceof Error ? error.message : 'artifact validation failed' };
+  }
+}
+
+export function evaluateEvidenceDirectory(root, payload, { runId, runAttempt, allowFlattenedSingle = false }) {
   try {
     const expectedNames = payload.intended_origins.map((origin) => `deploy-evidence-${runAttempt}-${origin}`);
     const entries = fs.readdirSync(root, { withFileTypes: true });
+    if (allowFlattenedSingle && expectedNames.length === 1 && entries.length === 1 &&
+        entries[0].isFile() && entries[0].name === 'evidence.json') {
+      const record = validateEvidenceRecord(readEvidenceFile(root), {
+        unitId: payload.unit_id,
+        origin: payload.intended_origins[0],
+        runId,
+        runAttempt,
+        commit: payload.commit,
+      });
+      if (record.parity_verified !== true || record.parity_source !== 'endpoint') {
+        throw new Error('every origin must have positive endpoint parity');
+      }
+      return { state: 'success', records: [record], reason: null };
+    }
     const names = entries.map((entry) => entry.name).sort();
     if (entries.some((entry) => !entry.isDirectory()) || JSON.stringify(names) !== JSON.stringify([...expectedNames].sort())) {
       throw new Error('evidence artifact set is missing, duplicate, or unexpected');
@@ -176,6 +214,27 @@ async function collectPages(fetchImpl, token, pathname) {
     if (batch.length < 100) return values;
   }
   throw new Error(`GitHub API pagination limit exceeded for ${pathname}`);
+}
+
+async function collectArtifactPages(fetchImpl, token, repository, runId) {
+  const values = [];
+  for (let page = 1; page <= 100; page += 1) {
+    const result = await githubRequest(
+      fetchImpl,
+      token,
+      'GET',
+      `/repos/${repository}/actions/runs/${runId}/artifacts?per_page=100&page=${page}`,
+    );
+    if (!record(result) || !Number.isSafeInteger(result.total_count) || result.total_count < 0 || !Array.isArray(result.artifacts)) {
+      throw new Error('GitHub artifact pagination response is invalid');
+    }
+    values.push(...result.artifacts);
+    if (result.artifacts.length < 100) {
+      if (values.length !== result.total_count) throw new Error('GitHub artifact count changed during pagination');
+      return values;
+    }
+  }
+  throw new Error('GitHub API pagination limit exceeded for workflow artifacts');
 }
 
 function deploymentId(value) {
@@ -244,7 +303,18 @@ export async function finalizeReceipt({ token, repository, runId, runAttempt, ev
   await validateWorkflowRun(fetchImpl, token, input, deployment.payload.commit);
   const prior = existingTerminal(deployment.statuses, input.runAttempt, deployment.payload.intended_origins.length);
   if (prior) return { state: prior, deploymentId: deployment.id, idempotent: true, reason: null };
-  const evidence = evaluateEvidenceDirectory(evidenceDirectory, deployment.payload, input);
+  const artifacts = await collectArtifactPages(fetchImpl, token, repository, runId);
+  const artifactEvidence = evaluateEvidenceArtifactSet(artifacts, deployment.payload, {
+    runIdNumber: input.runIdNumber,
+    runAttempt: input.runAttempt,
+    commit: deployment.payload.commit,
+  });
+  const evidence = artifactEvidence.state === 'failure'
+    ? { state: 'failure', records: [], reason: artifactEvidence.reason }
+    : evaluateEvidenceDirectory(evidenceDirectory, deployment.payload, {
+      ...input,
+      allowFlattenedSingle: deployment.payload.intended_origins.length === 1,
+    });
   const description = terminalPointer(input.runAttempt, deployment.payload.intended_origins.length);
   const beforeWrite = await collectPages(fetchImpl, token, `/repos/${repository}/deployments/${deployment.id}/statuses`);
   const raced = existingTerminal(beforeWrite, input.runAttempt, deployment.payload.intended_origins.length);
