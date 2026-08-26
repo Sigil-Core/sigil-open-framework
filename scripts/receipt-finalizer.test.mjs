@@ -68,6 +68,18 @@ function inProgress(attempt = runAttempt, origins = payload.intended_origins.len
   return { state: 'in_progress', description: `sigil-receipt/1 attempt=${attempt} origins=${origins}` };
 }
 
+function artifact(origin, overrides = {}, attempt = runAttempt) {
+  return {
+    id: origin === 'ams3' ? 11 : 12,
+    name: `deploy-evidence-${attempt}-${origin}`,
+    size_in_bytes: 334,
+    expired: false,
+    digest: `sha256:${'b'.repeat(64)}`,
+    workflow_run: { id: Number(runId), head_sha: commit },
+    ...overrides,
+  };
+}
+
 function fakeGithub({
   statuses = [inProgress()],
   statusesByDeployment = null,
@@ -76,11 +88,14 @@ function fakeGithub({
   expectedDeploymentId = 7,
   attempt = runAttempt,
   workflowRun = {},
+  artifacts = payload.intended_origins.map((origin) => artifact(origin, {}, attempt)),
+  artifactTotalCount = artifacts.length,
 } = {}) {
   const calls = [];
   const fetchImpl = (url, options) => {
     calls.push({ url, method: options.method, body: options.body ? JSON.parse(options.body) : null });
     if (url.includes('/deployments?')) return response(200, deployments);
+    if (url.includes('/actions/runs/42/artifacts?')) return response(200, { total_count: artifactTotalCount, artifacts });
     if (url.includes(`/actions/runs/42/attempts/${attempt}`)) return response(200, {
       id: 42,
       run_attempt: attempt,
@@ -96,7 +111,7 @@ function fakeGithub({
       const written = JSON.parse(options.body);
       assert.deepEqual(written, {
         state: expectedState,
-        description: `sigil-receipt/1 attempt=${attempt} origins=2`,
+        description: `sigil-receipt/1 attempt=${attempt} origins=${deployments.find((deployment) => deployment.id === expectedDeploymentId).payload.intended_origins.length}`,
         auto_inactive: false,
       });
       const target = statusesByDeployment?.[String(expectedDeploymentId)] ?? statuses;
@@ -156,6 +171,95 @@ test('finalizes success from exactly one valid artifact per intended origin', ()
   const result = await finalizeReceipt({ token: 'test-token', repository, runId, runAttempt, evidenceDirectory: root, fetchImpl: github.fetchImpl });
   assert.deepEqual(result, { state: 'success', deploymentId: 7, idempotent: false, reason: null });
   assert.equal(github.calls.some((call) => call.method === 'POST'), true);
+}));
+
+test('accepts the verified single-artifact flattened download layout', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'sigil-receipt-finalizer-flat-'));
+  const singlePayload = { ...payload, intended_origins: ['nyc2'] };
+  try {
+    fs.writeFileSync(path.join(root, 'evidence.json'), JSON.stringify(evidence('nyc2')));
+    const github = fakeGithub({
+      deployments: [{ id: 7, sha: commit, environment: 'test', payload: singlePayload }],
+      statuses: [inProgress(1, 1)],
+      artifacts: [artifact('nyc2')],
+    });
+    const result = await finalizeReceipt({
+      token: 'test-token', repository, runId, runAttempt, evidenceDirectory: root, fetchImpl: github.fetchImpl,
+    });
+    assert.deepEqual(result, { state: 'success', deploymentId: 7, idempotent: false, reason: null });
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('rejects a flattened download without the exact authoritative artifact', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'sigil-receipt-finalizer-flat-name-'));
+  const singlePayload = { ...payload, intended_origins: ['nyc2'] };
+  try {
+    fs.writeFileSync(path.join(root, 'evidence.json'), JSON.stringify(evidence('nyc2')));
+    const github = fakeGithub({
+      deployments: [{ id: 7, sha: commit, environment: 'test', payload: singlePayload }],
+      statuses: [inProgress(1, 1)],
+      artifacts: [artifact('wrong')],
+      expectedState: 'failure',
+    });
+    const result = await finalizeReceipt({
+      token: 'test-token', repository, runId, runAttempt, evidenceDirectory: root, fetchImpl: github.fetchImpl,
+    });
+    assert.equal(result.state, 'failure');
+    assert.match(result.reason, /artifact names/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('rejects extra files beside a flattened evidence artifact', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'sigil-receipt-finalizer-flat-extra-'));
+  const singlePayload = { ...payload, intended_origins: ['nyc2'] };
+  try {
+    fs.writeFileSync(path.join(root, 'evidence.json'), JSON.stringify(evidence('nyc2')));
+    fs.writeFileSync(path.join(root, 'unexpected.txt'), 'unexpected');
+    const github = fakeGithub({
+      deployments: [{ id: 7, sha: commit, environment: 'test', payload: singlePayload }],
+      statuses: [inProgress(1, 1)],
+      artifacts: [artifact('nyc2')],
+      expectedState: 'failure',
+    });
+    const result = await finalizeReceipt({
+      token: 'test-token', repository, runId, runAttempt, evidenceDirectory: root, fetchImpl: github.fetchImpl,
+    });
+    assert.equal(result.state, 'failure');
+    assert.match(result.reason, /artifact set/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('binds evidence artifact names and metadata before accepting downloaded files', async (t) => {
+  for (const [name, artifacts] of [
+    ['wrong name', [artifact('ams3'), artifact('wrong')]],
+    ['expired', [artifact('ams3'), artifact('nyc2', { expired: true })]],
+    ['wrong run', [artifact('ams3'), artifact('nyc2', { workflow_run: { id: 43, head_sha: commit } })]],
+    ['wrong commit', [artifact('ams3'), artifact('nyc2', { workflow_run: { id: 42, head_sha: 'c'.repeat(40) } })]],
+    ['missing digest', [artifact('ams3'), artifact('nyc2', { digest: null })]],
+  ]) {
+    await t.test(name, () => withEvidenceDirectory(async (root) => {
+      const github = fakeGithub({ artifacts, expectedState: 'failure' });
+      const result = await finalizeReceipt({
+        token: 'test-token', repository, runId, runAttempt, evidenceDirectory: root, fetchImpl: github.fetchImpl,
+      });
+      assert.equal(result.state, 'failure');
+      assert.match(result.reason, /artifact/);
+    }));
+  }
+});
+
+test('rejects unstable artifact pagination before writing a terminal receipt', () => withEvidenceDirectory(async (root) => {
+  const github = fakeGithub({ artifactTotalCount: 3 });
+  await assert.rejects(finalizeReceipt({
+    token: 'test-token', repository, runId, runAttempt, evidenceDirectory: root, fetchImpl: github.fetchImpl,
+  }), /artifact count changed/);
+  assert.equal(github.calls.some((call) => call.method === 'POST'), false);
 }));
 
 test('binds the authoritative workflow attempt and commit without using its conclusion', () => withEvidenceDirectory(async (root) => {
