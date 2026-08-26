@@ -46,9 +46,9 @@ async function withEvidenceDirectory(callback, records = payload.intended_origin
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'sigil-receipt-finalizer-'));
   try {
     for (const record of records) {
-      const artifact = path.join(root, `deploy-evidence-${attempt}-${record.origin}`);
-      fs.mkdirSync(artifact);
-      fs.writeFileSync(path.join(artifact, 'evidence.json'), JSON.stringify(record));
+      const artifactDirectory = path.join(root, `deploy-evidence-${attempt}-${record.origin}`);
+      fs.mkdirSync(artifactDirectory);
+      fs.writeFileSync(path.join(artifactDirectory, 'evidence.json'), JSON.stringify(record));
     }
     return await callback(root);
   } finally {
