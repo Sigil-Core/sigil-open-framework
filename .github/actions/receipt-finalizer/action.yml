@@ -1,0 +1,60 @@
+name: Sigil deployment receipt finalizer
+description: >-
+  Finalize one GitHub Deployment from exact per-origin evidence artifacts. The
+  caller workflow MUST serialize invocations with a GitHub Actions concurrency
+  key containing the target repository, run-id, and run-attempt.
+
+inputs:
+  github-token:
+    description: Token with Actions read and Deployments write access to the target repository.
+    required: true
+  repository:
+    description: Target repository in owner/name form.
+    required: true
+  run-id:
+    description: Workflow run that owns the deployment and evidence artifacts.
+    required: true
+  run-attempt:
+    description: Exact workflow run attempt named by the deployment in-progress receipt pointer.
+    required: true
+
+outputs:
+  state:
+    description: Terminal deployment state written or previously present.
+    value: ${{ steps.finalize.outputs.state }}
+  deployment-id:
+    description: Finalized GitHub Deployment identifier.
+    value: ${{ steps.finalize.outputs.deployment-id }}
+
+runs:
+  using: composite
+  steps:
+    - name: Validate receipt finalizer inputs
+      shell: bash
+      env:
+        INPUT_REPOSITORY: ${{ inputs.repository }}
+        INPUT_RUN_ID: ${{ inputs.run-id }}
+        INPUT_RUN_ATTEMPT: ${{ inputs.run-attempt }}
+      run: node "$GITHUB_ACTION_PATH/finalize.mjs" --validate-inputs
+
+    - name: Download exact-attempt deploy evidence
+      continue-on-error: true
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with:
+        github-token: ${{ inputs.github-token }}
+        repository: ${{ inputs.repository }}
+        run-id: ${{ inputs.run-id }}
+        pattern: deploy-evidence-${{ inputs.run-attempt }}-*
+        merge-multiple: false
+        path: ${{ runner.temp }}/sigil-receipt-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+
+    - id: finalize
+      name: Write terminal deployment receipt
+      shell: bash
+      env:
+        INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
+        INPUT_REPOSITORY: ${{ inputs.repository }}
+        INPUT_RUN_ID: ${{ inputs.run-id }}
+        INPUT_RUN_ATTEMPT: ${{ inputs.run-attempt }}
+        INPUT_EVIDENCE_DIRECTORY: ${{ runner.temp }}/sigil-receipt-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+      run: node "$GITHUB_ACTION_PATH/finalize.mjs"
