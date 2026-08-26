@@ -1,0 +1,3 @@
+/.github/actions/receipt-finalizer/ @Sigil-Core/owners
+/.github/actions/receipt-finalizer-resolution-proof/ @Sigil-Core/owners
+/scripts/receipt-finalizer.test.mjs @Sigil-Core/owners
