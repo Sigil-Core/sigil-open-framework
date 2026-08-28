@@ -15,7 +15,8 @@ const EVIDENCE_KEYS = new Set(['evidence_schema_version', 'unit_id', 'origin', '
 const REQUEST_TIMEOUT_MS = 15_000;
 const RETRY_WINDOW_MS = 180_000;
 const RETRY_ATTEMPTS = 10;
-const READBACK_RESERVE_MS = REQUEST_TIMEOUT_MS;
+const RETRY_DELAY_MS = 1_000;
+const READBACK_RESERVE_MS = (2 * REQUEST_TIMEOUT_MS) + RETRY_DELAY_MS;
 
 class ReceiptValidationError extends Error {}
 class RetryDeadlineError extends Error {}
@@ -35,7 +36,7 @@ function retryable(error) {
 
 async function waitToRetry(controls, description) {
   const remaining = requireTime(controls.deadline, controls.now, description);
-  await controls.sleep(Math.min(1_000, remaining));
+  await controls.sleep(Math.min(RETRY_DELAY_MS, remaining));
   requireTime(controls.deadline, controls.now, description);
 }
 

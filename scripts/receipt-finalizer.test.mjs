@@ -552,6 +552,33 @@ test('preserves a bounded readback window before attempting the terminal write',
   assert.equal(postCalls, 0);
 }));
 
+test('reserves two full readback attempts and their retry delay', () => withEvidenceDirectory(async (root) => {
+  const github = fakeGithub();
+  let postCompleted = false;
+  let readbackTimeouts = 1;
+  const sleeps = [];
+  const fetchImpl = (url, options) => {
+    if (options.method === 'POST') {
+      const result = github.fetchImpl(url, options);
+      postCompleted = true;
+      return result;
+    }
+    if (postCompleted && url.includes('/statuses?') && readbackTimeouts > 0) {
+      readbackTimeouts -= 1;
+      const error = new Error('first readback timed out');
+      error.name = 'TimeoutError';
+      throw error;
+    }
+    return github.fetchImpl(url, options);
+  };
+  const result = await finalizeReceipt({
+    token: 'test-token', repository, runId, runAttempt, evidenceDirectory: root, fetchImpl,
+    sleep: (milliseconds) => sleeps.push(milliseconds),
+  });
+  assert.deepEqual(result, { state: 'success', deploymentId: 7, idempotent: false, reason: null });
+  assert.deepEqual(sleeps, [1_000]);
+}));
+
 test('composite action preserves the proof action and states its caller serialization contract', () => {
   const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const action = fs.readFileSync(path.join(root, '.github/actions/receipt-finalizer/action.yml'), 'utf8');
