@@ -56,10 +56,14 @@ async function withEvidenceDirectory(callback, records = payload.intended_origin
   }
 }
 
-function response(status, value) {
+function response(status, value, headerValues = {}) {
+  const normalizedHeaders = Object.fromEntries(
+    Object.entries(headerValues).map(([name, headerValue]) => [name.toLowerCase(), String(headerValue)]),
+  );
   return {
     ok: status >= 200 && status < 300,
     status,
+    headers: { get: (name) => normalizedHeaders[name.toLowerCase()] ?? null },
     json: () => structuredClone(value),
   };
 }
@@ -383,6 +387,196 @@ test('serialized sequential invocations write exactly one terminal receipt', () 
   assert.deepEqual(first, { state: 'success', deploymentId: 7, idempotent: false, reason: null });
   assert.deepEqual(second, { state: 'success', deploymentId: 7, idempotent: true, reason: null });
   assert.equal(github.calls.filter((call) => call.method === 'POST').length, 1);
+}));
+
+test('retries transient reads inside one shared deadline and abort-bounds every request', () => withEvidenceDirectory(async (root) => {
+  const github = fakeGithub();
+  let transientReads = 1;
+  const sleeps = [];
+  const fetchImpl = (url, options) => {
+    assert.ok(options.signal instanceof AbortSignal);
+    if (options.method === 'GET' && transientReads > 0) {
+      transientReads -= 1;
+      return response(503, { message: 'temporary failure' });
+    }
+    return github.fetchImpl(url, options);
+  };
+  const result = await finalizeReceipt({
+    token: 'test-token',
+    repository,
+    runId,
+    runAttempt,
+    evidenceDirectory: root,
+    fetchImpl,
+    sleep: (milliseconds) => sleeps.push(milliseconds),
+  });
+  assert.equal(result.state, 'success');
+  assert.deepEqual(sleeps, [1_000]);
+}));
+
+test('stops transient retries at the shared deadline', () => withEvidenceDirectory(async (root) => {
+  let clock = 0;
+  let requests = 0;
+  await assert.rejects(finalizeReceipt({
+    token: 'test-token',
+    repository,
+    runId,
+    runAttempt,
+    evidenceDirectory: root,
+    fetchImpl: () => {
+      requests += 1;
+      throw new Error('temporary network failure');
+    },
+    sleep: () => { clock = 2_000; },
+    now: () => clock,
+    retryWindowMilliseconds: 1_500,
+  }), /shared retry deadline/);
+  assert.equal(requests, 1);
+}));
+
+test('retries a response-body abort instead of treating it as invalid JSON', () => withEvidenceDirectory(async (root) => {
+  const github = fakeGithub();
+  let aborts = 1;
+  const sleeps = [];
+  const fetchImpl = (url, options) => {
+    if (options.method === 'GET' && aborts > 0) {
+      aborts -= 1;
+      return {
+        ok: true,
+        status: 200,
+        json: () => {
+          const error = new Error('response body timed out');
+          error.name = 'TimeoutError';
+          throw error;
+        },
+      };
+    }
+    return github.fetchImpl(url, options);
+  };
+  const result = await finalizeReceipt({
+    token: 'test-token',
+    repository,
+    runId,
+    runAttempt,
+    evidenceDirectory: root,
+    fetchImpl,
+    sleep: (milliseconds) => sleeps.push(milliseconds),
+  });
+  assert.equal(result.state, 'success');
+  assert.deepEqual(sleeps, [1_000]);
+}));
+
+test('caps retry sleep at the remaining shared deadline', () => withEvidenceDirectory(async (root) => {
+  let clock = 0;
+  const sleeps = [];
+  await assert.rejects(finalizeReceipt({
+    token: 'test-token',
+    repository,
+    runId,
+    runAttempt,
+    evidenceDirectory: root,
+    fetchImpl: () => { throw new Error('temporary network failure'); },
+    sleep: (milliseconds) => {
+      sleeps.push(milliseconds);
+      clock += milliseconds;
+    },
+    now: () => clock,
+    retryWindowMilliseconds: 500,
+  }), /shared retry deadline/);
+  assert.deepEqual(sleeps, [500]);
+}));
+
+test('does not duplicate an uncertain terminal status write', () => withEvidenceDirectory(async (root) => {
+  const github = fakeGithub();
+  let postCalls = 0;
+  const fetchImpl = (url, options) => {
+    if (options.method === 'POST') {
+      postCalls += 1;
+      github.fetchImpl(url, options);
+      throw new Error('response was lost after the write');
+    }
+    return github.fetchImpl(url, options);
+  };
+  const result = await finalizeReceipt({
+    token: 'test-token', repository, runId, runAttempt, evidenceDirectory: root, fetchImpl,
+  });
+  assert.deepEqual(result, { state: 'success', deploymentId: 7, idempotent: false, reason: null });
+  assert.equal(postCalls, 1);
+}));
+
+test('retries a rate-limited 403 but not an ordinary forbidden response', () => withEvidenceDirectory(async (root) => {
+  const github = fakeGithub();
+  let rateLimitedReads = 1;
+  const sleeps = [];
+  const fetchImpl = (url, options) => {
+    if (options.method === 'GET' && rateLimitedReads > 0) {
+      rateLimitedReads -= 1;
+      return response(403, { message: 'rate limited' }, { 'x-ratelimit-remaining': '0' });
+    }
+    return github.fetchImpl(url, options);
+  };
+  const result = await finalizeReceipt({
+    token: 'test-token', repository, runId, runAttempt, evidenceDirectory: root, fetchImpl,
+    sleep: (milliseconds) => sleeps.push(milliseconds),
+  });
+  assert.equal(result.state, 'success');
+  assert.deepEqual(sleeps, [1_000]);
+
+  let forbiddenCalls = 0;
+  await assert.rejects(finalizeReceipt({
+    token: 'test-token', repository, runId, runAttempt, evidenceDirectory: root,
+    fetchImpl: () => {
+      forbiddenCalls += 1;
+      return response(403, { message: 'forbidden' });
+    },
+    sleep: () => assert.fail('ordinary 403 must not be retried'),
+  }), /failed with 403/);
+  assert.equal(forbiddenCalls, 1);
+}));
+
+test('preserves a bounded readback window before attempting the terminal write', () => withEvidenceDirectory(async (root) => {
+  const github = fakeGithub();
+  let clock = 0;
+  let postCalls = 0;
+  const fetchImpl = (url, options) => {
+    const result = github.fetchImpl(url, options);
+    if (options.method === 'POST') postCalls += 1;
+    clock = 6_000;
+    return result;
+  };
+  await assert.rejects(finalizeReceipt({
+    token: 'test-token', repository, runId, runAttempt, evidenceDirectory: root, fetchImpl,
+    now: () => clock,
+    retryWindowMilliseconds: 20_000,
+  }), /cannot preserve the readback deadline/);
+  assert.equal(postCalls, 0);
+}));
+
+test('reserves two full readback attempts and their retry delay', () => withEvidenceDirectory(async (root) => {
+  const github = fakeGithub();
+  let postCompleted = false;
+  let readbackTimeouts = 1;
+  const sleeps = [];
+  const fetchImpl = (url, options) => {
+    if (options.method === 'POST') {
+      const result = github.fetchImpl(url, options);
+      postCompleted = true;
+      return result;
+    }
+    if (postCompleted && url.includes('/statuses?') && readbackTimeouts > 0) {
+      readbackTimeouts -= 1;
+      const error = new Error('first readback timed out');
+      error.name = 'TimeoutError';
+      throw error;
+    }
+    return github.fetchImpl(url, options);
+  };
+  const result = await finalizeReceipt({
+    token: 'test-token', repository, runId, runAttempt, evidenceDirectory: root, fetchImpl,
+    sleep: (milliseconds) => sleeps.push(milliseconds),
+  });
+  assert.deepEqual(result, { state: 'success', deploymentId: 7, idempotent: false, reason: null });
+  assert.deepEqual(sleeps, [1_000]);
 }));
 
 test('composite action preserves the proof action and states its caller serialization contract', () => {

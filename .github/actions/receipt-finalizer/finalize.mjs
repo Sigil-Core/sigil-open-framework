@@ -12,6 +12,33 @@ const UTC_SECOND = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
 const ARTIFACT_DIGEST = /^sha256:[a-f0-9]{64}$/;
 const PAYLOAD_KEYS = new Set(['receipt_schema_version', 'unit_id', 'service', 'environment', 'commit', 'intended_origins', 'run_id']);
 const EVIDENCE_KEYS = new Set(['evidence_schema_version', 'unit_id', 'origin', 'run_id', 'run_attempt', 'commit', 'parity_verified', 'parity_source', 'completed_at']);
+const REQUEST_TIMEOUT_MS = 15_000;
+const RETRY_WINDOW_MS = 180_000;
+const RETRY_ATTEMPTS = 10;
+const RETRY_DELAY_MS = 1_000;
+const READBACK_RESERVE_MS = (2 * REQUEST_TIMEOUT_MS) + RETRY_DELAY_MS;
+
+class ReceiptValidationError extends Error {}
+class RetryDeadlineError extends Error {}
+
+function requireTime(deadline, now, description) {
+  const remaining = deadline - now();
+  if (!Number.isSafeInteger(remaining) || remaining < 1) {
+    throw new RetryDeadlineError(`${description} exceeded the shared retry deadline`);
+  }
+  return remaining;
+}
+
+function retryable(error) {
+  return !(error instanceof ReceiptValidationError) &&
+    !(error instanceof RetryDeadlineError) && error?.retryable !== false;
+}
+
+async function waitToRetry(controls, description) {
+  const remaining = requireTime(controls.deadline, controls.now, description);
+  await controls.sleep(Math.min(RETRY_DELAY_MS, remaining));
+  requireTime(controls.deadline, controls.now, description);
+}
 
 function record(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
@@ -189,7 +216,10 @@ export function evaluateEvidenceDirectory(root, payload, { runId, runAttempt, al
   }
 }
 
-async function githubRequest(fetchImpl, token, method, pathname, body) {
+async function githubRequest(fetchImpl, token, method, pathname, body, timeoutMilliseconds) {
+  if (!Number.isInteger(timeoutMilliseconds) || timeoutMilliseconds < 1 || timeoutMilliseconds > REQUEST_TIMEOUT_MS) {
+    throw new Error('GitHub API request timeout is invalid');
+  }
   const response = await fetchImpl(`${API}${pathname}`, {
     method,
     headers: {
@@ -199,34 +229,78 @@ async function githubRequest(fetchImpl, token, method, pathname, body) {
       ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
     },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    signal: AbortSignal.timeout(timeoutMilliseconds),
   });
-  if (!response.ok) throw new Error(`GitHub API ${method} ${pathname} failed with ${response.status}`);
-  return response.status === 204 ? null : response.json();
+  if (!response.ok) {
+    const error = new Error(`GitHub API ${method} ${pathname} failed with ${response.status}`);
+    const retryAfter = response.headers?.get?.('retry-after');
+    const rateLimitRemaining = response.headers?.get?.('x-ratelimit-remaining');
+    const rateLimitedForbidden = response.status === 403 && (
+      (typeof retryAfter === 'string' && retryAfter.trim().length > 0) ||
+      rateLimitRemaining === '0'
+    );
+    error.retryable = response.status === 408 || response.status === 429 || response.status >= 500 || rateLimitedForbidden;
+    throw error;
+  }
+  if (response.status === 204) return null;
+  try {
+    return await response.json();
+  } catch (error) {
+    if (!(error instanceof SyntaxError)) throw error;
+    throw new ReceiptValidationError(`GitHub API ${method} ${pathname} returned invalid JSON`);
+  }
 }
 
-async function collectPages(fetchImpl, token, pathname) {
+async function requestWithRetries(fetchImpl, token, method, pathname, controls, body) {
+  let lastError = null;
+  for (let attempt = 1; attempt <= controls.attempts; attempt += 1) {
+    const timeoutMilliseconds = Math.min(
+      REQUEST_TIMEOUT_MS,
+      requireTime(controls.deadline, controls.now, `GitHub API ${method} ${pathname}`),
+    );
+    try {
+      return await githubRequest(fetchImpl, token, method, pathname, body, timeoutMilliseconds);
+    } catch (error) {
+      if (!retryable(error)) throw error;
+      lastError = error;
+      if (attempt < controls.attempts) await waitToRetry(controls, `GitHub API ${method} ${pathname}`);
+    }
+  }
+  throw new Error(`GitHub API ${method} ${pathname} failed after bounded retries: ${lastError instanceof Error ? lastError.message : String(lastError)}`);
+}
+
+async function collectPages(fetchImpl, token, pathname, controls) {
   const values = [];
   for (let page = 1; page <= 100; page += 1) {
+    requireTime(controls.deadline, controls.now, `GitHub API pagination for ${pathname}`);
     const separator = pathname.includes('?') ? '&' : '?';
-    const batch = await githubRequest(fetchImpl, token, 'GET', `${pathname}${separator}per_page=100&page=${page}`);
-    if (!Array.isArray(batch)) throw new Error('GitHub API pagination response is invalid');
+    const batch = await requestWithRetries(
+      fetchImpl,
+      token,
+      'GET',
+      `${pathname}${separator}per_page=100&page=${page}`,
+      controls,
+    );
+    if (!Array.isArray(batch)) throw new ReceiptValidationError('GitHub API pagination response is invalid');
     values.push(...batch);
     if (batch.length < 100) return values;
   }
-  throw new Error(`GitHub API pagination limit exceeded for ${pathname}`);
+  throw new ReceiptValidationError(`GitHub API pagination limit exceeded for ${pathname}`);
 }
 
-async function collectArtifactPages(fetchImpl, token, repository, runId) {
+async function collectArtifactPages(fetchImpl, token, repository, runId, controls) {
   const values = [];
   for (let page = 1; page <= 100; page += 1) {
-    const result = await githubRequest(
+    requireTime(controls.deadline, controls.now, 'GitHub artifact pagination');
+    const result = await requestWithRetries(
       fetchImpl,
       token,
       'GET',
       `/repos/${repository}/actions/runs/${runId}/artifacts?per_page=100&page=${page}`,
+      controls,
     );
     if (!record(result) || !Number.isSafeInteger(result.total_count) || result.total_count < 0 || !Array.isArray(result.artifacts)) {
-      throw new Error('GitHub artifact pagination response is invalid');
+      throw new ReceiptValidationError('GitHub artifact pagination response is invalid');
     }
     values.push(...result.artifacts);
     if (result.artifacts.length < 100) {
@@ -234,7 +308,7 @@ async function collectArtifactPages(fetchImpl, token, repository, runId) {
       return values;
     }
   }
-  throw new Error('GitHub API pagination limit exceeded for workflow artifacts');
+  throw new ReceiptValidationError('GitHub API pagination limit exceeded for workflow artifacts');
 }
 
 function deploymentId(value) {
@@ -251,8 +325,8 @@ function matchingAttemptPointer(statuses, runAttempt, originCount) {
   return sameAttempt.length === 1;
 }
 
-async function selectDeployment(fetchImpl, token, repository, runId, runAttempt) {
-  const deployments = await collectPages(fetchImpl, token, `/repos/${repository}/deployments`);
+async function selectDeployment(fetchImpl, token, repository, runId, runAttempt, controls) {
+  const deployments = await collectPages(fetchImpl, token, `/repos/${repository}/deployments`, controls);
   const candidates = deployments.filter((deployment) => record(deployment?.payload) && deployment.payload.run_id === runId);
   const selected = [];
   for (const candidate of candidates) {
@@ -263,19 +337,20 @@ async function selectDeployment(fetchImpl, token, repository, runId, runAttempt)
       deploymentSha: candidate.sha,
       deploymentEnvironment: candidate.environment,
     });
-    const statuses = await collectPages(fetchImpl, token, `/repos/${repository}/deployments/${id}/statuses`);
+    const statuses = await collectPages(fetchImpl, token, `/repos/${repository}/deployments/${id}/statuses`, controls);
     if (matchingAttemptPointer(statuses, runAttempt, payload.intended_origins.length)) selected.push({ id, sha: candidate.sha, payload, statuses });
   }
   if (selected.length !== 1) throw new Error('exactly one deployment must match the workflow run attempt');
   return selected[0];
 }
 
-async function validateWorkflowRun(fetchImpl, token, input, commit) {
-  const run = await githubRequest(
+async function validateWorkflowRun(fetchImpl, token, input, commit, controls) {
+  const run = await requestWithRetries(
     fetchImpl,
     token,
     'GET',
     `/repos/${input.repository}/actions/runs/${input.runId}/attempts/${input.runAttempt}`,
+    controls,
   );
   if (!record(run) || run.id !== input.runIdNumber || run.run_attempt !== input.runAttempt ||
       run.repository?.full_name !== input.repository || run.head_sha !== commit ||
@@ -296,14 +371,33 @@ function existingTerminal(statuses, runAttempt, originCount) {
   return terminals[0].state;
 }
 
-export async function finalizeReceipt({ token, repository, runId, runAttempt, evidenceDirectory, fetchImpl = fetch }) {
+export async function finalizeReceipt({
+  token,
+  repository,
+  runId,
+  runAttempt,
+  evidenceDirectory,
+  fetchImpl = fetch,
+  sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)),
+  now = Date.now,
+  retryWindowMilliseconds = RETRY_WINDOW_MS,
+  retryAttempts = RETRY_ATTEMPTS,
+}) {
   if (typeof token !== 'string' || token.length < 1) throw new Error('github-token is required');
+  if (typeof fetchImpl !== 'function' || typeof sleep !== 'function' || typeof now !== 'function' ||
+      !Number.isInteger(retryWindowMilliseconds) || retryWindowMilliseconds < 1 || retryWindowMilliseconds > 240_000 ||
+      !Number.isInteger(retryAttempts) || retryAttempts < 1 || retryAttempts > 30) {
+    throw new Error('receipt finalizer retry controls are invalid');
+  }
+  const deadline = now() + retryWindowMilliseconds;
+  if (!Number.isSafeInteger(deadline)) throw new Error('receipt finalizer retry deadline is invalid');
+  const controls = { deadline, now, sleep, attempts: retryAttempts };
   const input = validateInputs({ repository, runId, runAttempt: String(runAttempt) });
-  const deployment = await selectDeployment(fetchImpl, token, repository, runId, input.runAttempt);
-  await validateWorkflowRun(fetchImpl, token, input, deployment.payload.commit);
+  const deployment = await selectDeployment(fetchImpl, token, repository, runId, input.runAttempt, controls);
+  await validateWorkflowRun(fetchImpl, token, input, deployment.payload.commit, controls);
   const prior = existingTerminal(deployment.statuses, input.runAttempt, deployment.payload.intended_origins.length);
   if (prior) return { state: prior, deploymentId: deployment.id, idempotent: true, reason: null };
-  const artifacts = await collectArtifactPages(fetchImpl, token, repository, runId);
+  const artifacts = await collectArtifactPages(fetchImpl, token, repository, runId, controls);
   const artifactEvidence = evaluateEvidenceArtifactSet(artifacts, deployment.payload, {
     runIdNumber: input.runIdNumber,
     runAttempt: input.runAttempt,
@@ -316,16 +410,36 @@ export async function finalizeReceipt({ token, repository, runId, runAttempt, ev
       allowFlattenedSingle: deployment.payload.intended_origins.length === 1,
     });
   const description = terminalPointer(input.runAttempt, deployment.payload.intended_origins.length);
-  const beforeWrite = await collectPages(fetchImpl, token, `/repos/${repository}/deployments/${deployment.id}/statuses`);
+  const beforeWrite = await collectPages(fetchImpl, token, `/repos/${repository}/deployments/${deployment.id}/statuses`, controls);
   const raced = existingTerminal(beforeWrite, input.runAttempt, deployment.payload.intended_origins.length);
   if (raced) return { state: raced, deploymentId: deployment.id, idempotent: true, reason: null };
-  await githubRequest(fetchImpl, token, 'POST', `/repos/${repository}/deployments/${deployment.id}/statuses`, {
-    state: evidence.state,
-    description,
-    auto_inactive: false,
-  });
-  const afterWrite = await collectPages(fetchImpl, token, `/repos/${repository}/deployments/${deployment.id}/statuses`);
-  if (existingTerminal(afterWrite, input.runAttempt, deployment.payload.intended_origins.length) !== evidence.state) {
+  let writeError = null;
+  try {
+    const remainingBeforeWrite = requireTime(deadline, now, 'terminal receipt status write');
+    if (remainingBeforeWrite <= READBACK_RESERVE_MS) {
+      throw new RetryDeadlineError('terminal receipt status write cannot preserve the readback deadline');
+    }
+    const writeTimeout = Math.min(
+      REQUEST_TIMEOUT_MS,
+      remainingBeforeWrite - READBACK_RESERVE_MS,
+    );
+    await githubRequest(fetchImpl, token, 'POST', `/repos/${repository}/deployments/${deployment.id}/statuses`, {
+      state: evidence.state,
+      description,
+      auto_inactive: false,
+    }, writeTimeout);
+  } catch (error) {
+    writeError = error;
+  }
+  const afterWrite = await collectPages(
+    fetchImpl,
+    token,
+    `/repos/${repository}/deployments/${deployment.id}/statuses`,
+    controls,
+  );
+  const serializedState = existingTerminal(afterWrite, input.runAttempt, deployment.payload.intended_origins.length);
+  if (serializedState !== evidence.state) {
+    if (writeError) throw writeError;
     throw new Error('terminal receipt status was not durably serialized');
   }
   return { state: evidence.state, deploymentId: deployment.id, idempotent: false, reason: evidence.reason };
