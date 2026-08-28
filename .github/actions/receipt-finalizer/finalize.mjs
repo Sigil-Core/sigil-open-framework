@@ -15,6 +15,7 @@ const EVIDENCE_KEYS = new Set(['evidence_schema_version', 'unit_id', 'origin', '
 const REQUEST_TIMEOUT_MS = 15_000;
 const RETRY_WINDOW_MS = 180_000;
 const RETRY_ATTEMPTS = 10;
+const READBACK_RESERVE_MS = REQUEST_TIMEOUT_MS;
 
 class ReceiptValidationError extends Error {}
 class RetryDeadlineError extends Error {}
@@ -231,7 +232,13 @@ async function githubRequest(fetchImpl, token, method, pathname, body, timeoutMi
   });
   if (!response.ok) {
     const error = new Error(`GitHub API ${method} ${pathname} failed with ${response.status}`);
-    error.retryable = response.status === 408 || response.status === 429 || response.status >= 500;
+    const retryAfter = response.headers?.get?.('retry-after');
+    const rateLimitRemaining = response.headers?.get?.('x-ratelimit-remaining');
+    const rateLimitedForbidden = response.status === 403 && (
+      (typeof retryAfter === 'string' && retryAfter.trim().length > 0) ||
+      rateLimitRemaining === '0'
+    );
+    error.retryable = response.status === 408 || response.status === 429 || response.status >= 500 || rateLimitedForbidden;
     throw error;
   }
   if (response.status === 204) return null;
@@ -407,9 +414,13 @@ export async function finalizeReceipt({
   if (raced) return { state: raced, deploymentId: deployment.id, idempotent: true, reason: null };
   let writeError = null;
   try {
+    const remainingBeforeWrite = requireTime(deadline, now, 'terminal receipt status write');
+    if (remainingBeforeWrite <= READBACK_RESERVE_MS) {
+      throw new RetryDeadlineError('terminal receipt status write cannot preserve the readback deadline');
+    }
     const writeTimeout = Math.min(
       REQUEST_TIMEOUT_MS,
-      requireTime(deadline, now, 'terminal receipt status write'),
+      remainingBeforeWrite - READBACK_RESERVE_MS,
     );
     await githubRequest(fetchImpl, token, 'POST', `/repos/${repository}/deployments/${deployment.id}/statuses`, {
       state: evidence.state,

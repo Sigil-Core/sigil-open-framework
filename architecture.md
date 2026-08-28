@@ -212,7 +212,7 @@ The reference SOF implementation is operated by Sigil Core as a hosted service a
 
 ### Deployment receipt reliability
 
-Sigil's reference deployment workflow finalizes receipt evidence within one bounded network window. Each GitHub API request has a timeout of at most 15 seconds, and transient read failures may retry only within a shared 180-second deadline. Semantic validation failures do not retry.
+Sigil's reference deployment workflow attempts receipt finalization within one bounded network window. Each GitHub API request has a timeout of at most 15 seconds, and transient read failures may retry only within a shared 180-second deadline. Semantic validation failures do not retry.
 
 The caller serializes finalizer invocations for each repository, run, and attempt. Within that serialized invocation, the terminal receipt write is attempted once, and an uncertain response does not trigger another write. The finalizer performs bounded readback recovery, and a deployment remains incomplete unless the exact terminal receipt is durably observed.
 
