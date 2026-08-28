@@ -385,6 +385,121 @@ test('serialized sequential invocations write exactly one terminal receipt', () 
   assert.equal(github.calls.filter((call) => call.method === 'POST').length, 1);
 }));
 
+test('retries transient reads inside one shared deadline and abort-bounds every request', () => withEvidenceDirectory(async (root) => {
+  const github = fakeGithub();
+  let transientReads = 1;
+  const sleeps = [];
+  const fetchImpl = (url, options) => {
+    assert.ok(options.signal instanceof AbortSignal);
+    if (options.method === 'GET' && transientReads > 0) {
+      transientReads -= 1;
+      return response(503, { message: 'temporary failure' });
+    }
+    return github.fetchImpl(url, options);
+  };
+  const result = await finalizeReceipt({
+    token: 'test-token',
+    repository,
+    runId,
+    runAttempt,
+    evidenceDirectory: root,
+    fetchImpl,
+    sleep: async (milliseconds) => sleeps.push(milliseconds),
+  });
+  assert.equal(result.state, 'success');
+  assert.deepEqual(sleeps, [1_000]);
+}));
+
+test('stops transient retries at the shared deadline', () => withEvidenceDirectory(async (root) => {
+  let clock = 0;
+  let requests = 0;
+  await assert.rejects(finalizeReceipt({
+    token: 'test-token',
+    repository,
+    runId,
+    runAttempt,
+    evidenceDirectory: root,
+    fetchImpl: async () => {
+      requests += 1;
+      throw new Error('temporary network failure');
+    },
+    sleep: async () => { clock = 2_000; },
+    now: () => clock,
+    retryWindowMilliseconds: 1_500,
+  }), /shared retry deadline/);
+  assert.equal(requests, 1);
+}));
+
+test('retries a response-body abort instead of treating it as invalid JSON', () => withEvidenceDirectory(async (root) => {
+  const github = fakeGithub();
+  let aborts = 1;
+  const sleeps = [];
+  const fetchImpl = (url, options) => {
+    if (options.method === 'GET' && aborts > 0) {
+      aborts -= 1;
+      return {
+        ok: true,
+        status: 200,
+        json: async () => {
+          const error = new Error('response body timed out');
+          error.name = 'TimeoutError';
+          throw error;
+        },
+      };
+    }
+    return github.fetchImpl(url, options);
+  };
+  const result = await finalizeReceipt({
+    token: 'test-token',
+    repository,
+    runId,
+    runAttempt,
+    evidenceDirectory: root,
+    fetchImpl,
+    sleep: async (milliseconds) => sleeps.push(milliseconds),
+  });
+  assert.equal(result.state, 'success');
+  assert.deepEqual(sleeps, [1_000]);
+}));
+
+test('caps retry sleep at the remaining shared deadline', () => withEvidenceDirectory(async (root) => {
+  let clock = 0;
+  const sleeps = [];
+  await assert.rejects(finalizeReceipt({
+    token: 'test-token',
+    repository,
+    runId,
+    runAttempt,
+    evidenceDirectory: root,
+    fetchImpl: async () => { throw new Error('temporary network failure'); },
+    sleep: async (milliseconds) => {
+      sleeps.push(milliseconds);
+      clock += milliseconds;
+    },
+    now: () => clock,
+    retryWindowMilliseconds: 500,
+  }), /shared retry deadline/);
+  assert.deepEqual(sleeps, [500]);
+}));
+
+test('does not duplicate an uncertain terminal status write', () => withEvidenceDirectory(async (root) => {
+  const github = fakeGithub();
+  let postCalls = 0;
+  const fetchImpl = (url, options) => {
+    if (options.method === 'POST') {
+      postCalls += 1;
+      github.fetchImpl(url, options);
+      throw new Error('response was lost after the write');
+    }
+    return github.fetchImpl(url, options);
+  };
+  const result = await finalizeReceipt({
+    token: 'test-token', repository, runId, runAttempt, evidenceDirectory: root, fetchImpl,
+  });
+  assert.deepEqual(result, { state: 'success', deploymentId: 7, idempotent: false, reason: null });
+  assert.equal(postCalls, 1);
+}));
+
 test('composite action preserves the proof action and states its caller serialization contract', () => {
   const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const action = fs.readFileSync(path.join(root, '.github/actions/receipt-finalizer/action.yml'), 'utf8');
