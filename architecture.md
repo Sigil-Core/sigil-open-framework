@@ -210,6 +210,12 @@ The reference SOF implementation is operated by Sigil Core as a hosted service a
 
 **Other paths.** The reference implementation is one of many possible signers. Operators with existing trusted relationships (audit firms, custodians, enterprise security teams) may prefer a third-party conforming signer over either Sigil-hosted or self-hosted reference. See the [Conformance Registry](/conformance#registry-of-conforming-implementations) for the current list.
 
+### Deployment receipt reliability
+
+Sigil's reference deployment workflow finalizes receipt evidence within one bounded network window. Each GitHub API request has a timeout of at most 15 seconds, and transient read failures may retry only within a shared 180-second deadline. Semantic validation failures do not retry.
+
+The caller serializes finalizer invocations for each repository, run, and attempt. Within that serialized invocation, the terminal receipt write is attempted once, and an uncertain response does not trigger another write. The finalizer performs bounded readback recovery, and a deployment remains incomplete unless the exact terminal receipt is durably observed.
+
 ---
 
 *Need to run your own signing infrastructure? `sigil-sign` is MIT-licensed and self-hostable. For most teams, managing your own cryptographic signing layer is unnecessary overhead — the Sigil API handles it.*
