@@ -10,8 +10,11 @@ const SERVICE = /^[a-z][a-z0-9-]{2,39}$/;
 const ORIGIN = /^[a-z][a-z0-9-]{1,31}$/;
 const UTC_SECOND = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
 const ARTIFACT_DIGEST = /^sha256:[a-f0-9]{64}$/;
-const PAYLOAD_KEYS = new Set(['receipt_schema_version', 'unit_id', 'service', 'environment', 'commit', 'intended_origins', 'run_id']);
+const PAYLOAD_KEYS_V1 = new Set(['receipt_schema_version', 'unit_id', 'service', 'environment', 'commit', 'intended_origins', 'run_id']);
+const PAYLOAD_KEYS_V2 = new Set([...PAYLOAD_KEYS_V1, 'deployment_class']);
 const EVIDENCE_KEYS = new Set(['evidence_schema_version', 'unit_id', 'origin', 'run_id', 'run_attempt', 'commit', 'parity_verified', 'parity_source', 'completed_at']);
+const PARITY_TUPLES = new Set(['true:endpoint', 'true:container', 'false:none']);
+const POSITIVE_PARITY_SOURCES = new Set(['endpoint', 'container']);
 const REQUEST_TIMEOUT_MS = 15_000;
 const RETRY_WINDOW_MS = 180_000;
 const RETRY_ATTEMPTS = 10;
@@ -127,7 +130,10 @@ export function validateInputs({ repository, runId, runAttempt }) {
 
 export function validateDeploymentPayload(payload, { runId, deploymentSha, deploymentEnvironment }) {
   const expectedUnitId = `${payload?.service}/${payload?.environment === 'production' ? 'prod' : payload?.environment}`;
-  if (!exactKeys(payload, PAYLOAD_KEYS) || payload.receipt_schema_version !== 1 || !UNIT_ID.test(payload.unit_id ?? '') ||
+  const schemaValid = payload?.receipt_schema_version === 1
+    ? exactKeys(payload, PAYLOAD_KEYS_V1)
+    : payload?.receipt_schema_version === 2 && exactKeys(payload, PAYLOAD_KEYS_V2) && payload.deployment_class === 2;
+  if (!schemaValid || !UNIT_ID.test(payload.unit_id ?? '') ||
       !SERVICE.test(payload.service ?? '') || !['production', 'test'].includes(payload.environment) || !SHA.test(payload.commit ?? '') ||
       payload.unit_id !== expectedUnitId || payload.commit !== deploymentSha || payload.environment !== deploymentEnvironment ||
       payload.run_id !== runId || !Array.isArray(payload.intended_origins) ||
@@ -145,7 +151,7 @@ export function validateEvidenceRecord(value, binding) {
       value.commit !== binding.commit || typeof value.parity_verified !== 'boolean' || typeof value.parity_source !== 'string' ||
       !exactUtcSecond(value.completed_at)) throw new Error(`evidence for ${binding.origin} is invalid`);
   const parityTuple = `${String(value.parity_verified)}:${String(value.parity_source)}`;
-  if (!['true:endpoint', 'false:none'].includes(parityTuple)) throw new Error(`evidence parity tuple for ${binding.origin} is invalid`);
+  if (!PARITY_TUPLES.has(parityTuple)) throw new Error(`evidence parity tuple for ${binding.origin} is invalid`);
   return value;
 }
 
@@ -183,6 +189,7 @@ export function evaluateEvidenceArtifactSet(artifacts, payload, { runIdNumber, r
 
 export function evaluateEvidenceDirectory(root, payload, { runId, runAttempt, allowFlattenedSingle = false }) {
   try {
+    const expectedParitySource = payload.receipt_schema_version === 2 && payload.deployment_class === 2 ? 'container' : 'endpoint';
     const expectedNames = payload.intended_origins.map((origin) => `deploy-evidence-${runAttempt}-${origin}`);
     const entries = fs.readdirSync(root, { withFileTypes: true });
     if (allowFlattenedSingle && expectedNames.length === 1 && entries.length === 1 &&
@@ -194,8 +201,8 @@ export function evaluateEvidenceDirectory(root, payload, { runId, runAttempt, al
         runAttempt,
         commit: payload.commit,
       });
-      if (record.parity_verified !== true || record.parity_source !== 'endpoint') {
-        throw new Error('every origin must have positive endpoint parity');
+      if (record.parity_verified !== true || record.parity_source !== expectedParitySource) {
+        throw new Error('every origin must have positive deployment parity');
       }
       return { state: 'success', records: [record], reason: null };
     }
@@ -207,8 +214,8 @@ export function evaluateEvidenceDirectory(root, payload, { runId, runAttempt, al
       readEvidenceFile(path.join(root, `deploy-evidence-${runAttempt}-${origin}`)),
       { unitId: payload.unit_id, origin, runId, runAttempt, commit: payload.commit },
     ));
-    if (records.some((record) => record.parity_verified !== true || record.parity_source !== 'endpoint')) {
-      throw new Error('every origin must have positive endpoint parity');
+    if (records.some((record) => record.parity_verified !== true || record.parity_source !== expectedParitySource)) {
+      throw new Error('every origin must have positive deployment parity');
     }
     return { state: 'success', records, reason: null };
   } catch (error) {

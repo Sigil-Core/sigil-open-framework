@@ -214,6 +214,8 @@ The reference SOF implementation is operated by Sigil Core as a hosted service a
 
 Sigil's reference deployment workflow attempts receipt finalization within one bounded network window. Each GitHub API request has a timeout of at most 15 seconds, and transient read failures may retry only within a shared 180-second deadline. Semantic validation failures do not retry.
 
+Each intended origin must produce one exact-attempt evidence record with positive deployment parity. Receipt schema v1 is endpoint-only: HTTP services use `parity_verified: true` with `parity_source: "endpoint"` after comparing the served commit with the deployment commit. Endpoint-absent class-2 services use receipt schema v2 with the exact `deployment_class: 2` marker and `parity_verified: true` with `parity_source: "container"` only after comparing the revision label on the running container's immutable image ID with the deployment commit. The finalizer requires the evidence source to match the selected deployment payload. A failed or unavailable comparison uses only `parity_verified: false` with `parity_source: "none"`. The finalizer rejects every other schema, class, boolean, and source combination.
+
 The caller serializes finalizer invocations for each repository, run, and attempt. Within that serialized invocation, the terminal receipt write is attempted once, and an uncertain response does not trigger another write. The finalizer performs bounded readback recovery, and a deployment remains incomplete unless the exact terminal receipt is durably observed.
 
 ---
