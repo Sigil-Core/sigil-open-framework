@@ -26,6 +26,7 @@ const payload = {
   intended_origins: ['ams3', 'nyc2'],
   run_id: runId,
 };
+const class2Payload = { ...payload, receipt_schema_version: 2, deployment_class: 2, intended_origins: ['nyc2'] };
 
 function evidence(origin, overrides = {}) {
   return {
@@ -133,6 +134,7 @@ test('validates bounded canonical action inputs and deployment payload binding',
   });
   const deploymentBinding = { runId, deploymentSha: commit, deploymentEnvironment: 'test' };
   assert.deepEqual(validateDeploymentPayload(payload, deploymentBinding), payload);
+  assert.deepEqual(validateDeploymentPayload(class2Payload, deploymentBinding), class2Payload);
   for (const invalid of ['../../repo', 'Other/repo', 'Sigil-Core/repo/name']) {
     assert.throws(() => validateInputs({ repository: invalid, runId, runAttempt: '1' }), /allowlist/);
   }
@@ -140,6 +142,8 @@ test('validates bounded canonical action inputs and deployment payload binding',
   assert.throws(() => validateDeploymentPayload({ ...payload, commit: 'b'.repeat(40) }, deploymentBinding), /payload/);
   assert.throws(() => validateDeploymentPayload({ ...payload, service: 'sigil_sign' }, deploymentBinding), /payload/);
   assert.throws(() => validateDeploymentPayload({ ...payload, intended_origins: ['1'] }, deploymentBinding), /payload|origins/);
+  assert.throws(() => validateDeploymentPayload({ ...class2Payload, deployment_class: 1 }, deploymentBinding), /payload/);
+  assert.throws(() => validateDeploymentPayload({ ...payload, deployment_class: 2 }, deploymentBinding), /payload/);
   assert.throws(() => validateDeploymentPayload(payload, { ...deploymentBinding, deploymentEnvironment: 'production' }), /payload/);
 });
 
@@ -149,10 +153,14 @@ test('rejects duplicate JSON keys and non-scalar evidence structures', () => {
   assert.throws(() => parseEvidenceJson(Buffer.from('{\u00a0"origin":"nyc2"}')), /key/);
 });
 
-test('requires the exact evidence schema and positive endpoint parity for success', () => {
+test('requires the exact evidence schema and an allowed parity tuple', () => {
   assert.deepEqual(validateEvidenceRecord(evidence('nyc2'), {
     unitId: payload.unit_id, origin: 'nyc2', runId, runAttempt, commit,
   }), evidence('nyc2'));
+  const acceptedContainer = evidence('nyc2', { parity_source: 'container' });
+  assert.deepEqual(validateEvidenceRecord(acceptedContainer, {
+    unitId: payload.unit_id, origin: 'nyc2', runId, runAttempt, commit,
+  }), acceptedContainer);
   const acceptedNegative = validateEvidenceRecord(evidence('nyc2', { parity_verified: false, parity_source: 'none' }), {
     unitId: payload.unit_id, origin: 'nyc2', runId, runAttempt, commit,
   });
@@ -163,6 +171,11 @@ test('requires the exact evidence schema and positive endpoint parity for succes
   for (const invalidParity of [
     { parity_verified: 'true', parity_source: 'endpoint' },
     { parity_verified: true, parity_source: true },
+    { parity_verified: true, parity_source: 'none' },
+    { parity_verified: false, parity_source: 'endpoint' },
+    { parity_verified: false, parity_source: 'container' },
+    { parity_verified: false, parity_source: 'unknown' },
+    { parity_verified: true, parity_source: 'unknown' },
   ]) {
     assert.throws(() => validateEvidenceRecord(evidence('nyc2', invalidParity), {
       unitId: payload.unit_id, origin: 'nyc2', runId, runAttempt, commit,
@@ -176,6 +189,42 @@ test('finalizes success from exactly one valid artifact per intended origin', ()
   assert.deepEqual(result, { state: 'success', deploymentId: 7, idempotent: false, reason: null });
   assert.equal(github.calls.some((call) => call.method === 'POST'), true);
 }));
+
+test('finalizes success from positive container parity for endpoint-absent units', () => withEvidenceDirectory(async (root) => {
+  const github = fakeGithub({
+    deployments: [{ id: 7, sha: commit, environment: 'test', payload: class2Payload }],
+    statuses: [inProgress(1, 1)],
+    artifacts: [artifact('nyc2')],
+  });
+  const result = await finalizeReceipt({ token: 'test-token', repository, runId, runAttempt, evidenceDirectory: root, fetchImpl: github.fetchImpl });
+  assert.deepEqual(result, { state: 'success', deploymentId: 7, idempotent: false, reason: null });
+}, [evidence('nyc2', { parity_source: 'container' })]));
+
+test('rejects container parity for endpoint deployments', () => withEvidenceDirectory(async (root) => {
+  const github = fakeGithub({ expectedState: 'failure' });
+  const result = await finalizeReceipt({ token: 'test-token', repository, runId, runAttempt, evidenceDirectory: root, fetchImpl: github.fetchImpl });
+  assert.equal(result.state, 'failure');
+  assert.equal(github.calls.some((call) => call.method === 'POST' && call.body.state === 'failure'), true);
+}, payload.intended_origins.map((origin) => evidence(origin, { parity_source: 'container' }))));
+
+test('accepts positive container parity in the single-artifact flattened layout', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'sigil-receipt-finalizer-flat-container-'));
+  const singlePayload = class2Payload;
+  try {
+    fs.writeFileSync(path.join(root, 'evidence.json'), JSON.stringify(evidence('nyc2', { parity_source: 'container' })));
+    const github = fakeGithub({
+      deployments: [{ id: 7, sha: commit, environment: 'test', payload: singlePayload }],
+      statuses: [inProgress(1, 1)],
+      artifacts: [artifact('nyc2')],
+    });
+    const result = await finalizeReceipt({
+      token: 'test-token', repository, runId, runAttempt, evidenceDirectory: root, fetchImpl: github.fetchImpl,
+    });
+    assert.deepEqual(result, { state: 'success', deploymentId: 7, idempotent: false, reason: null });
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
 
 test('accepts the verified single-artifact flattened download layout', async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'sigil-receipt-finalizer-flat-'));
