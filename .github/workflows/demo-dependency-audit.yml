@@ -62,8 +62,14 @@ jobs:
             echo "AUDIT_ENDPOINT_FAULT: ${out} malformed after 3 bounded attempts -- npm advisory endpoint fault, not a dependency finding" >&2
             return 1
           }
-          capture_audit audit-full
-          capture_audit audit-production --omit=dev
+          # Attempt both scopes before failing so the artifact retains the
+          # evidence of each even when the first one faults.
+          endpoint_fault=0
+          capture_audit audit-full || endpoint_fault=1
+          capture_audit audit-production --omit=dev || endpoint_fault=1
+          if [ "$endpoint_fault" -ne 0 ]; then
+            exit 1
+          fi
           FULL_STATUS="$(cat audit-full.exit)" PRODUCTION_STATUS="$(cat audit-production.exit)" node --input-type=module -e '
             import fs from "node:fs";
             for (const [file, status] of [["audit-full.json", Number(process.env.FULL_STATUS)], ["audit-production.json", Number(process.env.PRODUCTION_STATUS)]]) {
