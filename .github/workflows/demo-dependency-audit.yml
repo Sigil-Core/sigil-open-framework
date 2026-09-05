@@ -5,6 +5,7 @@ on:
     branches: [main]
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -35,13 +36,35 @@ jobs:
         run: npm ci
       - name: Capture and validate npm audits
         run: |
-          set +e
-          npm audit --json > audit-full.json 2> audit-full.stderr
-          full_status=$?
-          npm audit --omit=dev --json > audit-production.json 2> audit-production.stderr
-          production_status=$?
-          set -e
-          FULL_STATUS="$full_status" PRODUCTION_STATUS="$production_status" node --input-type=module -e '
+          # The registry advisory endpoint can hang or return malformed JSON
+          # (2026-09-04: a ~5-minute hang produced output with no
+          # metadata.vulnerabilities.total, leaving main red on an endpoint
+          # fault). Bound each call and retry only when the output is not a
+          # well-formed audit report; a report with findings never retries.
+          capture_audit() {
+            out="$1"; shift
+            for attempt in 1 2 3; do
+              if [ "$attempt" -gt 1 ]; then sleep $(( (attempt - 1) * 30 )); fi
+              set +e
+              timeout 180 npm audit --json "$@" > "${out}.json" 2> "${out}.stderr"
+              echo $? > "${out}.exit"
+              set -e
+              if node --input-type=module -e '
+                import fs from "node:fs";
+                const text = fs.readFileSync(process.argv[1], "utf8");
+                const total = JSON.parse(text)?.metadata?.vulnerabilities?.total;
+                process.exit(Number.isInteger(total) ? 0 : 1);
+              ' "${out}.json" 2> /dev/null; then
+                return 0
+              fi
+              echo "::warning::${out}: no numeric vulnerability total (attempt ${attempt}, exit $(cat "${out}.exit"))"
+            done
+            echo "AUDIT_ENDPOINT_FAULT: ${out} malformed after 3 bounded attempts -- npm advisory endpoint fault, not a dependency finding" >&2
+            return 1
+          }
+          capture_audit audit-full
+          capture_audit audit-production --omit=dev
+          FULL_STATUS="$(cat audit-full.exit)" PRODUCTION_STATUS="$(cat audit-production.exit)" node --input-type=module -e '
             import fs from "node:fs";
             for (const [file, status] of [["audit-full.json", Number(process.env.FULL_STATUS)], ["audit-production.json", Number(process.env.PRODUCTION_STATUS)]]) {
               const text = fs.readFileSync(file, "utf8");
@@ -72,6 +95,7 @@ jobs:
             demo/dependency-toolchain.txt
             demo/audit-*.json
             demo/audit-*.stderr
+            demo/audit-*.exit
             demo/audit-signatures.txt
             demo/package-lock.*.sha256
           if-no-files-found: warn
