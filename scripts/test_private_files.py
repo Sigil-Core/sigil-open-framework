@@ -14,10 +14,13 @@ class PrivateFilesTest(unittest.TestCase):
             root = pathlib.Path(directory)
             subprocess.run(["git", "init", "-q", directory], check=True)
             for name in paths:
-                file = root / name
-                file.parent.mkdir(parents=True, exist_ok=True)
-                file.write_text("synthetic fixture\n")
-            subprocess.run(["git", "add", "--all"], cwd=root, check=True)
+                blob = subprocess.check_output(
+                    ["git", "hash-object", "-w", "--stdin"], cwd=root,
+                    input=b"synthetic fixture\n").strip()
+                record = b"100644 " + blob + b"\t" + name.encode(
+                    "utf-8", errors="surrogateescape") + b"\0"
+                subprocess.run(["git", "update-index", "-z", "--index-info"],
+                               cwd=root, input=record, check=True)
             result = subprocess.run([sys.executable, str(GATE)], cwd=root,
                                     capture_output=True, text=True)
             self.assertEqual(result.returncode, expected, result.stderr)
