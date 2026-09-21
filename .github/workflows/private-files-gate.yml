@@ -1,0 +1,14 @@
+name: Private files gate
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  private-files:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject credential artifacts, including encrypted bundles
+        run: python3 scripts/check-private-files.py
