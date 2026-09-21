@@ -57,3 +57,15 @@ bin/age-keygen
 
 # Internal AI agent context — do not publish in public repos
 agents-global.md
+
+# Private credential bundles and encryption configuration
+secrets.yaml
+secrets.yml
+secrets.yaml.*
+secrets.yml.*
+.sops.yaml
+.sops.yml
+.env.*
+!.env.example
+!.env.sample
+!.env.template

@@ -1,0 +1,16 @@
+name: Private files gate
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  private-files:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Test filename policy
+        run: python3 -m unittest discover -s scripts -p "test_private_files.py"
+      - name: Reject credential artifacts, including encrypted bundles
+        run: python3 scripts/check-private-files.py
