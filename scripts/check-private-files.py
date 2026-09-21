@@ -1,5 +1,6 @@
 """Reject private credential artifacts without reading or logging their contents."""
 import pathlib
+import shutil
 import subprocess
 import sys
 
@@ -14,7 +15,11 @@ def is_private(path):
 
 
 def main():
-    paths = subprocess.check_output(["git", "ls-files", "-z"]).decode(errors="surrogateescape").split("\0")
+    git = shutil.which("git")
+    if git is None:
+        print("Git is required to inspect tracked files.", file=sys.stderr)
+        return 1
+    paths = subprocess.check_output([git, "ls-files", "-z"]).decode(errors="surrogateescape").split("\0")
     blocked = [path for path in paths if path and is_private(path)]
     if blocked:
         print("Private credential artifacts must not be tracked:", file=sys.stderr)
