@@ -22,7 +22,7 @@ class PrivateFilesTest(unittest.TestCase):
                 subprocess.run(["git", "update-index", "-z", "--index-info"],
                                cwd=root, input=record, check=True)
             result = subprocess.run([sys.executable, str(GATE)], cwd=root,
-                                    capture_output=True, text=True)
+                                    capture_output=True, text=True, check=False)
             self.assertEqual(result.returncode, expected, result.stderr)
             self.assertNotIn("synthetic fixture", result.stdout + result.stderr)
             return result
