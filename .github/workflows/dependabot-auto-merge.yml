@@ -10,7 +10,9 @@ jobs:
   auto-merge:
     name: Enable auto-merge on green Dependabot PRs
     runs-on: ubuntu-latest
-    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    # Operator updates to a Dependabot branch require normal review. Metadata
+    # verification intentionally rejects commits that were not made by the bot.
+    if: github.event.pull_request.user.login == 'dependabot[bot]' && github.actor == 'dependabot[bot]'
     steps:
       - name: Fetch Dependabot metadata
         id: metadata
