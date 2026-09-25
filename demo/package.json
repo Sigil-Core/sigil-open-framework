@@ -12,7 +12,7 @@
     "typecheck": "tsc --noEmit --target es2022 --module nodenext --moduleResolution nodenext --types node demo.ts"
   },
   "devDependencies": {
-    "@types/node": "26.5.1",
+    "@types/node": "26.6.2",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   }
